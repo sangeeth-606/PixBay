@@ -5,5 +5,4 @@ const users = [
     { id: 4, name: 'Bob Brown', email: 'bobbrown@gmail.com', password: 'bobsecure' },
     { id: 5, name: 'Charlie Davis', email: 'charlied@protonmail.com', password: 'charlie123' },
 ];
-
 export default users;

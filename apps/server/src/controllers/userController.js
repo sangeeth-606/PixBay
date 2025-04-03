@@ -1,4 +1,4 @@
-import users from '../mockData';
+import users from '../../testData.js'
 
 const getUsers = (req, res) => {
     try {

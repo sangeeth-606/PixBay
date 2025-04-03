@@ -1,11 +1,8 @@
-import users from '../../testData.js';
+import express from 'express';
+import { getUsers } from '../controllers/userController.js';
 
-const getUsers = (req, res) => {
-    try {
-        res.status(200).json(users);
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-};
+const router = express.Router();
 
-export default getUsers ;
+router.get('/', getUsers);
+
+export default router;

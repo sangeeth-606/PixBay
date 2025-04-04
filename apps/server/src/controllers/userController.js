@@ -32,3 +32,4 @@ const updateUser = (req, res) => {
 }
 
 export { getUsers,addUser,updateUser };
+

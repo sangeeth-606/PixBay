@@ -1,35 +1,89 @@
-import users from '../../testData.js'
+import {prisma} from '../db.js'
 
-const getUsers = (req, res) => {
+export const createUser = async (req, res) => {
     try {
-        res.status(200).json(users);
+      const { email, name, role } = req.body;
+  
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+  
+      const user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          role: role || 'MEMBER', // Default to MEMBER if not provided
+        },
+      });
+  
+      res.status(201).json({ message: 'User created successfully', user });
     } catch (error) {
-        res.status(500).send(error.message);
+      console.error(error);
+      res.status(500).json({ error: 'Failed to create user' });
     }
-};
+  };
 
-const addUser = (req, res) => {
+export const getUser = async (req, res) => {
     try {
-        const user = req.body;
-        users.push(user);
-        res.status(201).json({message: "user created succesfully", user});
+      const { id } = req.params;
+  
+      const user = await prisma.user.findUnique({
+        where: { id },
+        include: {
+          projects: true, 
+          workspaces: true, 
+        },
+      });
+  
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      res.status(200).json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to fetch user' });
     }
-    catch (error) {
-        res.status(500).send(error.message);
-    }
-}
-const updateUser = (req, res) => {
+  };
+
+export const updateUser = async (req, res) => {
     try {
-        const { email } = req.params;
-        const user = req.body;
-        const userIndex = users.findIndex(user => user.email === email);
-        users[userIndex] = { ...users[userIndex], ...user };
-        res.status(200).json({ message: "user updated successfully", user: users[userIndex] });
+      const { id } = req.params;
+      const { email, name, role } = req.body;
+  
+      const user = await prisma.user.update({
+        where: { id },
+        data: {
+          email: email || undefined,
+          name: name || undefined,
+          role: role || undefined,
+        },
+      });
+  
+      res.status(200).json({ message: 'User updated successfully', user });
+    } catch (error) {
+      if (error.code === 'P2025') { // Prisma error for record not found
+        return res.status(404).json({ error: 'User not found' });
+      }
+      console.error(error);
+      res.status(500).json({ error: 'Failed to update user' });
     }
-    catch (error) {
-        res.status(500).send(error.message);
+  };
+
+export const deleteUser = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      await prisma.user.delete({
+        where: { id },
+      });
+  
+      res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      console.error(error);
+      res.status(500).json({ error: 'Failed to delete user' });
     }
-}
-
-export { getUsers,addUser,updateUser };
-
+  };

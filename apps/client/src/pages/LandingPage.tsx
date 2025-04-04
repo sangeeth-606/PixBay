@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { ArrowRight, VideoIcon, Clipboard, Users, Moon, Sun } from 'lucide-react';
+import SignIn from '../components/SignIn';
 
 const LandingPage = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -31,6 +32,9 @@ const LandingPage = () => {
             <a href="#features" className="hover:text-emerald-500 transition-colors">Features</a>
             <a href="#projects" className="hover:text-emerald-500 transition-colors">Projects</a>
             <a href="#pricing" className="hover:text-emerald-500 transition-colors">Pricing</a>
+            <div className="text-gray-600 hover:text-indigo-600 font-semibold" >
+            < SignIn/>
+          </div>
           </div>
           <button 
             onClick={toggleTheme} 

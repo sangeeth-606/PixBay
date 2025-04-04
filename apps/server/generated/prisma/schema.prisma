@@ -1,0 +1,253 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(cuid())
+  email           String?
+  name            String?
+  role            UserRole          @default(MEMBER)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  projects        ProjectMember[]
+  assignedTasks   Task[]            @relation("TaskAssignee")
+  createdTasks    Task[]            @relation("TaskCreator")
+  ownedMilestones Milestone[]
+  ownedSprints    Sprint[]
+  workspaces      WorkspaceMember[]
+  notifications   Notification[]
+  activities      Activity[]
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  MEMBER
+  GUEST
+}
+
+// Workspace
+model Workspace {
+  id        String            @id @default(cuid())
+  name      String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  members   WorkspaceMember[]
+  projects  Project[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  role        UserRole  @default(MEMBER)
+  joinedAt    DateTime  @default(now())
+
+  @@unique([workspaceId, userId])
+}
+
+// Projects
+model Project {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  key         String // Project key for issue references (e.g., PIX)
+  status      ProjectStatus   @default(ACTIVE)
+  progress    Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  members     ProjectMember[]
+  tasks       Task[]
+  sprints     Sprint[]
+  milestones  Milestone[]
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  role      UserRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  @@unique([projectId, userId])
+}
+
+// Tasks and Issues
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  type        TaskType   @default(TASK)
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  storyPoints Int?
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  sprint      Sprint?    @relation(fields: [sprintId], references: [id])
+  sprintId    String?
+  assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId  String?
+  creator     User       @relation("TaskCreator", fields: [creatorId], references: [id])
+  creatorId   String
+  parent      Task?      @relation("SubTasks", fields: [parentId], references: [id])
+  parentId    String?
+  subtasks    Task[]     @relation("SubTasks")
+  tags        TaskTag[]
+  activities  Activity[]
+}
+
+enum TaskType {
+  TASK
+  BUG
+  STORY
+  EPIC
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  ARCHIVED
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model TaskTag {
+  id     String  @id @default(cuid())
+  name   String
+  color  String?
+  task   Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String
+
+  @@unique([taskId, name])
+}
+
+// Sprints
+model Sprint {
+  id        String       @id @default(cuid())
+  name      String
+  goal      String?
+  status    SprintStatus @default(PLANNING)
+  startDate DateTime?
+  endDate   DateTime?
+  progress  Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  owner     User         @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  tasks     Task[]
+}
+
+enum SprintStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// Roadmap
+model Milestone {
+  id           String                @id @default(cuid())
+  title        String
+  description  String?
+  status       MilestoneStatus       @default(UPCOMING)
+  progress     Int                   @default(0)
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  project      Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    String
+  owner        User                  @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  // epics       Epic[]
+  dependencies MilestoneDependency[] @relation("DependsOn")
+  dependents   MilestoneDependency[] @relation("DependedBy")
+}
+
+enum MilestoneStatus {
+  COMPLETED
+  IN_PROGRESS
+  UPCOMING
+  AT_RISK
+  BLOCKED
+}
+
+model MilestoneDependency {
+  id          String    @id @default(cuid())
+  milestone   Milestone @relation("DependsOn", fields: [milestoneId], references: [id], onDelete: Cascade)
+  milestoneId String
+  dependsOn   Milestone @relation("DependedBy", fields: [dependsOnId], references: [id], onDelete: Cascade)
+  dependsOnId String
+
+  @@unique([milestoneId, dependsOnId])
+}
+
+enum ViewType {
+  TABLE
+  GALLERY
+  LIST
+  CALENDAR
+  KANBAN
+  TIMELINE
+}
+
+// Activity and Notifications
+model Activity {
+  id        String       @id @default(cuid())
+  type      ActivityType
+  content   String
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id])
+  userId    String
+  task      Task?        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String?
+}
+
+enum ActivityType {
+  CREATED
+  UPDATED
+  DELETED
+  COMMENTED
+  ASSIGNED
+  STATUS_CHANGED
+  COMPLETED
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+}

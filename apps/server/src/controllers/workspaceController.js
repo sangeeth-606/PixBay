@@ -16,7 +16,7 @@ export const createWorkspace= async(req  , res)=>{
         })
 
         if (!user){
-            return res.status(400).josn({error:"User Not Found "})
+            return res.status(400).json({error:"User Not Found "})
         }
 
         const Workspace= await prisma.workspace.create({
@@ -30,9 +30,9 @@ export const createWorkspace= async(req  , res)=>{
                 }
             }
         });
-        res.status(201).josn({message:"Workspace created successfully", Workspace})
+        res.status(201).json({message:"Workspace created successfully", Workspace})
     } catch (error) {
-        console.error;
+        console.error('Error creating workspace:', error);
         res.status(500).json({error:"failed to create workspace"});
     }
 }

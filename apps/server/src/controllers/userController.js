@@ -1,4 +1,4 @@
-import {prisma} from '../db.js'
+import prisma from '../db.js'
 
 export const createUser = async (req, res) => {
     try {
@@ -12,7 +12,7 @@ export const createUser = async (req, res) => {
         data: {
           email,
           name,
-          role: role || 'MEMBER', // Default to MEMBER if not provided
+          role: role || 'MEMBER', 
         },
       });
   

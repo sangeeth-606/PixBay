@@ -1,15 +1,31 @@
 import express from 'express';
-import userRoute from './routes/userRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
-const port = 3000;
 
+app.use(express.json()); 
+
+
+
+app.use('/api/users', userRoutes); 
 app.get('/', (req, res) => {
-  res.send('Hello World');
+  res.json({ message: 'Server is running' });
 });
 
-app.use('/api/users', userRoute);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// // Graceful shutdown for Prisma
+// process.on('SIGTERM', async () => {
+//   await prisma.$disconnect();
+//   process.exit(0);
+// });

@@ -2,6 +2,7 @@ import express from 'express';
 import userRoutes from './routes/userRoutes.js';
 import workspaceRoutes from './routes/workspaceRoutes.js'
 import projectRoutes from './routes/projectRoutes.js';
+import taskRoutes from './routes/taskRoutes.js';
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes); 
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/projects', projectRoutes); 
+app.use('/tasks', taskRoutes); // Add this
 app.get('/', (req, res) => {
   res.json({ message: 'Server is running' });
 });

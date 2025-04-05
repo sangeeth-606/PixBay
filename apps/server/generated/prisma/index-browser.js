@@ -153,14 +153,6 @@ exports.Prisma.ProjectScalarFieldEnum = {
   workspaceId: 'workspaceId'
 };
 
-exports.Prisma.ProjectMemberScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  userId: 'userId',
-  role: 'role',
-  joinedAt: 'joinedAt'
-};
-
 exports.Prisma.TaskScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -316,7 +308,6 @@ exports.Prisma.ModelName = {
   Workspace: 'Workspace',
   WorkspaceMember: 'WorkspaceMember',
   Project: 'Project',
-  ProjectMember: 'ProjectMember',
   Task: 'Task',
   TaskTag: 'TaskTag',
   Sprint: 'Sprint',

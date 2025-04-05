@@ -15,7 +15,6 @@ model User {
   role            UserRole          @default(MEMBER)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
-  projects        ProjectMember[]
   assignedTasks   Task[]            @relation("TaskAssignee")
   createdTasks    Task[]            @relation("TaskCreator")
   ownedMilestones Milestone[]
@@ -56,17 +55,16 @@ model WorkspaceMember {
 
 // Projects
 model Project {
-  id          String          @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   description String?
   key         String // Project key for issue references (e.g., PIX)
-  status      ProjectStatus   @default(ACTIVE)
-  progress    Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  status      ProjectStatus @default(ACTIVE)
+  progress    Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  members     ProjectMember[]
   tasks       Task[]
   sprints     Sprint[]
   milestones  Milestone[]
@@ -77,18 +75,6 @@ enum ProjectStatus {
   ACTIVE
   COMPLETED
   ARCHIVED
-}
-
-model ProjectMember {
-  id        String   @id @default(cuid())
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  role      UserRole @default(MEMBER)
-  joinedAt  DateTime @default(now())
-
-  @@unique([projectId, userId])
 }
 
 // Tasks and Issues
@@ -188,7 +174,6 @@ model Milestone {
   projectId    String
   owner        User                  @relation(fields: [ownerId], references: [id])
   ownerId      String
-  // epics       Epic[]
   dependencies MilestoneDependency[] @relation("DependsOn")
   dependents   MilestoneDependency[] @relation("DependedBy")
 }

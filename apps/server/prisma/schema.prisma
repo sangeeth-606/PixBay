@@ -8,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
   id                String              @id @default(cuid())
   email             String?             
@@ -16,7 +15,6 @@ model User {
   role              UserRole            @default(MEMBER)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @default(now()) @updatedAt
-  projects          ProjectMember[]
   assignedTasks     Task[]              @relation("TaskAssignee")
   createdTasks      Task[]              @relation("TaskCreator")
   ownedMilestones   Milestone[]
@@ -67,7 +65,6 @@ model Project {
   updatedAt   DateTime        @updatedAt
   workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  members     ProjectMember[]
   tasks       Task[]
   sprints     Sprint[]
   milestones  Milestone[]
@@ -78,18 +75,6 @@ enum ProjectStatus {
   ACTIVE
   COMPLETED
   ARCHIVED
-}
-
-model ProjectMember {
-  id        String    @id @default(cuid())
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  role      UserRole  @default(MEMBER)
-  joinedAt  DateTime  @default(now())
-
-  @@unique([projectId, userId])
 }
 
 // Tasks and Issues
@@ -189,7 +174,6 @@ model Milestone {
   projectId   String
   owner       User                 @relation(fields: [ownerId], references: [id])
   ownerId     String
-  // epics       Epic[]
   dependencies MilestoneDependency[] @relation("DependsOn")
   dependents   MilestoneDependency[] @relation("DependedBy")
 }
@@ -211,7 +195,6 @@ model MilestoneDependency {
 
   @@unique([milestoneId, dependsOnId])
 }
-
 
 enum ViewType {
   TABLE
@@ -253,4 +236,3 @@ model Notification {
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
 }
-

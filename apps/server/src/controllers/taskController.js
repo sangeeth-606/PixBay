@@ -109,5 +109,3 @@ export const getProjectTasks = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
-
-export { createTask, getProjectTasks };

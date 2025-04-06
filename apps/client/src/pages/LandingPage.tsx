@@ -1,12 +1,52 @@
 
 import { useState } from 'react';
 import { ArrowRight, VideoIcon, Clipboard, Users, Moon, Sun } from 'lucide-react';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/clerk-react';
 import SignIn from '../components/SignIn';
 
 const LandingPage = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [roomCode, setRoomCode] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
+
+  const { isSignedIn } = useAuth();
+  const { user } = useUser(); 
+  
+  const email = user?.emailAddresses?.[0]?.emailAddress || null;
+  console.log(email);
+
+  useEffect(() => {
+    if (isSignedIn && email) {
+      const storedName = localStorage.getItem('userName');
+      if (storedName) {
+        setUserName(storedName);
+      } else {
+        setShowNameModal(true);
+      } 
+    }
+  }, [isSignedIn, email]);
+
+  const handleNameSubmit = async () => {
+    if (userName.trim() && email) {
+      localStorage.setItem('userName', userName);
+      setShowNameModal(false);
+      try {
+        await axios.post('http://localhost:5000/api/users', {
+          email,
+          name: userName,
+          role: 'MEMBER'
+        });
+        console.log('User created in database');
+      } catch (error) {
+        console.error('Error creating user:', error);
+      }
+    }
+  };
 
   const handleVideoMeetingClick = () => {
     setShowAlert(true);
@@ -48,6 +88,35 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
+      {showNameModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+        >
+          <div
+            className={`px-6 py-4 rounded-md shadow-lg ${
+              darkMode ? 'bg-[#2C2C2C] text-white' : 'bg-white text-[#212121]'
+            } border ${darkMode ? 'border-[#333]' : 'border-gray-300'}`}
+          >
+            <h3 className="text-center text-lg font-semibold mb-4">Enter Your Name</h3>
+            <input
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Enter your name"
+              className={`w-full p-2 rounded-md border ${
+                darkMode ? 'bg-[#1C1C1C] border-[#333] text-white' : 'bg-white border-gray-300 text-[#212121]'
+              }`}
+            />
+            <button
+              onClick={handleNameSubmit}
+              className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-md font-medium transition-colors w-full"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
       
       <section className="relative px-6 py-16 md:py-24">
         {/* Background pattern */}

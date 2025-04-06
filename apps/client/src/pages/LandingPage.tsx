@@ -5,7 +5,14 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import { useUser } from '@clerk/clerk-react';
 import { useAuth } from '@clerk/clerk-react';
+import {useNavigate} from 'react-router-dom';
 import SignIn from '../components/SignIn';
+
+interface Workspace {
+  id: string | number;
+  name: string;
+  // Add other properties your workspace objects have
+}
 
 const WorkSpaceNameCode = () => {
   const characters = '0123456789';
@@ -16,6 +23,7 @@ const WorkSpaceNameCode = () => {
   return code;
 };
 
+
 const LandingPage = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [roomCode, setRoomCode] = useState('');
@@ -24,9 +32,13 @@ const LandingPage = () => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [workspaceNameInput, setWorkspaceNameInput] = useState('pixbay');
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [selectedWorkspace, setSelectedWorkspace] = useState("");
 
   const { isSignedIn,getToken } = useAuth();
   const { user } = useUser(); 
+  const navigate = useNavigate();
+  
   
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
   console.log(email);
@@ -41,6 +53,25 @@ const LandingPage = () => {
       } 
     }
   }, [isSignedIn, email]);
+
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      
+      if (isSignedIn) {
+        try {
+          const token = await getToken();
+          const response = await axios.get('http://localhost:5000/api/workspaces/user', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          setWorkspaces(response.data); 
+        } catch (error) {
+          console.error('Error fetching workspaces:', error);
+        }
+      }
+    };
+    fetchWorkspaces();
+  }, [isSignedIn, getToken]);
 
   const handleNameSubmit = async () => {
     if (userName.trim() && email) {
@@ -57,6 +88,7 @@ const LandingPage = () => {
         console.error('Error creating user:', error);
       }
     }
+    
   };
   const ShowMaodalForSpace = () => {
     setShowWorkspaceModal(true);
@@ -84,10 +116,47 @@ const LandingPage = () => {
   
       console.log('Workspace created with name:', finalWorkspaceName);
       setShowWorkspaceModal(false);
+      navigate('/dashboard'  ,{state:{workSpaceCode:finalWorkspaceName}} );
     } catch (error) {
       console.error('Error creating workspace:', error);
     }
+    
   };
+  
+  const handleJoinWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = await getToken();
+    const workspaceName = roomCode;
+    
+    try {
+        await axios.post(
+            'http://localhost:5000/api/workspaces/join',
+            { workspaceName: workspaceName },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log('joined WorkSpace:', workspaceName);
+        navigate('/dashboard', { state: { workSpaceCode: workspaceName } });
+    } catch (error) {
+        // Type check the error as an AxiosError
+        if (axios.isAxiosError(error)) {
+            if (error.response?.status === 400) {
+                alert('You are already a member of this workspace!');
+                navigate('/dashboard', { state: { workSpaceCode: workspaceName } });
+            } else {
+                console.error('Error joining workspace:', error);
+            }
+        } else {
+            console.error('Error joining workspace:', error);
+        }
+    }
+};
+const handleWorkspaceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const selectedWorkspaceName = e.target.value;
+  setSelectedWorkspace(selectedWorkspaceName);
+  if (selectedWorkspaceName) {
+    navigate('/dashboard', { state: { workSpaceCode: selectedWorkspaceName } });
+  }
+};
   
 
   const handleVideoMeetingClick = () => {
@@ -224,7 +293,9 @@ const LandingPage = () => {
               <ArrowRight className="ml-2" size={18} />
             </button  >
             
-            <div className="flex">
+            <form 
+            onSubmit={handleJoinWorkspace}  
+            className="flex">
               <input 
                 type="text"
                 placeholder="Enter Room Code"
@@ -234,17 +305,35 @@ const LandingPage = () => {
                   darkMode ? 'bg-[#2C2C2C] border-[#333]' : 'bg-white border-gray-300'
                 }`}
               />
-              <button className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-r-md font-medium transition-colors">
+              <button 
+              type="submit"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-r-md font-medium transition-colors">
                 Join Room
               </button>
-            </div>
+            </form>
 
-            <button 
-            onClick={handleVideoMeetingClick}
-             className="bg-[#2C2C2C] hover:bg-[#333] text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105 border border-[#333]">
-              <VideoIcon className="mr-2" size={18} />
-              Start a Video Meeting
-            </button>
+            <select
+  className={`py-3 px-6 rounded-md font-medium transition-all transform hover:scale-105 ${
+    darkMode 
+      ? 'bg-[#2C2C2C] hover:bg-[#333] text-white border border-[#333]' 
+      : 'bg-white hover:bg-gray-100 text-[#212121] border border-gray-300'
+  }`}
+  onChange={handleWorkspaceSelect}
+  value={selectedWorkspace}
+>
+  <option value="" disabled className={darkMode ? 'bg-[#1C1C1C]' : 'bg-white'}>
+    All your spaces
+  </option>
+  {workspaces.map((workspace) => (
+    <option 
+      key={workspace.id} 
+      value={workspace.name}
+      className={darkMode ? 'bg-[#1C1C1C]' : 'bg-white'}
+    >
+      {workspace.name}
+    </option>
+  ))}
+</select>
           </div>
 
           {/* Hero Image */}

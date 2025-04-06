@@ -4,13 +4,14 @@ export const createProject = async (req, res) => {
     try {
       const { name, description, workspaceId } = req.body;
       const {emailAddresses}= req.auth 
+      const email = emailAddresses?.[0]?.emailAddress;
   
       if (!name || !workspaceId) {
         return res.status(400).json({ error: 'Project name and workspace ID are required' });
       }
   
       const user = await prisma.user.findUnique({
-        where: { email:emailAddresses },
+        where: { email:email },
       });
   
       if (!user) {
@@ -44,9 +45,10 @@ export const createProject = async (req, res) => {
 export const getUserProjects = async (req, res) => {
     try {
         const {emailAddresses}= req.auth 
+        const email = emailAddresses?.[0]?.emailAddress;
   
       const user = await prisma.user.findUnique({
-        where: { email:emailAddresses },
+        where: { email:email},
         include: {
           workspaces: {
             include: { workspace: { include: { projects: true } } },

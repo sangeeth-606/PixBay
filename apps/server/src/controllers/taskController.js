@@ -7,6 +7,7 @@ export const createTask = async (req, res) => {
   try {
     const { title, description, projectId, type, priority, dueDate } = req.body;
     const {emailAddresses}= req.auth 
+    const email = emailAddresses?.[0]?.emailAddress;
 
     if (!title || !projectId) {
       return res.status(400).json({ error: 'Title and project ID are required' });
@@ -14,7 +15,7 @@ export const createTask = async (req, res) => {
 
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email:emailAddresses },
+      where: { email:email},
     });
 
     if (!user) {
@@ -65,10 +66,11 @@ export const getProjectTasks = async (req, res) => {
   try {
     const { projectId } = req.params; // From URL
     const {emailAddresses}= req.auth 
+    const email = emailAddresses?.[0]?.emailAddress;
 
     // Find user by email
     const user = await prisma.user.findUnique({
-      where: { email:emailAddresses },
+      where: { email:email},
     });
 
     if (!user) {

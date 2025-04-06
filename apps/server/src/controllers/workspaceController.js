@@ -43,12 +43,13 @@ export const joinWorkspace= async( req  , res)=>{
     try {
         const {workspaceName}= req.body;
         const {emailAddresses}= req.auth;
+        const email = emailAddresses?.[0]?.emailAddress;
 
         if (!workspaceName){
             return res.status(400).json({error:"Workspace name is required"})
         }
         const user= await prisma.user.findFirst({
-            where:{email:emailAddresses}
+            where:{email:email}
         })
 
         if (!user){
@@ -90,9 +91,10 @@ export const joinWorkspace= async( req  , res)=>{
 export const getUserWorkspaces = async (req, res) => {
   try {
     const {emailAddresses}= req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
 
-    const user = await prisma.user.findUnique({
-      where: { email:emailAddresses },
+    const user = await prisma.user.findFirst({
+      where: { email:email },
       include: { workspaces: { include: { workspace: true } } },
     });
 

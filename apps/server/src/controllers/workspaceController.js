@@ -2,8 +2,10 @@ import prisma from '../db.js'
 
 export const createWorkspace= async(req  , res)=>{
     try {
+        console.log('createWorkspace called', req.body, req.auth);
         const {name}=req.body
         const {emailAddresses}= req.auth // will be getting aftewr clerk middleware check
+        const email = emailAddresses?.[0]?.emailAddress;
 
         if (!name){
             return res.status(400).json({error:"Give a Name to Workspace"})
@@ -12,7 +14,7 @@ export const createWorkspace= async(req  , res)=>{
             return res.status(400).json({error:"Please sign in again"})
         }
         const user= await prisma.user.findFirst({
-            where:{email:emailAddresses}
+            where:{email:email}
         })
 
         if (!user){

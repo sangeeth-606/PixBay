@@ -7,14 +7,25 @@ import { useUser } from '@clerk/clerk-react';
 import { useAuth } from '@clerk/clerk-react';
 import SignIn from '../components/SignIn';
 
+const WorkSpaceNameCode = () => {
+  const characters = '0123456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) {
+    code += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return code;
+};
+
 const LandingPage = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [roomCode, setRoomCode] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [workspaceNameInput, setWorkspaceNameInput] = useState('pixbay');
 
-  const { isSignedIn } = useAuth();
+  const { isSignedIn,getToken } = useAuth();
   const { user } = useUser(); 
   
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
@@ -47,6 +58,37 @@ const LandingPage = () => {
       }
     }
   };
+  const ShowMaodalForSpace = () => {
+    setShowWorkspaceModal(true);
+  };
+
+  const handleCreateWorkspace = async () => {
+    // const { getToken } = useAuth(); // 👈 getToken comes from Clerk
+    const token = await getToken(); // 👈 get the session token
+  
+    const randomCode = WorkSpaceNameCode();
+    const finalWorkspaceName = `${workspaceNameInput}-${randomCode}`;
+  
+    try {
+      await axios.post(
+        'http://localhost:5000/api/workspaces/create',
+        {
+          name: finalWorkspaceName,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // 👈 pass token to backend
+          },
+        }
+      );
+  
+      console.log('Workspace created with name:', finalWorkspaceName);
+      setShowWorkspaceModal(false);
+    } catch (error) {
+      console.error('Error creating workspace:', error);
+    }
+  };
+  
 
   const handleVideoMeetingClick = () => {
     setShowAlert(true);
@@ -88,6 +130,36 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
+      {showWorkspaceModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+        >
+          <div
+            className="px-6 py-4 rounded-md shadow-lg bg-white text-[#212121] border border-gray-300"
+          >
+            <h3 className="text-center text-lg font-semibold mb-4">
+              Create a Name for Your Space
+            </h3>
+            <p className="mb-2 text-sm text-gray-600">
+              Enter a name for your workspace. It will be combined with a random code.
+            </p>
+            <input
+              type="text"
+              value={workspaceNameInput}
+              onChange={(e) => setWorkspaceNameInput(e.target.value)}
+              placeholder="Enter workspace name"
+              className="w-full p-2 rounded-md border bg-gray-50 border-gray-300 text-[#212121]"
+            />
+            <button
+              onClick={handleCreateWorkspace}
+              className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-md font-medium transition-colors w-full"
+            >
+              Create Workspace
+            </button>
+          </div>
+        </div>
+      )}
       {showNameModal && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50"
@@ -145,10 +217,12 @@ const LandingPage = () => {
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <button className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105">
+            <button 
+            onClick={ShowMaodalForSpace}
+             className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105">
               Create a Room
               <ArrowRight className="ml-2" size={18} />
-            </button>
+            </button  >
             
             <div className="flex">
               <input 

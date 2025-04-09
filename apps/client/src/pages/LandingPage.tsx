@@ -126,7 +126,7 @@ const LandingPage = () => {
 
       console.log("Workspace created with name:", finalWorkspaceName);
       setShowWorkspaceModal(false);
-      navigate("/dashboard", { state: { workSpaceCode: finalWorkspaceName } });
+      navigate(`/workspace/${finalWorkspaceName}`);
     } catch (error) {
       console.error("Error creating workspace:", error);
     }
@@ -148,13 +148,13 @@ const LandingPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("joined WorkSpace:", workspaceName);
-      navigate("/dashboard", { state: { workSpaceCode: workspaceName } });
+      navigate(`/workspace/${workspaceName}`);
     } catch (error) {
       // Type check the error as an AxiosError
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 400) {
           alert("You are already a member of this workspace!");
-          navigate("/dashboard", { state: { workSpaceCode: workspaceName } });
+          navigate(`/workspace/${workspaceName}`);
         } else {
           console.error("Error joining workspace:", error);
         }
@@ -169,9 +169,7 @@ const LandingPage = () => {
     
     setSelectedWorkspace(selectedWorkspaceName);
     if (selectedWorkspaceName) {
-      navigate("/dashboard", {
-        state: { workSpaceCode: selectedWorkspaceName },
-      });
+      navigate(`/workspace/${selectedWorkspaceName}`);
     }
   };
 

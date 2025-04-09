@@ -1,8 +1,9 @@
-import { useLocation } from 'react-router-dom';
+
+import { useParams } from "react-router-dom";
 
 function DashBoard() {
-    const location = useLocation();
-    const {workSpaceCode} = location.state || {};
+  
+    const { workspaceCode } = useParams();
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
@@ -13,7 +14,7 @@ function DashBoard() {
           <div className="flex items-center">
             <span className="text-gray-600 font-medium">Workspace Code:</span>
             <span className="ml-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-md font-mono">
-              {workSpaceCode || "No workspace code provided"}
+              {workspaceCode || "No workspace code provided"}
             </span>
           </div>
         </div>

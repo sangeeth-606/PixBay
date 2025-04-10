@@ -2,15 +2,23 @@ import prisma from '../db.js'
 
 export const createProject = async (req, res) => {
     try {
-      const { name, description, workspaceId } = req.body;
+      const { name, description, workspaceName } = req.body;
       const {emailAddresses}= req.auth 
       const email = emailAddresses?.[0]?.emailAddress;
   
-      if (!name || !workspaceId) {
-        return res.status(400).json({ error: 'Project name and workspace ID are required' });
+      if (!name || !workspaceName) {
+        return res.status(400).json({ error: 'Project name and workspace name are required' });
       }
+      const workspace = await prisma.workspace.findFirst({
+        where: { name: workspaceName },
+      });
+      if (!workspace) {
+        return res.status(404).json({ error: 'Workspace not found' });
+      }
+      const workspaceId= workspace.id;
+
   
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email:email },
       });
   
@@ -44,6 +52,7 @@ export const createProject = async (req, res) => {
   };
 export const getUserProjects = async (req, res) => {
     try {
+      console.log('Request body:', req.body); 
         const {emailAddresses}= req.auth 
         const email = emailAddresses?.[0]?.emailAddress;
   

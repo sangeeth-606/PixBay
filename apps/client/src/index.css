@@ -19,3 +19,8 @@
       @apply bg-[#1C1C1C] hover:bg-[#2C2C2C] text-white font-medium py-2 px-4 rounded-md border border-[#333] transition-all;
     }
   }
+/* app.css */
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 24rem; }
+}

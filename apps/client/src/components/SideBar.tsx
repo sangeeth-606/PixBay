@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
@@ -13,18 +13,20 @@ import {
   Plus,
 } from "lucide-react";
 import { FormModal } from "./FormModal";
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
 
 interface SidebarProps {
   selectedItem: string;
   darkMode?: boolean;
   workspaceCode: string;
+  onProjectCreated?: () => void; // Add this line
 }
-
-const projects = [
-  { id: "project-a", name: "Project A" },
-  { id: "project-b", name: "Project B" },
-  { id: "project-c", name: "Project C" },
-];
+interface Project {
+  id: string;
+  name: string;
+  workspaceId: string;
+}
 
 const sprints = [
   { id: "sprint-1", name: "Sprint 1 (Current)" },
@@ -40,6 +42,9 @@ export function Sidebar({
   const [projectsExpanded, setProjectsExpanded] = useState(true);
   const [sprintsExpanded, setSprintsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [project, setProject] = useState<Project[]>([]);
+
+  const { getToken } = useAuth();
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -48,6 +53,27 @@ export function Sidebar({
   const classNames = (...classes: string[]) => {
     return classes.filter(Boolean).join(" ");
   };
+  const getProjects = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        "http://localhost:5000/api/projects/user",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setProject(response.data);
+      console.log("usestate projects data", project);
+      console.log("get products data", response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getProjects();
+  }, []);
+  console.log("usestate projects data", project);
 
   // Animation variants
   const itemVariants = {
@@ -76,7 +102,12 @@ export function Sidebar({
 
   return (
     <>
-      <FormModal isOpen={isModalOpen} onClose={closeModal} darkMode={true} />
+      <FormModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        darkMode={true}
+        onProjectCreated={getProjects} // Pass the getProjects function as callback
+      />
 
       <motion.div
         className="flex h-full w-64 flex-col bg-[#171717] text-white rounded-r-lg"
@@ -136,19 +167,19 @@ export function Sidebar({
                     animate="open"
                     exit="closed"
                   >
-                    {projects.map((project) => (
+                    {project.map((proj) => (
                       <motion.div
-                        key={project.id}
+                        key={proj.id}
                         className={classNames(
                           "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                          selectedItem === project.id
+                          selectedItem === proj.id
                             ? "bg-emerald-500/20 text-emerald-500"
                             : "hover:bg-[#2C2C2C]"
                         )}
                         variants={subItemVariants}
                         whileTap={{ scale: 0.98 }}
                       >
-                        {project.name}
+                        {proj.name}
                       </motion.div>
                     ))}
                     {!isModalOpen && (
@@ -178,7 +209,6 @@ export function Sidebar({
                 onClick={() => {
                   setSprintsExpanded(!sprintsExpanded);
                 }}
-          
                 whileTap={{ scale: 0.98 }}
                 variants={itemVariants}
                 initial="initial"

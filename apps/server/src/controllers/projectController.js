@@ -52,6 +52,7 @@ export const createProject = async (req, res) => {
   };
 export const getUserProjects = async (req, res) => {
     try {
+      console.log('Request body:', req.body); 
         const {emailAddresses}= req.auth 
         const email = emailAddresses?.[0]?.emailAddress;
   

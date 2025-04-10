@@ -12,12 +12,15 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.25.6",
     "@fontsource/inter": "^5.2.5",
+    "@headlessui/react": "^2.2.1",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.2",
     "axios": "^1.8.4",
     "framer-motion": "^12.6.3",
     "lucide-react": "^0.487.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.55.0",
     "tailwindcss": "^4.1.2"
   },
   "devDependencies": {

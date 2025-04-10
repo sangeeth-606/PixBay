@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { Menu, Bell, Search, User, Settings } from "lucide-react";
 import SideBar from "../components/SideBar";
+import KanbanBoard from "../components/KanbanBoard";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -54,14 +55,15 @@ function DashBoard() {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 overflow-auto ">
+          
             {/* Workspace header */}
+            <KanbanBoard/>
             
             
             {/* Dashboard widgets */}
             
-          </div>
+ 
         </main>
       </div>
     </div>

@@ -56,7 +56,7 @@ export const getUserProjects = async (req, res) => {
         const {emailAddresses}= req.auth 
         const email = emailAddresses?.[0]?.emailAddress;
   
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email:email},
         include: {
           workspaces: {

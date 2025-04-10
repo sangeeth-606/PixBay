@@ -4,19 +4,20 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
+
 interface FormModalProps {
   isOpen: boolean;
   onClose: () => void;
   darkMode: boolean;
+  onProjectCreated?: () => void; // Add this line
 }
 
-export function FormModal({ isOpen, onClose, darkMode }: FormModalProps) {
+export function FormModal({ isOpen, onClose, darkMode,onProjectCreated  }: FormModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const { getToken } = useAuth();
   const params= useParams()
-  // const [error, setError] = useState<string | null>(null);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
+ 
   const workspaceName = params.workspaceCode;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,13 +39,15 @@ export function FormModal({ isOpen, onClose, darkMode }: FormModalProps) {
       );
 
       console.log("Project created:", response.data);
-      // You might want to trigger a refresh of projects or show a success notification
+      
 
       onClose();
+      if (onProjectCreated) {
+        onProjectCreated();
+      }
     } catch (error) {
       console.error("Failed to create project:", error);
-      // You might want to show an error message to the user
-      // For example, using a toast notification or setting an error state
+      
     }
   };
 

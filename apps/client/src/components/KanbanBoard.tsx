@@ -3,6 +3,7 @@ import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Projectinfo from "./ProjectInfo";
 import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
 
 // Define enums and interfaces based on the schema
 enum TaskStatus {
@@ -309,14 +310,45 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     dueDate: "",
     type: "TASK",
   });
+  const { getToken } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data:", {
-      ...formData,
-      projectId,
-    });
-    onClose();
+    try {
+      const token = await getToken();
+      console.log("Token obtained:", token ? `${token.substring(0, 15)}...` : "No token");
+      
+      console.log("Sending request to create task with data:", {
+        ...formData,
+        projectId
+      });
+      
+      const response = await axios.post("http://localhost:5000/api/tasks/create", 
+        {
+          ...formData,
+          projectId  : "cm9cneymk000ne8mblbqdoexg" ,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      if (response.status === 201) {
+        console.log("Task created successfully:", response.data);
+        onClose();
+      }
+    } catch (error) {
+      console.error("Failed to create task - Full error details:", error);
+      
+      if (axios.isAxiosError(error)) {
+        console.error("Request failed with status:", error.response?.status);
+        console.error("Error message:", error.message);
+        console.error("Server response data:", error.response?.data);
+        console.error("Request URL:", error.config?.url);
+        console.error("Request method:", error.config?.method);
+        console.error("Request headers:", error.config?.headers);
+      }
+    }
   };
 
   if (!isOpen) return null;
@@ -468,6 +500,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const [tasks, setTasks] = useState<Task[]>(dummyTasks);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  
 
   useEffect(() => {
     if (projectId) {

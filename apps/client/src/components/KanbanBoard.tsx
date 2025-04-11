@@ -255,16 +255,6 @@ const KanbanBoard: React.FC = () => {
     <div className={darkMode ? 'bg-[#1C1C1C]' : 'bg-[#F5F5F5]'}>
       <div>
         <Projectinfo project={projectInfo} darkMode={darkMode} />
-        {/* <button
-          onClick={toggleDarkMode}
-          className={`px-4 py-2 rounded-md ${
-            darkMode 
-              ? 'bg-[#2C2C2C] text-white hover:bg-[#333]' 
-              : 'bg-gray-200 text-[#212121] hover:bg-gray-300'
-          }`}
-        >
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
-        </button> */}
       </div>
       
       <DndProvider backend={HTML5Backend}>

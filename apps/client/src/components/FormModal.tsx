@@ -97,7 +97,7 @@ export function FormModal({
                     darkMode ? "text-white" : "text-[#212121]"
                   }`}
                 >
-                  Create New Item
+                  Create New Project
                 </Dialog.Title>
 
                 {/* Close Button */}
@@ -118,51 +118,68 @@ export function FormModal({
                     <div>
                       <label
                         htmlFor="name"
-                        className={`block text-sm font-medium ${
-                          darkMode ? "text-gray-400" : "text-gray-700"
+                        className={`block text-sm font-medium mb-1.5 ${
+                          darkMode ? "text-gray-300" : "text-gray-700"
                         }`}
                       >
                         Name
                       </label>
-                      <input
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className={`mt-1 block w-full px-3 py-2 rounded-md shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm ${
-                          darkMode
-                            ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500"
-                            : "border-gray-300 bg-white text-[#212121] placeholder-gray-400"
-                        }`}
-                        placeholder="Enter project name"
-                        required
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          id="name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm 
+                          transition-all duration-200 ease-in-out
+                          ${
+                            darkMode
+                              ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                              : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
+                          }
+                          focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
+                          hover:border-emerald-500/50
+                          ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                          disabled:bg-opacity-70 disabled:cursor-not-allowed`}
+                          required
+                          disabled={isLoading}
+                          placeholder="Enter project name"
+                        />
+                      </div>
                     </div>
 
                     <div>
                       <label
                         htmlFor="description"
-                        className={`block text-sm font-medium ${
-                          darkMode ? "text-gray-400" : "text-gray-700"
+                        className={`block text-sm font-medium mb-1.5 ${
+                          darkMode ? "text-gray-300" : "text-gray-700"
                         }`}
                       >
                         Description
                       </label>
-                      <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        rows={4}
-                        className={`mt-1 block w-full px-3 py-2 rounded-md shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm ${
-                          darkMode
-                            ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500"
-                            : "border-gray-300 bg-white text-[#212121] placeholder-gray-400"
-                        }`}
-                        placeholder="Enter project description"
-                        required
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <textarea
+                          id="description"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          rows={3}
+                          className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm 
+                          transition-all duration-200 ease-in-out
+                          ${
+                            darkMode
+                              ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                              : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
+                          }
+                          focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
+                          hover:border-emerald-500/50
+                          ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                          disabled:bg-opacity-70 disabled:cursor-not-allowed
+                          resize-none`}
+                          required
+                          disabled={isLoading}
+                          placeholder="Enter project description"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -170,11 +187,11 @@ export function FormModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                      className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out ${
                         darkMode
                           ? "text-white bg-[#2C2C2C] hover:bg-[#333] border-[#333]"
                           : "text-gray-700 bg-white hover:bg-gray-100 border-gray-300"
-                      } border`}
+                      } border ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                       disabled={isLoading}
                     >
                       Cancel
@@ -182,8 +199,8 @@ export function FormModal({
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 inline-flex items-center ${
-                        isLoading ? "opacity-70 cursor-not-allowed" : ""
+                      className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${
+                        isLoading ? "opacity-75 cursor-not-allowed" : ""
                       }`}
                     >
                       {isLoading ? (
@@ -211,7 +228,7 @@ export function FormModal({
                           Creating...
                         </>
                       ) : (
-                        "Submit"
+                        "Create Project"
                       )}
                     </button>
                   </div>

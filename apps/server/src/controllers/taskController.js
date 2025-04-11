@@ -1,7 +1,6 @@
 
 import prisma from '../db.js'
 
-
 // Create a new task
 export const createTask = async (req, res) => {
   try {
@@ -14,7 +13,7 @@ export const createTask = async (req, res) => {
     }
 
     // Find user by email
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email:email},
     });
 

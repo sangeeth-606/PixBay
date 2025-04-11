@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Projectinfo from './ProjectInfo';
@@ -80,6 +80,7 @@ interface TaskCardProps {
   task: Task;
   darkMode: boolean;
 }
+
 
 // Task Card Component
 const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode }) => {
@@ -219,11 +220,21 @@ const dummyTasks: Task[] = [
     projectId: 'p1',
   },
 ];
+interface KanbanBoardProps {
+  projectId: string | null;
+}
 
 // Main Kanban Board Component
-const KanbanBoard: React.FC = () => {
+const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId })=> {
   const [tasks, setTasks] = useState<Task[]>(dummyTasks);
   const [darkMode, setDarkMode] = useState<boolean>(true);
+  
+  useEffect(() => {
+    if (projectId) {
+      // Filter tasks based on projectId or fetch tasks for this project
+      console.log("Project id from kanban board page ",projectId)
+    }
+  }, [projectId]);
 
   // Handle task drop to update status
   const handleDrop = (taskId: string, newStatus: TaskStatus) => {
@@ -255,16 +266,6 @@ const KanbanBoard: React.FC = () => {
     <div className={darkMode ? 'bg-[#1C1C1C]' : 'bg-[#F5F5F5]'}>
       <div>
         <Projectinfo project={projectInfo} darkMode={darkMode} />
-        {/* <button
-          onClick={toggleDarkMode}
-          className={`px-4 py-2 rounded-md ${
-            darkMode 
-              ? 'bg-[#2C2C2C] text-white hover:bg-[#333]' 
-              : 'bg-gray-200 text-[#212121] hover:bg-gray-300'
-          }`}
-        >
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
-        </button> */}
       </div>
       
       <DndProvider backend={HTML5Backend}>

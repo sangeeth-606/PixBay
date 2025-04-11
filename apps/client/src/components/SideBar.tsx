@@ -13,6 +13,7 @@ import {
   Plus,
 } from "lucide-react";
 import { FormModal } from "./FormModal";
+import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
@@ -21,6 +22,7 @@ interface SidebarProps {
   darkMode?: boolean;
   workspaceCode: string;
   onProjectCreated?: () => void; // Add this line
+  onProjectSelect: (projectId: string) => void;
 }
 interface Project {
   id: string;
@@ -38,11 +40,13 @@ export function Sidebar({
   selectedItem,
   darkMode = true,
   workspaceCode,
+  onProjectSelect,
 }: SidebarProps) {
   const [projectsExpanded, setProjectsExpanded] = useState(true);
   const [sprintsExpanded, setSprintsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [project, setProject] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { getToken } = useAuth();
 
@@ -54,6 +58,7 @@ export function Sidebar({
     return classes.filter(Boolean).join(" ");
   };
   const getProjects = async () => {
+    setIsLoading(true);
     try {
       const token = await getToken();
       const response = await axios.get(
@@ -67,6 +72,8 @@ export function Sidebar({
       console.log("get products data", response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,8 +130,8 @@ export function Sidebar({
                 className={classNames(
                   "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   selectedItem === "projects"
-                    ? "bg-emerald-500 text-white"
-                    : "hover:bg-[#2C2C2C]"
+                    ? "bg-[#00875A] text-white hover:bg-[#006644] shadow-[0_0_0_1px_rgba(255,255,255,0.15),0_0_2px_0_rgba(255,255,255,0.1)]"
+                    : "hover:bg-[#2C2C2C] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
                 )}
                 onClick={() => {
                   setProjectsExpanded(!projectsExpanded);
@@ -167,30 +174,40 @@ export function Sidebar({
                     animate="open"
                     exit="closed"
                   >
-                    {project.map((proj) => (
-                      <motion.div
-                        key={proj.id}
-                        className={classNames(
-                          "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                          selectedItem === proj.id
-                            ? "bg-emerald-500/20 text-emerald-500"
-                            : "hover:bg-[#2C2C2C]"
+                    {isLoading ? (
+                      <LoadingSpinner size={20} />
+                    ) : (
+                      <>
+                        {project.map((proj) => (
+                          <motion.button
+                            key={proj.id}
+                            onClick={() => {
+                              console.log("Project ID:", proj.id);
+                              onProjectSelect(proj.id); // Add this
+                            }}
+                            className={classNames(
+                              "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                              selectedItem === proj.id
+                                ? "bg-emerald-500/20 text-emerald-500"
+                                : "hover:bg-[#2C2C2C]"
+                            )}
+                            variants={subItemVariants}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            {proj.name}
+                          </motion.button>
+                        ))}
+                        {!isModalOpen && (
+                          <motion.div
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
+                            variants={subItemVariants}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Plus size={16} />
+                            <button onClick={openModal}>Add Project</button>
+                          </motion.div>
                         )}
-                        variants={subItemVariants}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        {proj.name}
-                      </motion.div>
-                    ))}
-                    {!isModalOpen && (
-                      <motion.div
-                        className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
-                        variants={subItemVariants}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Plus size={16} />
-                        <button onClick={openModal}>Add Project</button>
-                      </motion.div>
+                      </>
                     )}
                   </motion.div>
                 )}

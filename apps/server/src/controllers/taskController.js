@@ -68,7 +68,7 @@ export const getProjectTasks = async (req, res) => {
     const email = emailAddresses?.[0]?.emailAddress;
 
     // Find user by email
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email:email},
     });
 

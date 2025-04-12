@@ -5,6 +5,6 @@ import authMiddleware from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.post('/create',authMiddleware, createTask);        
-router.get('/project/:projectId',authMiddleware, getProjectTasks); 
+router.get('/task/:projectId',authMiddleware, getProjectTasks); 
 
 export default router;

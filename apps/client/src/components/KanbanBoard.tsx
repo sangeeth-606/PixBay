@@ -210,84 +210,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode }) => {
       )}
     </div>
   );
-};
+}
 
-// Sample dummy data
-const dummyTasks: Task[] = [
-  {
-    id: "1",
-    title: "Implement Landing Page",
-    description: "Create responsive landing page with dark mode support",
-    status: TaskStatus.TODO,
-    priority: Priority.HIGH,
-    dueDate: "2025-04-15",
-    creator: { id: "u1", name: "John Doe" },
-    assignee: { id: "u2", name: "Jane Smith" },
-    projectId: "p1",
-  },
-  {
-    id: "2",
-    title: "Fix Authentication Bug",
-    description: "Users are getting logged out unexpectedly",
-    status: TaskStatus.IN_PROGRESS,
-    priority: Priority.HIGH,
-    dueDate: "2025-04-12",
-    creator: { id: "u1", name: "John Doe" },
-    assignee: { id: "u3", name: "Mike Johnson" },
-    projectId: "p1",
-  },
-  {
-    id: "3",
-    title: "Design User Profile Page",
-    description: "Create wireframes for new profile page",
-    status: TaskStatus.DONE,
-    priority: Priority.MEDIUM,
-    dueDate: "2025-04-08",
-    creator: { id: "u2", name: "Jane Smith" },
-    assignee: { id: "u2", name: "Jane Smith" },
-    projectId: "p1",
-  },
-  {
-    id: "4",
-    title: "Setup CI/CD Pipeline",
-    status: TaskStatus.TODO,
-    priority: Priority.MEDIUM,
-    creator: { id: "u3", name: "Mike Johnson" },
-    projectId: "p1",
-  },
-  {
-    id: "5",
-    title: "Write API Documentation",
-    description: "Document all endpoints for the project",
-    status: TaskStatus.IN_PROGRESS,
-    priority: Priority.LOW,
-    dueDate: "2025-04-20",
-    creator: { id: "u1", name: "John Doe" },
-    assignee: { id: "u4", name: "Sarah Williams" },
-    projectId: "p1",
-  },
-  {
-    id: "6",
-    title: "Update Dependencies",
-    status: TaskStatus.DONE,
-    priority: Priority.LOW,
-    creator: { id: "u3", name: "Mike Johnson" },
-    projectId: "p1",
-  },
-  {
-    id: "7",
-    title: "Archive Old Features",
-    status: TaskStatus.ARCHIVED,
-    priority: Priority.LOW,
-    creator: { id: "u1", name: "John Doe" },
-    projectId: "p1",
-  },
-];
 interface KanbanBoardProps {
   projectId: string | null;
 }
-
-// const createTask=
 
 // Add Task Modal Component
 interface AddTaskModalProps {
@@ -498,7 +425,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
 // Main Kanban Board Component
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
-  const [tasks, setTasks] = useState<Task[]>(dummyTasks);
+  const [tasks, setTasks] = useState<Task[]>([]); // Initialize with empty array instead of dummyTasks
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { getToken } = useAuth();

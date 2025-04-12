@@ -312,6 +312,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   });
   const { getToken } = useAuth();
 
+  //create task endpoint 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -500,12 +501,36 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const [tasks, setTasks] = useState<Task[]>(dummyTasks);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const { getToken } = useAuth();
 
-  
+  const fetchTasks = async () => {
+    if (!projectId) return;
+    
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `http://localhost:5000/api/tasks/task/${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (response.data) {
+        console.log("Fetched tasks:", response.data);
+        setTasks(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error details:", error.response?.data);
+      }
+    }
+  };
 
   useEffect(() => {
     if (projectId) {
       console.log("Project id from kanban board page ", projectId);
+      fetchTasks();
     }
   }, [projectId]);
 

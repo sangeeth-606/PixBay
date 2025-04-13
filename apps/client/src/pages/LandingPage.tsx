@@ -48,15 +48,39 @@ const LandingPage = () => {
   console.log(email);
 
   useEffect(() => {
-    if (isSignedIn && email) {
-      const storedName = localStorage.getItem("userName");
-      if (storedName) {
-        setUserName(storedName);
-      } else {
-        setShowNameModal(true);
+    const checkUserInDatabase = async () => {
+      if (isSignedIn && email) {
+        const storedName = localStorage.getItem("userName");
+        
+        // Always check if user exists in database regardless of localStorage
+        try {
+          const token = await getToken();
+          const response = await axios.get(
+            `http://localhost:5000/api/users/check?email=${encodeURIComponent(email)}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (response.data.exists && storedName) {
+            // User exists in database AND we have a stored name
+            setUserName(storedName);
+          } else {
+            // Either user doesn't exist in DB OR we don't have a stored name
+            setShowNameModal(true);
+            if (storedName) setUserName(storedName); // Pre-fill with stored name if available
+          }
+        } catch (error) {
+          console.error("Error checking user:", error);
+          // If there's an error, show the modal to be safe
+          setShowNameModal(true);
+          if (storedName) setUserName(storedName);
+        }
       }
-    }
-  }, [isSignedIn, email]);
+    };
+
+    checkUserInDatabase();
+  }, [isSignedIn, email, getToken]);
 
   useEffect(() => {
     const fetchWorkspaces = async () => {

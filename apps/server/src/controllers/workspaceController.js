@@ -27,7 +27,7 @@ export const createWorkspace= async(req  , res)=>{
                 members:{
                     create:{
                         userId:user.id,
-                        role:'ADMIN'
+                        role:'ADMIN'  // Creator gets ADMIN role
                     }
                 }
             }
@@ -75,7 +75,7 @@ export const joinWorkspace= async( req  , res)=>{
             data: {
               workspaceId: workspace.id, // Use the found workspace’s ID
               userId: user.id,
-              role: 'MEMBER',
+              role: 'MEMBER',  // Joiner gets MEMBER role
             },
           });
         res.status(200).json({ message: 'Joined workspace successfully', member });

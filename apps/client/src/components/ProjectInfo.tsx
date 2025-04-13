@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 
 interface ProjectInfo {
@@ -21,78 +21,64 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
-  const projectId = searchParams.get("projectId");
+  const location = useLocation();
   const { getToken } = useAuth();
 
-  console.log("Component rendered, projectId:", projectId);
+  const projectId = searchParams.get("projectId");
 
-  useEffect(() => {
-    const fetchProjectInfo = async () => {
-      console.log("Fetching project info for projectId:", projectId);
-      try {
-        if (!projectId) {
-          throw new Error("Project ID is missing");
-        }
+  console.log("ProjectInfo render - projectId:", projectId, "location:", location.search);
 
-        setLoading(true);
-        const token = await getToken();
-      
+  const fetchProjectInfo = useCallback(async () => {
+    if (!projectId) {
+      setError("Select a project or create a new one");
+      setLoading(false);
+      return;
+    }
 
-        const projectUrl = `http://localhost:5000/api/projects/${projectId}`;
-        console.log("Fetching from endpoint:", projectUrl);
+    console.log("Fetching project info for projectId:", projectId);
+    setLoading(true);
 
-        const response = await axios.get(projectUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    try {
+      const token = await getToken();
+      const projectUrl = `http://localhost:5000/api/projects/${projectId}`;
 
-        console.log("API response received:", response.status, response.statusText);
-        console.log("Project data:", response.data);
+      console.log("Making API request to:", projectUrl);
+      const response = await axios.get(projectUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        // Set default values for missing fields
-        const projectData = {
-          ...response.data,
-          status: response.data.status || "active",
-          progress: response.data.progress || 0,
-        };
+      console.log("API response success:", response.data);
 
-        setProject(projectData);
-        setLoading(false);
-      } catch (err: any) {
-        console.error("Error fetching project details:");
-        console.error("Error message:", err.message);
-        console.error("Error response:", err.response?.data);
-        console.error("Status code:", err.response?.status);
+      const projectData = {
+        ...response.data,
+        status: response.data.status || "active",
+        progress: response.data.progress || 0,
+      };
 
-        console.error("Project ID type:", typeof projectId);
-        console.error("Project ID value:", projectId);
+      setProject(projectData);
+      setError(null);
+    } catch (err: any) {
+      console.error("Error fetching project:", err);
 
-        let errorMessage = "Failed to load project information";
-        if (err.response) {
-          errorMessage += ` (${err.response.status}: ${err.response.statusText})`;
-          if (err.response.status === 404) {
-            errorMessage = "Create a Project ";
-          } else if (err.response.status === 401 || err.response.status === 403) {
-            errorMessage = "You don’t have permission to view this project.";
-          }
-        } else if (err.request) {
-          errorMessage += " (No response received from server. Is the backend running?)";
-        } else {
-          errorMessage += ` (${err.message})`;
-        }
-
-        setError(errorMessage);
-        setLoading(false);
+      let errorMessage = "Failed to load project information";
+      if (axios.isAxiosError(err) && err.response) {
+        errorMessage =
+          err.response.status === 404
+            ? "Project not found"
+            : `Error: ${err.response.status} - ${err.response.statusText}`;
       }
-    };
 
-    if (projectId) {
-      fetchProjectInfo();
-    } else {
-      console.error("No projectId found in query parameters");
-      setError("select a project or create a new ");
+      setError(errorMessage);
+      setProject(null);
+    } finally {
       setLoading(false);
     }
   }, [projectId, getToken]);
+
+  useEffect(() => {
+    console.log("ProjectInfo useEffect triggered - projectId:", projectId);
+    fetchProjectInfo();
+  }, [fetchProjectInfo, projectId, location.search]);
 
   console.log("Component state:", { loading, error, project });
 
@@ -112,9 +98,11 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
 
   if (error || !project) {
     return (
-      <div className={`rounded-lg shadow-md p-6 ${
-        darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
-      }`}>
+      <div
+        className={`rounded-lg shadow-md p-6 ${
+          darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
+        }`}
+      >
         <p className={`text-center text-red-500`}>{error || "Project not found"}</p>
       </div>
     );

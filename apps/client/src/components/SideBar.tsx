@@ -16,6 +16,7 @@ import { FormModal } from "./FormModal";
 import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   selectedItem: string;
@@ -47,6 +48,7 @@ export function Sidebar({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [project, setProject] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const { getToken } = useAuth();
 
@@ -68,9 +70,16 @@ export function Sidebar({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setProject(response.data);
-      console.log("usestate projects data", project);
-      console.log("get products data", response.data);
+
+      const projects = response.data;
+      setProject(projects);
+
+      // Auto-select first project if no project is selected and there are projects available
+      const currentProjectId = new URLSearchParams(window.location.search).get("projectId");
+      if (projects.length > 0 && !currentProjectId) {
+        console.log("Auto-selecting first project:", projects[0].id);
+        handleProjectSelect(projects[0].id);
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -78,14 +87,12 @@ export function Sidebar({
     }
   };
 
-  // Add function to update URL with query parameters
+  // Replace the handleProjectSelect function
   const handleProjectSelect = (projectId: string) => {
-    // Update URL with project ID as query parameter without reloading the page
-    const url = new URL(window.location.href);
-    url.searchParams.set("projectId", projectId);
-    window.history.pushState({ projectId }, "", url);
-
-    // Call the callback to update the state in parent component
+    // Use React Router's navigate instead of manually changing history
+    navigate(`?projectId=${projectId}`);
+    
+    // Still call the callback to update any parent component state
     onProjectSelect(projectId);
   };
 

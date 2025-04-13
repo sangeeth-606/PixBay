@@ -52,21 +52,6 @@ const KanbanColumn: React.FC<ColumnProps> = ({
 
   drop(ref);
 
-  const getColumnHeaderColor = (status: TaskStatus) => {
-    switch (status) {
-      case TaskStatus.TODO:
-        return darkMode ? "border-blue-500" : "border-blue-400";
-      case TaskStatus.IN_PROGRESS:
-        return darkMode ? "border-yellow-500" : "border-yellow-400";
-      case TaskStatus.DONE:
-        return darkMode ? "border-green-500" : "border-green-400";
-      case TaskStatus.ARCHIVED:
-        return darkMode ? "border-gray-500" : "border-gray-400";
-      default:
-        return darkMode ? "border-gray-500" : "border-gray-400";
-    }
-  };
-
   return (
     <div
       ref={ref}
@@ -75,7 +60,7 @@ const KanbanColumn: React.FC<ColumnProps> = ({
       }`}
     >
       <div
-        className={`p-6 border-t-4 h-full overflow-y-auto ${getColumnHeaderColor(status)}`}
+        className={`p-6 h-full overflow-y-auto`}
       >
         <div className="flex justify-between items-center mb-4">
           <h2

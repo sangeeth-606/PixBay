@@ -99,7 +99,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
   if (loading) {
     return (
       <div
-        className={`rounded-lg shadow-md p-8 ${
+        className={`rounded-lg shadow-md p-6 ${
           darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
         }`}
       >
@@ -112,7 +112,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
 
   if (error || !project) {
     return (
-      <div className={`rounded-lg shadow-md p-8 ${
+      <div className={`rounded-lg shadow-md p-6 ${
         darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
       }`}>
         <p className={`text-center text-red-500`}>{error || "Project not found"}</p>
@@ -126,9 +126,9 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
         darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
       }`}
     >
-      <div className="p-8">
+      <div className="p-5">
         <h1
-          className={`text-2xl font-bold mb-6 ${
+          className={`text-xl font-bold mb-3 ${
             darkMode ? "text-white" : "text-[#212121]"
           }`}
         >
@@ -136,25 +136,25 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
         </h1>
 
         {project.description && (
-          <div className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-            <p>{project.description}</p>
+          <div className={`mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+            <p className="text-sm">{project.description}</p>
           </div>
         )}
 
-        <div className="flex justify-between items-center px-12">
+        <div className="flex justify-between items-center px-6">
           <div className="flex items-center">
-            <div className="relative w-16 h-16">
+            <div className="relative w-12 h-12">
               <div
-                className={`w-16 h-16 rounded-full border-2 flex items-center justify-center ${
+                className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${
                   darkMode ? "border-[#2C2C2C]" : "border-gray-300"
                 }`}
               >
-                <div className="text-emerald-400 font-semibold text-lg">
+                <div className="text-emerald-400 font-semibold text-sm">
                   {project.progress}%
                 </div>
               </div>
               <svg
-                className="absolute top-0 left-0 w-16 h-16"
+                className="absolute top-0 left-0 w-12 h-12"
                 viewBox="0 0 44 44"
               >
                 <circle
@@ -178,16 +178,16 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
                 />
               </svg>
             </div>
-            <div className="ml-4">
+            <div className="ml-3">
               <div
-                className={`text-base ${
+                className={`text-xs ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}
               >
                 Progress
               </div>
               <div
-                className={`${darkMode ? "text-white" : "text-[#212121]"} text-lg`}
+                className={`${darkMode ? "text-white" : "text-[#212121]"} text-sm`}
               >
                 {project.progress}%
               </div>
@@ -196,12 +196,12 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
 
           <div className="flex items-center">
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
                 darkMode ? "bg-[#2C2C2C]" : "bg-gray-200"
               }`}
             >
               <svg
-                className="w-6 h-6 text-emerald-400"
+                className="w-5 h-5 text-emerald-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -214,16 +214,16 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
                 ></path>
               </svg>
             </div>
-            <div className="ml-4">
+            <div className="ml-3">
               <div
-                className={`text-base ${
+                className={`text-xs ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}
               >
                 Status
               </div>
               <div
-                className={`${darkMode ? "text-white" : "text-[#212121]"} text-lg capitalize`}
+                className={`${darkMode ? "text-white" : "text-[#212121]"} text-sm capitalize`}
               >
                 {project.status}
               </div>
@@ -233,12 +233,12 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
           {project.deadline && (
             <div className="flex items-center">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   darkMode ? "bg-[#2C2C2C]" : "bg-gray-200"
                 }`}
               >
                 <svg
-                  className="w-6 h-6 text-emerald-400"
+                  className="w-5 h-5 text-emerald-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -251,16 +251,16 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
                   ></path>
                 </svg>
               </div>
-              <div className="ml-4">
+              <div className="ml-3">
                 <div
-                  className={`text-base ${
+                  className={`text-xs ${
                     darkMode ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
                   Deadline
                 </div>
                 <div
-                  className={`${darkMode ? "text-white" : "text-[#212121]"} text-lg`}
+                  className={`${darkMode ? "text-white" : "text-[#212121]"} text-sm`}
                 >
                   {project.deadline}
                 </div>

@@ -57,6 +57,7 @@ export function Sidebar({
   const classNames = (...classes: string[]) => {
     return classes.filter(Boolean).join(" ");
   };
+
   const getProjects = async () => {
     setIsLoading(true);
     try {
@@ -76,6 +77,28 @@ export function Sidebar({
       setIsLoading(false);
     }
   };
+
+  // Add function to update URL with query parameters
+  const handleProjectSelect = (projectId: string) => {
+    // Update URL with project ID as query parameter without reloading the page
+    const url = new URL(window.location.href);
+    url.searchParams.set("projectId", projectId);
+    window.history.pushState({ projectId }, "", url);
+
+    // Call the callback to update the state in parent component
+    onProjectSelect(projectId);
+  };
+
+  // Check for projectId in URL when component mounts
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const projectIdFromUrl = url.searchParams.get("projectId");
+
+    if (projectIdFromUrl) {
+      console.log("Found project ID in URL:", projectIdFromUrl);
+      onProjectSelect(projectIdFromUrl);
+    }
+  }, []);
 
   useEffect(() => {
     getProjects();
@@ -183,7 +206,7 @@ export function Sidebar({
                             key={proj.id}
                             onClick={() => {
                               console.log("Project ID:", proj.id);
-                              onProjectSelect(proj.id); // Add this
+                              handleProjectSelect(proj.id); // Use new function instead of direct callback
                             }}
                             className={classNames(
                               "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",

@@ -3,6 +3,7 @@ import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Projectinfo from "./ProjectInfo";
 import axios from "axios";
+
 import { useAuth } from "@clerk/clerk-react";
 
 // Define enums and interfaces based on the schema
@@ -212,82 +213,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode }) => {
   );
 };
 
-// Sample dummy data
-const dummyTasks: Task[] = [
-  {
-    id: "1",
-    title: "Implement Landing Page",
-    description: "Create responsive landing page with dark mode support",
-    status: TaskStatus.TODO,
-    priority: Priority.HIGH,
-    dueDate: "2025-04-15",
-    creator: { id: "u1", name: "John Doe" },
-    assignee: { id: "u2", name: "Jane Smith" },
-    projectId: "p1",
-  },
-  {
-    id: "2",
-    title: "Fix Authentication Bug",
-    description: "Users are getting logged out unexpectedly",
-    status: TaskStatus.IN_PROGRESS,
-    priority: Priority.HIGH,
-    dueDate: "2025-04-12",
-    creator: { id: "u1", name: "John Doe" },
-    assignee: { id: "u3", name: "Mike Johnson" },
-    projectId: "p1",
-  },
-  {
-    id: "3",
-    title: "Design User Profile Page",
-    description: "Create wireframes for new profile page",
-    status: TaskStatus.DONE,
-    priority: Priority.MEDIUM,
-    dueDate: "2025-04-08",
-    creator: { id: "u2", name: "Jane Smith" },
-    assignee: { id: "u2", name: "Jane Smith" },
-    projectId: "p1",
-  },
-  {
-    id: "4",
-    title: "Setup CI/CD Pipeline",
-    status: TaskStatus.TODO,
-    priority: Priority.MEDIUM,
-    creator: { id: "u3", name: "Mike Johnson" },
-    projectId: "p1",
-  },
-  {
-    id: "5",
-    title: "Write API Documentation",
-    description: "Document all endpoints for the project",
-    status: TaskStatus.IN_PROGRESS,
-    priority: Priority.LOW,
-    dueDate: "2025-04-20",
-    creator: { id: "u1", name: "John Doe" },
-    assignee: { id: "u4", name: "Sarah Williams" },
-    projectId: "p1",
-  },
-  {
-    id: "6",
-    title: "Update Dependencies",
-    status: TaskStatus.DONE,
-    priority: Priority.LOW,
-    creator: { id: "u3", name: "Mike Johnson" },
-    projectId: "p1",
-  },
-  {
-    id: "7",
-    title: "Archive Old Features",
-    status: TaskStatus.ARCHIVED,
-    priority: Priority.LOW,
-    creator: { id: "u1", name: "John Doe" },
-    projectId: "p1",
-  },
-];
 interface KanbanBoardProps {
   projectId: string | null;
 }
-
-// const createTask=
 
 // Add Task Modal Component
 interface AddTaskModalProps {
@@ -295,6 +223,7 @@ interface AddTaskModalProps {
   onClose: () => void;
   darkMode: boolean;
   projectId: string;
+  onTaskAdded: () => void; // Add this new callback prop
 }
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({
@@ -302,6 +231,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   onClose,
   darkMode,
   projectId,
+  onTaskAdded, // Add this new prop
 }) => {
   const [formData, setFormData] = useState({
     title: "",
@@ -310,37 +240,54 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     dueDate: "",
     type: "TASK",
   });
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
   const { getToken } = useAuth();
 
-  //create task endpoint 
+  //create task endpoint
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
+
     try {
       const token = await getToken();
-      console.log("Token obtained:", token ? `${token.substring(0, 15)}...` : "No token");
-      
+      console.log(
+        "Token obtained:",
+        token ? `${token.substring(0, 15)}...` : "No token"
+      );
+
       console.log("Sending request to create task with data:", {
         ...formData,
-        projectId
+        projectId,
       });
-      
-      const response = await axios.post("http://localhost:5000/api/tasks/create", 
+
+      const response = await axios.post(
+        "http://localhost:5000/api/tasks/create",
         {
           ...formData,
-          projectId  : "cm9cneymk000ne8mblbqdoexg" ,
+          projectId: projectId,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
+
       if (response.status === 201) {
         console.log("Task created successfully:", response.data);
+        // Clear form data to reset the form
+        setFormData({
+          title: "",
+          description: "",
+          priority: Priority.MEDIUM,
+          dueDate: "",
+          type: "TASK",
+        });
+        // Call the callback to refresh tasks
+        onTaskAdded();
         onClose();
       }
     } catch (error) {
       console.error("Failed to create task - Full error details:", error);
-      
+
       if (axios.isAxiosError(error)) {
         console.error("Request failed with status:", error.response?.status);
         console.error("Error message:", error.message);
@@ -349,6 +296,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         console.error("Request method:", error.config?.method);
         console.error("Request headers:", error.config?.headers);
       }
+    } finally {
+      setIsLoading(false); // End loading whether request succeeded or failed
     }
   };
 
@@ -485,9 +434,36 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </div>
             <button
               type="submit"
-              className="w-full py-3 px-4 rounded-lg bg-emerald-400 hover:bg-emerald-500 text-white font-medium transition-colors duration-200"
+              disabled={isLoading}
+              className="w-full py-3 px-4 rounded-lg bg-emerald-400 hover:bg-emerald-500 text-white font-medium transition-colors duration-200 flex items-center justify-center"
             >
-              Create Task
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Creating...
+                </>
+              ) : (
+                "Create Task"
+              )}
             </button>
           </form>
         </div>
@@ -498,23 +474,31 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
 // Main Kanban Board Component
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
-  const [tasks, setTasks] = useState<Task[]>(dummyTasks);
+  const [tasks, setTasks] = useState<Task[]>([]); // Initialize with empty array instead of dummyTasks
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { getToken } = useAuth();
 
+  // Extract projectId from URL if not provided explicitly
+  const extractProjectIdFromUrl = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get("projectId") || null;
+  };
+
+  const effectiveProjectId = projectId || extractProjectIdFromUrl();
+
   const fetchTasks = async () => {
-    if (!projectId) return;
-    
+    if (!effectiveProjectId) return;
+
     try {
       const token = await getToken();
       const response = await axios.get(
-        `http://localhost:5000/api/tasks/task/${projectId}`,
+        `http://localhost:5000/api/tasks/task/${effectiveProjectId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       if (response.data) {
         console.log("Fetched tasks:", response.data);
         setTasks(response.data);
@@ -528,11 +512,11 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   };
 
   useEffect(() => {
-    if (projectId) {
-      console.log("Project id from kanban board page ", projectId);
+    if (effectiveProjectId) {
+      console.log("Project id from kanban board page ", effectiveProjectId);
       fetchTasks();
     }
-  }, [projectId]);
+  }, [effectiveProjectId]);
 
   const handleDrop = (taskId: string, newStatus: TaskStatus) => {
     setTasks((prevTasks) =>
@@ -544,6 +528,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+
+  // Pass this function to refresh tasks after a new task is created
+  const refreshTasks = () => {
+    console.log("Refreshing tasks...");
+    fetchTasks();
   };
 
   const columns: TaskStatus[] = [
@@ -565,7 +555,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
     >
       <div className="max-w-[1800px] mx-auto px-4">
         <div className="py-6">
-          <Projectinfo project={projectInfo} darkMode={darkMode} />
+          <Projectinfo darkMode={darkMode} />
         </div>
 
         <DndProvider backend={HTML5Backend}>
@@ -598,17 +588,11 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         darkMode={darkMode}
-        projectId={projectId || "p1"} // Fallback to 'p1' if projectId is null
+        projectId={effectiveProjectId || ""} // Use empty string instead of p1 as fallback
+        onTaskAdded={refreshTasks} // Add this new prop
       />
     </div>
   );
 };
 
 export default KanbanBoard;
-
-const projectInfo = {
-  name: "Project A",
-  progress: 70,
-  deadline: "April 10, 2025",
-  teamMembers: 5,
-};

@@ -82,3 +82,32 @@ export const getUserProjects = async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch projects' });
     }
   };
+
+export const getProjectInfo = async(req, res) => {
+  try {
+    const { projectId } = req.params;
+    
+    if (!projectId) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+    
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        name: true,
+        description: true,
+        status: true,
+        progress: true
+      }
+    });
+    
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    res.status(200).json(project);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch project information' });
+  }
+};

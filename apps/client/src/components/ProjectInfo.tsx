@@ -9,7 +9,7 @@ interface ProjectInfo {
   status: string;
   progress: number;
   deadline?: string; // Optional since it might not be in the API
-  teamMembers?: number; // Optional since it might not be in the API
+  teamMembers?: number; // This will now contain the workspace member count
 }
 
 interface ProjectInfoProps {
@@ -48,6 +48,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
       });
 
       console.log("API response success:", response.data);
+      console.log("Team members count from API:", response.data.teamMembers);
 
       const projectData = {
         ...response.data,
@@ -55,6 +56,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
         progress: response.data.progress || 0,
       };
 
+      console.log("Processed project data:", projectData);
       setProject(projectData);
       setError(null);
     } catch (err: any) {
@@ -214,6 +216,42 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
                 className={`${darkMode ? "text-white" : "text-[#212121]"} text-sm capitalize`}
               >
                 {project.status}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                darkMode ? "bg-[#2C2C2C]" : "bg-gray-200"
+              }`}
+            >
+              <svg
+                className="w-5 h-5 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                ></path>
+              </svg>
+            </div>
+            <div className="ml-3">
+              <div
+                className={`text-xs ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
+                Team
+              </div>
+              <div
+                className={`${darkMode ? "text-white" : "text-[#212121]"} text-sm`}
+              >
+                {project.teamMembers || 0} members
               </div>
             </div>
           </div>

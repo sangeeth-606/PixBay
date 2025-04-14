@@ -93,11 +93,22 @@ export const getProjectInfo = async(req, res) => {
     
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      select: {
-        name: true,
-        description: true,
-        status: true,
-        progress: true
+      include: {
+        workspace: {
+          include: {
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     });
     
@@ -105,7 +116,21 @@ export const getProjectInfo = async(req, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
     
-    res.status(200).json(project);
+    // Count workspace members and add to response
+    const memberCount = project.workspace.members.length;
+    
+    // Format the response
+    const projectData = {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      status: project.status,
+      progress: project.progress,
+      teamMembers: memberCount,
+      // Add other project properties as needed
+    };
+    
+    res.status(200).json(projectData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch project information' });

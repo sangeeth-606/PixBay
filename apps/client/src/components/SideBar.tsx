@@ -22,8 +22,9 @@ interface SidebarProps {
   selectedItem: string;
   darkMode?: boolean;
   workspaceCode: string;
-  onProjectCreated?: () => void; // Add this line
+  onProjectCreated?: () => void;
   onProjectSelect: (projectId: string) => void;
+  onItemSelect: (item: string) => void; // Add this new prop
 }
 interface Project {
   id: string;
@@ -42,6 +43,7 @@ export function Sidebar({
   darkMode = true,
   workspaceCode,
   onProjectSelect,
+  onItemSelect,
 }: SidebarProps) {
   const [projectsExpanded, setProjectsExpanded] = useState(true);
   const [sprintsExpanded, setSprintsExpanded] = useState(false);
@@ -147,7 +149,7 @@ export function Sidebar({
       />
 
       <motion.div
-        className="flex h-full w-64 flex-col bg-[#171717] text-white"
+        className="flex h-full w-64 flex-col bg-[#171717] text-white "
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -165,6 +167,7 @@ export function Sidebar({
                 )}
                 onClick={() => {
                   setProjectsExpanded(!projectsExpanded);
+                  onItemSelect("projects"); // Add this line
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -255,6 +258,7 @@ export function Sidebar({
                 )}
                 onClick={() => {
                   setSprintsExpanded(!sprintsExpanded);
+                  onItemSelect("sprints"); // Add this line
                 }}
                 whileTap={{ scale: 0.98 }}
                 variants={itemVariants}
@@ -329,6 +333,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
+              onClick={() => onItemSelect("roadmap")} // Add this line
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -352,6 +357,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
+              onClick={() => onItemSelect("calendar")} // Add this line
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -375,6 +381,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
+              onClick={() => onItemSelect("members")} // Add this line
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -398,6 +405,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
+              onClick={() => onItemSelect("inbox")} // Add this line
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -424,6 +432,7 @@ export function Sidebar({
                 ? "bg-emerald-500 text-white"
                 : "hover:bg-[#2C2C2C]"
             )}
+            onClick={() => onItemSelect("settings")} // Add this line
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             variants={itemVariants}

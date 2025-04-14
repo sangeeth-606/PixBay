@@ -118,6 +118,7 @@ export const getUserWorkspaces = async (req, res) => {
 export const workSpaceMembers = async (req, res) => {
   try {
     const { name } = req.params;
+    console.log("Workspace name received:", name); 
     
     if (!name) {
       return res.status(400).json({ error: "Workspace name is required" });

@@ -147,7 +147,7 @@ export function Sidebar({
       />
 
       <motion.div
-        className="flex h-full w-64 flex-col bg-[#171717] text-white rounded-r-lg"
+        className="flex h-full w-64 flex-col bg-[#171717] text-white"
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}

@@ -4,7 +4,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import Projectinfo from "./ProjectInfo";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import AddTaskModal, { TaskStatus, Priority } from "./AddTaskModal"; // Import the AddTaskModal component
+import AddTaskModal, { TaskStatus, Priority } from "./AddTaskModal";
+import TaskInfo from "./TaskInfo"; // Import the TaskInfo component
 
 // Define enums and interfaces based on the schema
 // Note: TaskStatus and Priority are now imported from AddTaskModal
@@ -33,6 +34,7 @@ interface ColumnProps {
   onDrop: (taskId: string, newStatus: TaskStatus) => void;
   darkMode: boolean;
   onAddTask?: () => void;
+  onTaskClick: (taskId: string) => void; // Add new prop
 }
 
 // Kanban Column Component
@@ -42,6 +44,7 @@ const KanbanColumn: React.FC<ColumnProps> = ({
   onDrop,
   darkMode,
   onAddTask,
+  onTaskClick,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -97,7 +100,12 @@ const KanbanColumn: React.FC<ColumnProps> = ({
             </p>
           ) : (
             tasks.map((task) => (
-              <TaskCard key={task.id} task={task} darkMode={darkMode} />
+              <TaskCard 
+                key={task.id} 
+                task={task} 
+                darkMode={darkMode}
+                onTaskClick={onTaskClick} 
+              />
             ))
           )}
         </div>
@@ -110,10 +118,11 @@ const KanbanColumn: React.FC<ColumnProps> = ({
 interface TaskCardProps {
   task: Task;
   darkMode: boolean;
+  onTaskClick: (taskId: string) => void; // Add click handler prop
 }
 
 // Task Card Component
-const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode, onTaskClick }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, drag] = useDrag({
@@ -139,12 +148,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode }) => {
     }
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent click from triggering drag
+    if (!isDragging) {
+      onTaskClick(task.id);
+    }
+  };
+
   return (
     <div
       ref={ref}
-      className={`p-4 mb-4 rounded-md shadow-sm cursor-move ${
-        isDragging ? "opacity-50" : ""
-      } ${darkMode ? "bg-[#2C2C2C]" : "bg-white"}`}
+      onClick={handleClick}
+      className={`p-4 mb-4 rounded-md shadow-sm ${
+        isDragging ? "opacity-50 cursor-move" : "cursor-pointer hover:shadow-md"
+      } ${darkMode ? "bg-[#2C2C2C]" : "bg-white"} transition-shadow`}
     >
       <div className="flex items-center justify-between mb-2">
         <h3
@@ -196,6 +213,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const [tasks, setTasks] = useState<Task[]>([]); // Initialize with empty array instead of dummyTasks
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null); // Updated state variable for selected task
+  const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // New state variable for task info modal
   const { getToken } = useAuth();
 
   // Extract projectId from URL if not provided explicitly
@@ -255,6 +274,18 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
     fetchTasks();
   };
 
+  const handleTaskClick = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId) || null;
+    setSelectedTask(task);
+    setIsTaskInfoModalOpen(true);
+  };
+
+  const handleTaskDeleted = () => {
+    setIsTaskInfoModalOpen(false);
+    setSelectedTask(null);
+    refreshTasks();
+  };
+
   const columns: TaskStatus[] = [
     TaskStatus.TODO,
     TaskStatus.IN_PROGRESS,
@@ -291,6 +322,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
                   tasks={column.tasks}
                   onDrop={handleDrop}
                   darkMode={darkMode}
+                  onTaskClick={handleTaskClick}
                   onAddTask={
                     column.status === TaskStatus.TODO
                       ? () => setIsAddModalOpen(true)
@@ -310,6 +342,39 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         projectId={effectiveProjectId || ""} // Use empty string instead of p1 as fallback
         onTaskAdded={refreshTasks} // Add this new prop
       />
+
+      {/* Task Info Modal */}
+      {selectedTask && (
+        <div className={`fixed inset-0 z-50 flex items-center justify-center ${isTaskInfoModalOpen ? "" : "hidden"}`}>
+          {/* Semi-transparent overlay with stronger blur effect */}
+          <div 
+            className="absolute inset-0" 
+            style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)'
+            }}
+            onClick={() => setIsTaskInfoModalOpen(false)}
+          ></div>
+          <div className="relative z-10 w-full max-w-4xl h-[80vh] overflow-y-auto rounded-lg shadow-xl">
+            <button 
+              className={`absolute top-4 right-4 z-20 p-2 rounded-full ${darkMode ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
+              onClick={() => setIsTaskInfoModalOpen(false)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <TaskInfo 
+              taskId={selectedTask.id}
+              title={selectedTask.title}
+              description={selectedTask.description}
+              darkMode={darkMode} 
+              onTaskDeleted={handleTaskDeleted}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -145,18 +145,18 @@ export const deleteTask = async (req, res) => {
     }
 
     // Check if user is a member of the workspace
-    const workspaceMember = await prisma.workspaceMember.findUnique({
-      where: { 
-        workspaceId_userId: { 
-          workspaceId: task.project.workspaceId, 
-          userId: user.id 
-        } 
-      },
-    });
+    // const workspaceMember = await prisma.workspaceMember.findUnique({
+    //   where: { 
+    //     workspaceId_userId: { 
+    //       workspaceId: task.project.workspaceId, 
+    //       userId: user.id 
+    //     } 
+    //   },
+    // });
 
-    if (!workspaceMember) {
-      return res.status(403).json({ error: 'User is not a member of the task\'s workspace' });
-    }
+    // if (!workspaceMember) {
+    //   return res.status(403).json({ error: 'User is not a member of the task\'s workspace' });
+    // }
 
     // Additional permission check (optional): only creator or admin/manager can delete
     if (task.creatorId !== user.id && !['ADMIN', 'MANAGER'].includes(workspaceMember.role)) {

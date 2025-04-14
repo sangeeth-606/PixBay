@@ -101,7 +101,7 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center bg-[#171717]">
         <LoadingSpinner size={30} />
       </div>
     );

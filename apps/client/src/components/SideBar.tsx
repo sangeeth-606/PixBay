@@ -432,7 +432,7 @@ export function Sidebar({
                 ? "bg-emerald-500 text-white"
                 : "hover:bg-[#2C2C2C]"
             )}
-            onClick={() => onItemSelect("settings")} // Add this line
+            onClick={() => onItemSelect("settings")} 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             variants={itemVariants}

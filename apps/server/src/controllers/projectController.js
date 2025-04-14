@@ -108,7 +108,8 @@ export const getProjectInfo = async(req, res) => {
               }
             }
           }
-        }
+        },
+        tasks: true // Include tasks to calculate progress
       }
     });
     
@@ -116,8 +117,20 @@ export const getProjectInfo = async(req, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
     
-    // Count workspace members and add to response
+    // Count workspace members
     const memberCount = project.workspace.members.length;
+    
+    // Calculate progress based on tasks
+    let progressPercentage = 0;
+    if (project.tasks.length > 0) {
+      const completedTasks = project.tasks.filter(task => task.status === 'DONE').length;
+      const inProgressTasks = project.tasks.filter(task => task.status === 'IN_PROGRESS').length;
+      
+      // Completed tasks count as 100%, in-progress tasks count as 50%
+      progressPercentage = Math.round(
+        ((completedTasks + (inProgressTasks * 0.5)) / project.tasks.length) * 100
+      );
+    }
     
     // Format the response
     const projectData = {
@@ -125,7 +138,7 @@ export const getProjectInfo = async(req, res) => {
       name: project.name,
       description: project.description,
       status: project.status,
-      progress: project.progress,
+      progress: progressPercentage, // Use calculated progress
       teamMembers: memberCount,
       // Add other project properties as needed
     };

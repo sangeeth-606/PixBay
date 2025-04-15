@@ -13,6 +13,7 @@ import {
   Plus,
 } from "lucide-react";
 import { FormModal } from "./FormModal";
+import { SprintFormModal } from "./SprintFormModal";
 import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
@@ -24,7 +25,7 @@ interface SidebarProps {
   workspaceCode: string;
   onProjectCreated?: () => void;
   onProjectSelect: (projectId: string) => void;
-  onItemSelect: (item: string) => void; // Add this new prop
+  onItemSelect: (item: string) => void;
 }
 interface Project {
   id: string;
@@ -47,15 +48,26 @@ export function Sidebar({
 }: SidebarProps) {
   const [projectsExpanded, setProjectsExpanded] = useState(true);
   const [sprintsExpanded, setSprintsExpanded] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
   const [project, setProject] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const { getToken } = useAuth();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openProjectModal = () => setIsProjectModalOpen(true);
+  const closeProjectModal = () => setIsProjectModalOpen(false);
+
+  const openSprintModal = () => {
+    console.log("Opening sprint modal");
+    setIsSprintModalOpen(true);
+  };
+  const closeSprintModal = () => setIsSprintModalOpen(false);
+
+  useEffect(() => {
+    console.log("Sprint modal state:", isSprintModalOpen);
+  }, [isSprintModalOpen]);
 
   // Helper function to conditionally join classnames
   const classNames = (...classes: string[]) => {
@@ -89,16 +101,11 @@ export function Sidebar({
     }
   };
 
-  // Replace the handleProjectSelect function
   const handleProjectSelect = (projectId: string) => {
-    // Use React Router's navigate instead of manually changing history
     navigate(`?projectId=${projectId}`);
-    
-    // Still call the callback to update any parent component state
     onProjectSelect(projectId);
   };
 
-  // Check for projectId in URL when component mounts
   useEffect(() => {
     const url = new URL(window.location.href);
     const projectIdFromUrl = url.searchParams.get("projectId");
@@ -139,13 +146,23 @@ export function Sidebar({
     open: { opacity: 1, y: 0, transition: { duration: 0.2 } },
   };
 
+  const currentProjectId = new URLSearchParams(window.location.search).get("projectId");
+
   return (
     <>
       <FormModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
+        isOpen={isProjectModalOpen}
+        onClose={closeProjectModal}
         darkMode={true}
-        onProjectCreated={getProjects} // Pass the getProjects function as callback
+        onProjectCreated={getProjects}
+      />
+
+      <SprintFormModal
+        isOpen={isSprintModalOpen}
+        onClose={closeSprintModal}
+        darkMode={true}
+        projectId={currentProjectId}
+        onSprintCreated={() => console.log("Sprint created successfully")}
       />
 
       <motion.div
@@ -167,7 +184,7 @@ export function Sidebar({
                 )}
                 onClick={() => {
                   setProjectsExpanded(!projectsExpanded);
-                  onItemSelect("projects"); // Add this line
+                  onItemSelect("projects");
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -216,7 +233,7 @@ export function Sidebar({
                             key={proj.id}
                             onClick={() => {
                               console.log("Project ID:", proj.id);
-                              handleProjectSelect(proj.id); // Use new function instead of direct callback
+                              handleProjectSelect(proj.id);
                             }}
                             className={classNames(
                               "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
@@ -230,14 +247,14 @@ export function Sidebar({
                             {proj.name}
                           </motion.button>
                         ))}
-                        {!isModalOpen && (
+                        {!isProjectModalOpen && (
                           <motion.div
                             className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
                             variants={subItemVariants}
                             whileTap={{ scale: 0.95 }}
                           >
                             <Plus size={16} />
-                            <button onClick={openModal}>Add Project</button>
+                            <button onClick={openProjectModal}>Add Project</button>
                           </motion.div>
                         )}
                       </>
@@ -258,7 +275,7 @@ export function Sidebar({
                 )}
                 onClick={() => {
                   setSprintsExpanded(!sprintsExpanded);
-                  onItemSelect("sprints"); // Add this line
+                  onItemSelect("sprints");
                 }}
                 whileTap={{ scale: 0.98 }}
                 variants={itemVariants}
@@ -305,7 +322,6 @@ export function Sidebar({
                             : "hover:bg-[#2C2C2C]"
                         )}
                         variants={subItemVariants}
-                        //   whileHover={{ x: 5 }}
                         whileTap={{ scale: 0.98 }}
                       >
                         {sprint.name}
@@ -314,8 +330,8 @@ export function Sidebar({
                     <motion.button
                       className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
                       variants={subItemVariants}
-                      whileHover={{ x: 5 }}
                       whileTap={{ scale: 0.95 }}
+                      onClick={openSprintModal}
                     >
                       <Plus size={16} />
                       <span>Add Sprint</span>
@@ -333,7 +349,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
-              onClick={() => onItemSelect("roadmap")} // Add this line
+              onClick={() => onItemSelect("roadmap")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -357,7 +373,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
-              onClick={() => onItemSelect("calendar")} // Add this line
+              onClick={() => onItemSelect("calendar")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -381,7 +397,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
-              onClick={() => onItemSelect("members")} // Add this line
+              onClick={() => onItemSelect("members")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -405,7 +421,7 @@ export function Sidebar({
                   ? "bg-emerald-500 text-white"
                   : "hover:bg-[#2C2C2C]"
               )}
-              onClick={() => onItemSelect("inbox")} // Add this line
+              onClick={() => onItemSelect("inbox")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               variants={itemVariants}
@@ -432,7 +448,7 @@ export function Sidebar({
                 ? "bg-emerald-500 text-white"
                 : "hover:bg-[#2C2C2C]"
             )}
-            onClick={() => onItemSelect("settings")} 
+            onClick={() => onItemSelect("settings")}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             variants={itemVariants}

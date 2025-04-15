@@ -3,11 +3,24 @@ import prisma from '../db.js'
 export const createSprint = async (req, res) => {
   try {
     const { name, goal, startDate, endDate, projectId } = req.body;
-    const {emailAddresses}= req.auth 
+    const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
+
+    if (!email) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
     if (!name || !projectId) {
       return res.status(400).json({ error: "Name and project ID are required" });
+    }
+
+    // Find user by email
+    const user = await prisma.user.findFirst({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
     // Verify project exists and user has access
@@ -20,19 +33,21 @@ export const createSprint = async (req, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
+    // Extract workspace ID from project
+    const workspaceId = project.workspaceId;
+
     // Check if user is a member of the workspace
-    // const isMember = project.workspace.members.some(
-    //   (member) => member.userId === userId
-    // );
-    // if (!isMember) {
-    //   return res.status(403).json({ error: "Unauthorized to create sprint in this project" });
-    // }
     const workspaceMember = await prisma.workspaceMember.findUnique({
-        where: { workspaceId_userId: { workspaceId, userId: user.id } },
-      });
-  
-      if (!workspaceMember) {
-        return res.status(403).json({ error: 'User is not a member of this workspace' });
+      where: { 
+        workspaceId_userId: { 
+          workspaceId, 
+          userId: user.id 
+        } 
+      },
+    });
+
+    if (!workspaceMember) {
+      return res.status(403).json({ error: 'User is not a member of this workspace' });
     }
 
     const sprint = await prisma.sprint.create({
@@ -42,7 +57,7 @@ export const createSprint = async (req, res) => {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         project: { connect: { id: projectId } },
-        owner: { connect: { id: userId } },
+        owner: { connect: { id: user.id } },
       },
     });
 

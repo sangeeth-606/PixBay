@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  workspaceId: string;
+}
 
 interface SprintFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   darkMode?: boolean;
-  projectId: string | null;
+  workspaceName: string;
   onSprintCreated?: () => void;
 }
 
@@ -17,34 +23,61 @@ export function SprintFormModal({
   isOpen,
   onClose,
   darkMode = true,
-  projectId,
+  workspaceName,
   onSprintCreated
 }: SprintFormModalProps) {
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [projectsError, setProjectsError] = useState('');
   
   const { getToken } = useAuth();
 
+  // Fetch projects when modal opens
+  useEffect(() => {
+    if (isOpen && workspaceName) {
+      const fetchProjects = async () => {
+        try {
+          const token = await getToken();
+          const response = await axios.get(
+            `http://localhost:5000/api/projects/workspace/${workspaceName}`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          setProjects(response.data);
+        } catch (err: any) {
+          setProjectsError('Failed to fetch projects');
+          console.error('Error fetching projects:', err);
+        }
+      };
+      fetchProjects();
+    }
+  }, [isOpen, workspaceName, getToken]);
+
   // Reset form state when modal opens/closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setName('');
       setGoal('');
       setStartDate('');
       setEndDate('');
+      setSelectedProjectId('');
       setError('');
+      setProjectsError('');
     }
   }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!projectId) {
-      setError('No project selected');
+    if (!selectedProjectId) {
+      setError('Please select a project');
       return;
     }
     
@@ -65,7 +98,7 @@ export function SprintFormModal({
           goal,
           startDate: startDate || null,
           endDate: endDate || null,
-          projectId
+          projectId: selectedProjectId
         },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -84,7 +117,6 @@ export function SprintFormModal({
     }
   };
 
-  // Updated variants to match the style of AddTaskModal
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
@@ -95,9 +127,6 @@ export function SprintFormModal({
     visible: { opacity: 1, scale: 1 }
   };
 
-  if (!isOpen) return null;
-  
-  // Updated styling to match AddTaskModal
   const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
     darkMode
       ? "bg-[#171717] border-[#2C2C2C] text-white"
@@ -173,6 +202,29 @@ export function SprintFormModal({
                       darkMode ? "text-gray-300" : "text-gray-700"
                     }`}
                   >
+                    Project <span className="text-emerald-400">*</span>
+                  </label>
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className={inputStyles}
+                    required
+                  >
+                    <option value="">Select a project</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label
+                    className={`block mb-2 font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
                     Sprint Goal
                   </label>
                   <textarea
@@ -220,6 +272,10 @@ export function SprintFormModal({
                 
                 {error && (
                   <div className="text-red-500 text-sm">{error}</div>
+                )}
+                
+                {projectsError && (
+                  <div className="text-red-500 text-sm">{projectsError}</div>
                 )}
                 
                 <button

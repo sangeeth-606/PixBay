@@ -13,11 +13,14 @@ const router = express.Router();
 // Create a new sprint
 router.post('/create', authMiddleware, createSprint);
 
-// Get a single sprint
-router.get('/:sprintId', authMiddleware, getSprint);
+// Route for workspace sprints - put this BEFORE the /:sprintId route to ensure proper precedence
+router.get('/workspace/:workspaceId', authMiddleware, getAllSprints);
 
-// Get all sprints for a project
+// Route for project sprints - put this BEFORE the /:sprintId route
 router.get('/project/:projectId', authMiddleware, getAllSprints);
+
+// Get a single sprint - this needs to be after the more specific routes
+router.get('/:sprintId', authMiddleware, getSprint);
 
 // Update a sprint
 router.put('/:sprintId', authMiddleware, updateSprint);

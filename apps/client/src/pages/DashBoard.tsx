@@ -4,17 +4,22 @@ import SideBar from "../components/SideBar";
 import KanbanBoard from "../components/KanbanBoard";
 import Navbar from "../components/Navbar";
 import Members from "../components/Members";
+import Sprint from "../components/Sprint";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
-  const [selectedItem, setSelectedItem] = useState("sprints");
+  const [selectedItem, setSelectedItem] = useState("projects");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null
+  );
+  const [selectedSprintId, setSelectedSprintId] = useState<string | null>(
     null
   );
 
   // Reset project selection when workspace changes
   useEffect(() => {
     setSelectedProjectId(null);
+    setSelectedSprintId(null);
     setSelectedItem("sprints");
   }, [workspaceCode]);
 
@@ -29,6 +34,11 @@ function DashBoard() {
     setSelectedItem("projects"); // Switch to projects view when a project is selected
   };
 
+  const handleSprintSelect = (sprintId: string) => {
+    setSelectedSprintId(sprintId);
+    setSelectedItem("sprints"); // Switch to sprints view when a sprint is selected
+  };
+
   // Add this to debug which content is being rendered
   useEffect(() => {
     console.log("Current selected item:", selectedItem);
@@ -41,6 +51,16 @@ function DashBoard() {
         return <KanbanBoard projectId={selectedProjectId} />;
       case "members":
         return <Members workspaceName={workspaceCode || ""} />;
+      case "sprints":
+        return selectedSprintId ? (
+          <Sprint sprintId={selectedSprintId} />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-lg text-gray-500">
+              Select a sprint from the sidebar or create a new one
+            </p>
+          </div>
+        );
       default:
         return (
           <div className="flex h-full items-center justify-center">
@@ -61,6 +81,7 @@ function DashBoard() {
           darkMode={true}
           workspaceCode={workspaceCode || ""}
           onProjectSelect={handleProjectSelect}
+          onSprintSelect={handleSprintSelect}
           onItemSelect={handleItemSelect}
         />
       </div>

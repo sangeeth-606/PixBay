@@ -25,6 +25,7 @@ interface SidebarProps {
   workspaceCode: string;
   onProjectCreated?: () => void;
   onProjectSelect: (projectId: string) => void;
+  onSprintSelect: (sprintId: string) => void; // Added parameter here
   onItemSelect: (item: string) => void;
 }
 interface Project {
@@ -33,17 +34,20 @@ interface Project {
   workspaceId: string;
 }
 
-const sprints = [
-  { id: "sprint-1", name: "Sprint 1 (Current)" },
-  { id: "sprint-2", name: "Sprint 2 (Planning)" },
-  { id: "sprint-3", name: "Sprint 3 (Backlog)" },
-];
+interface Sprint {
+  id: string;
+  name: string;
+  status: string;
+  projectId: string;
+  project?: { name: string };
+}
 
 export function Sidebar({
   selectedItem,
   darkMode = true,
   workspaceCode,
   onProjectSelect,
+  onSprintSelect, // Added parameter here
   onItemSelect,
 }: SidebarProps) {
   const [projectsExpanded, setProjectsExpanded] = useState(true);
@@ -51,7 +55,9 @@ export function Sidebar({
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
   const [project, setProject] = useState<Project[]>([]);
+  const [sprints, setSprints] = useState<Sprint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSprintsLoading, setIsSprintsLoading] = useState(false);
   const navigate = useNavigate();
 
   const { getToken } = useAuth();
@@ -60,14 +66,9 @@ export function Sidebar({
   const closeProjectModal = () => setIsProjectModalOpen(false);
 
   const openSprintModal = () => {
-    console.log("Opening sprint modal");
     setIsSprintModalOpen(true);
   };
   const closeSprintModal = () => setIsSprintModalOpen(false);
-
-  useEffect(() => {
-    console.log("Sprint modal state:", isSprintModalOpen);
-  }, [isSprintModalOpen]);
 
   // Helper function to conditionally join classnames
   const classNames = (...classes: string[]) => {
@@ -103,6 +104,44 @@ export function Sidebar({
     }
   };
 
+  const getSprints = async () => {
+    if (!workspaceCode) return;
+
+    setIsSprintsLoading(true);
+    try {
+      const token = await getToken();
+
+      // Ensure the workspace ID is properly encoded for the URL
+      const encodedWorkspaceId = encodeURIComponent(workspaceCode);
+      console.log(`Fetching sprints for workspace: ${encodedWorkspaceId}`);
+
+      // Make sure any + signs are properly handled (+ represents a space in URL encoding)
+      const url = `http://localhost:5000/api/sprints/workspace/${encodedWorkspaceId}`;
+      console.log(`Making API request to: ${url}`);
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log(`Successfully fetched ${response.data.length} sprints`);
+      setSprints(response.data);
+    } catch (error) {
+      console.error("Error fetching sprints:", error);
+      // Handle the error gracefully
+      setSprints([]);
+
+      // Add better error details
+      if (axios.isAxiosError(error) && error.response) {
+        console.error(
+          `Server responded with status ${error.response.status}:`,
+          error.response.data
+        );
+      }
+    } finally {
+      setIsSprintsLoading(false);
+    }
+  };
+
   const handleProjectSelect = (projectId: string) => {
     navigate(`?projectId=${projectId}`);
     onProjectSelect(projectId);
@@ -120,9 +159,15 @@ export function Sidebar({
 
   useEffect(() => {
     getProjects();
-  }, [workspaceCode]); // Add workspaceCode as a dependency to refetch when workspace changes
+    getSprints();
+  }, [workspaceCode]);
 
-  console.log("usestate projects data", project);
+  // Refresh sprints when a new sprint is created
+  useEffect(() => {
+    if (!isSprintModalOpen) {
+      getSprints();
+    }
+  }, [isSprintModalOpen]);
 
   // Animation variants
   const itemVariants = {
@@ -149,10 +194,6 @@ export function Sidebar({
     open: { opacity: 1, y: 0, transition: { duration: 0.2 } },
   };
 
-  const currentProjectId = new URLSearchParams(window.location.search).get(
-    "projectId"
-  );
-
   return (
     <>
       <FormModal
@@ -166,8 +207,8 @@ export function Sidebar({
         isOpen={isSprintModalOpen}
         onClose={closeSprintModal}
         darkMode={true}
-        projectId={currentProjectId}
-        onSprintCreated={() => console.log("Sprint created successfully")}
+        workspaceName={workspaceCode}
+        onSprintCreated={() => getSprints()}
       />
 
       <motion.div
@@ -319,30 +360,58 @@ export function Sidebar({
                     animate="open"
                     exit="closed"
                   >
-                    {sprints.map((sprint) => (
-                      <motion.button
-                        key={sprint.id}
-                        className={classNames(
-                          "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                          selectedItem === sprint.id
-                            ? "bg-emerald-500/20 text-emerald-500"
-                            : "hover:bg-[#2C2C2C]"
+                    {isSprintsLoading ? (
+                      <LoadingSpinner size={20} />
+                    ) : (
+                      <>
+                        {sprints.length > 0 ? (
+                          sprints.map((sprint) => (
+                            <motion.button
+                              key={sprint.id}
+                              className={classNames(
+                                "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                                selectedItem === sprint.id
+                                  ? "bg-emerald-500/20 text-emerald-500"
+                                  : "hover:bg-[#2C2C2C]"
+                              )}
+                              variants={subItemVariants}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => {
+                                onSprintSelect(sprint.id); // Use the onSprintSelect prop
+                                onItemSelect("sprints");
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span>{sprint.name}</span>
+                                {sprint.status && (
+                                  <span className="text-xs opacity-70">
+                                    ({sprint.status.toLowerCase()})
+                                  </span>
+                                )}
+                              </div>
+                              {sprint.project && (
+                                <div className="mt-1 text-xs opacity-60">
+                                  {sprint.project.name}
+                                </div>
+                              )}
+                            </motion.button>
+                          ))
+                        ) : (
+                          <div className="text-sm text-gray-400 px-3 py-2">
+                            No sprints found
+                          </div>
                         )}
-                        variants={subItemVariants}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        {sprint.name}
-                      </motion.button>
-                    ))}
-                    <motion.button
-                      className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
-                      variants={subItemVariants}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={openSprintModal}
-                    >
-                      <Plus size={16} />
-                      <span>Add Sprint</span>
-                    </motion.button>
+                        <motion.button
+                          className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
+                          variants={subItemVariants}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={openSprintModal}
+                        >
+                          <Plus size={16} />
+                          <span>Add Sprint</span>
+                        </motion.button>
+                      </>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -473,6 +542,7 @@ export function Sidebar({
         </div>
       </motion.div>
     </>
+
   );
 }
 

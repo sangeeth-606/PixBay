@@ -93,35 +93,84 @@ export const getSprint = async (req, res) => {
   }
 };
 
-// Get all sprints for a project
+// Get all sprints for a project or workspace
 export const getAllSprints = async (req, res) => {
   try {
-    const { projectId } = req.params;
+    // const { workspaceName } = req.params;
+    const workspaceName = req.params.workspaceId;
 
-    // Verify project exists
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-    });
 
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
+    if (!workspaceName) {
+      return res.status(400).json({ error: 'Workspace name is required' });
     }
 
+    // Find the workspace by name
+    const workspace = await prisma.workspace.findFirst({
+      where: { name: workspaceName },
+      include: {
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            workspaceId: true,
+          }
+        }
+      }
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: 'Workspace not found' });
+    }
+
+    // Verify the user has access to this workspace
+    const { emailAddresses } = req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
+
+    const user = await prisma.user.findFirst({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user is a workspace member
+    const workspaceMember = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: workspace.id, userId: user.id } },
+    });
+
+    if (!workspaceMember) {
+      return res.status(403).json({ error: 'User is not a member of this workspace' });
+    }
+
+    // Get all projects in the workspace
+    const projectIds = workspace.projects.map(project => project.id);
+
+    if (projectIds.length === 0) {
+      return res.status(200).json([]); // No projects, no sprints
+    }
+
+    // Find all sprints in those projects
     const sprints = await prisma.sprint.findMany({
-      where: { projectId },
+      where: {
+        projectId: { in: projectIds },
+      },
       include: {
         owner: { select: { id: true, name: true } },
         tasks: { select: { id: true, title: true, status: true } },
+        project: { select: { id: true, name: true, key: true } }
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "desc" }
     });
 
-    res.status(200).json(sprints);
+    return res.status(200).json(sprints);
+
   } catch (error) {
     console.error("Get all sprints error:", error);
-    res.status(500).json({ error: "Failed to fetch sprints" });
+    return res.status(500).json({ error: 'Failed to fetch sprints' });
   }
 };
+
 
 // Update a sprint
 export const updateSprint = async (req, res) => {

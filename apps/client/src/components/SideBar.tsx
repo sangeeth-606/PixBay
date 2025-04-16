@@ -79,7 +79,7 @@ export function Sidebar({
     try {
       const token = await getToken();
       const response = await axios.get(
-        "http://localhost:5000/api/projects/user",
+        `http://localhost:5000/api/projects/workspace/${workspaceCode}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -88,8 +88,10 @@ export function Sidebar({
       const projects = response.data;
       setProject(projects);
 
-      // Auto-select first project if no project is selected and there are projects available
-      const currentProjectId = new URLSearchParams(window.location.search).get("projectId");
+      // Only auto-select if we're in the same workspace
+      const currentProjectId = new URLSearchParams(window.location.search).get(
+        "projectId"
+      );
       if (projects.length > 0 && !currentProjectId) {
         console.log("Auto-selecting first project:", projects[0].id);
         handleProjectSelect(projects[0].id);
@@ -118,7 +120,8 @@ export function Sidebar({
 
   useEffect(() => {
     getProjects();
-  }, []);
+  }, [workspaceCode]); // Add workspaceCode as a dependency to refetch when workspace changes
+
   console.log("usestate projects data", project);
 
   // Animation variants
@@ -146,7 +149,9 @@ export function Sidebar({
     open: { opacity: 1, y: 0, transition: { duration: 0.2 } },
   };
 
-  const currentProjectId = new URLSearchParams(window.location.search).get("projectId");
+  const currentProjectId = new URLSearchParams(window.location.search).get(
+    "projectId"
+  );
 
   return (
     <>
@@ -254,7 +259,9 @@ export function Sidebar({
                             whileTap={{ scale: 0.95 }}
                           >
                             <Plus size={16} />
-                            <button onClick={openProjectModal}>Add Project</button>
+                            <button onClick={openProjectModal}>
+                              Add Project
+                            </button>
                           </motion.div>
                         )}
                       </>

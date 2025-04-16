@@ -15339,10 +15339,10 @@ export namespace Prisma {
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    email?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
-    email?: StringNullableFilter<"User"> | string | null
     name?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -15354,7 +15354,7 @@ export namespace Prisma {
     workspaces?: WorkspaceMemberListRelationFilter
     notifications?: NotificationListRelationFilter
     activities?: ActivityListRelationFilter
-  }, "id">
+  }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
@@ -15403,15 +15403,15 @@ export namespace Prisma {
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    name?: string
     AND?: WorkspaceWhereInput | WorkspaceWhereInput[]
     OR?: WorkspaceWhereInput[]
     NOT?: WorkspaceWhereInput | WorkspaceWhereInput[]
-    name?: StringFilter<"Workspace"> | string
     createdAt?: DateTimeFilter<"Workspace"> | Date | string
     updatedAt?: DateTimeFilter<"Workspace"> | Date | string
     members?: WorkspaceMemberListRelationFilter
     projects?: ProjectListRelationFilter
-  }, "id">
+  }, "id" | "name">
 
   export type WorkspaceOrderByWithAggregationInput = {
     id?: SortOrder

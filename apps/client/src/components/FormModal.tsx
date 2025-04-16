@@ -33,7 +33,7 @@ export function FormModal({
     try {
       const token = await getToken();
       const response = await axios.post(
-        "http://localhost:5000/api/projects/create",
+        "http://localhost:5000/api/projects", // Remove any trailing slash here
         {
           name,
           description,

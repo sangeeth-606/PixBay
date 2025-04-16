@@ -8,7 +8,15 @@ import Members from "../components/Members";
 function DashBoard() {
   const { workspaceCode } = useParams();
   const [selectedItem, setSelectedItem] = useState("sprints");
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null
+  );
+
+  // Reset project selection when workspace changes
+  useEffect(() => {
+    setSelectedProjectId(null);
+    setSelectedItem("sprints");
+  }, [workspaceCode]);
 
   // Handle item selection from sidebar
   const handleItemSelect = (itemKey: string) => {
@@ -36,7 +44,9 @@ function DashBoard() {
       default:
         return (
           <div className="flex h-full items-center justify-center">
-            <p className="text-lg text-gray-500">Select an option from the sidebar</p>
+            <p className="text-lg text-gray-500">
+              Select an option from the sidebar
+            </p>
           </div>
         );
     }

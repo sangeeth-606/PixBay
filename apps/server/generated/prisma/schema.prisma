@@ -10,7 +10,7 @@ datasource db {
 
 model User {
   id              String            @id @default(cuid())
-  email           String?
+  email           String?           @unique
   name            String?
   role            UserRole          @default(MEMBER)
   createdAt       DateTime          @default(now())
@@ -34,7 +34,7 @@ enum UserRole {
 // Workspace
 model Workspace {
   id        String            @id @default(cuid())
-  name      String
+  name      String            @unique
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
   members   WorkspaceMember[]

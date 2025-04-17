@@ -7,12 +7,13 @@ import { useAuth } from "@clerk/clerk-react";
 import AddTaskModal, { TaskStatus, Priority } from "./AddTaskModal";
 import TaskInfo from "./TaskInfo"; // Import the TaskInfo component
 
-// Define enums and interfaces based on the schema
-// Note: TaskStatus and Priority are now imported from AddTaskModal
-
+// Update User interface to match the one in AddTaskModal.tsx
 interface User {
   id: string;
-  name: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+  joinedAt: string;
 }
 
 interface Task {
@@ -62,9 +63,7 @@ const KanbanColumn: React.FC<ColumnProps> = ({
         darkMode ? "bg-[#171717]" : "bg-white"
       }`}
     >
-      <div
-        className={`p-6 h-full overflow-y-auto`}
-      >
+      <div className={`p-6 h-full overflow-y-auto`}>
         <div className="flex justify-between items-center mb-4">
           <h2
             className={`text-xl font-bold ${
@@ -100,11 +99,11 @@ const KanbanColumn: React.FC<ColumnProps> = ({
             </p>
           ) : (
             tasks.map((task) => (
-              <TaskCard 
-                key={task.id} 
-                task={task} 
+              <TaskCard
+                key={task.id}
+                task={task}
                 darkMode={darkMode}
-                onTaskClick={onTaskClick} 
+                onTaskClick={onTaskClick}
               />
             ))
           )}
@@ -215,6 +214,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null); // Updated state variable for selected task
   const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // New state variable for task info modal
+  const [workspaceMembers, setWorkspaceMembers] = useState<User[]>([]);
+  const [workspaceName, setWorkspaceName] = useState<string | null>(null);
   const { getToken } = useAuth();
 
   // Extract projectId from URL if not provided explicitly
@@ -224,6 +225,46 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   };
 
   const effectiveProjectId = projectId || extractProjectIdFromUrl();
+
+  const fetchProjectDetails = async () => {
+    if (!effectiveProjectId) return;
+
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `http://localhost:5000/api/projects/${effectiveProjectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data && response.data.workspace) {
+        setWorkspaceName(response.data.workspace.name);
+      }
+    } catch (error) {
+      console.error("Failed to fetch project details:", error);
+    }
+  };
+
+  const fetchWorkspaceMembers = async () => {
+    if (!workspaceName) return;
+
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `http://localhost:5000/api/workspaces/${encodeURIComponent(workspaceName)}/members`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data && response.data.members) {
+        setWorkspaceMembers(response.data.members);
+      }
+    } catch (error) {
+      console.error("Failed to fetch workspace members:", error);
+    }
+  };
 
   const fetchTasks = async () => {
     if (!effectiveProjectId) return;
@@ -253,8 +294,15 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
     if (effectiveProjectId) {
       console.log("Project id from kanban board page ", effectiveProjectId);
       fetchTasks();
+      fetchProjectDetails();
     }
   }, [effectiveProjectId]);
+
+  useEffect(() => {
+    if (workspaceName) {
+      fetchWorkspaceMembers();
+    }
+  }, [workspaceName]);
 
   const handleDrop = (taskId: string, newStatus: TaskStatus) => {
     setTasks((prevTasks) =>
@@ -275,7 +323,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   };
 
   const handleTaskClick = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId) || null;
+    const task = tasks.find((t) => t.id === taskId) || null;
     setSelectedTask(task);
     setIsTaskInfoModalOpen(true);
   };
@@ -341,35 +389,49 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         darkMode={darkMode}
         projectId={effectiveProjectId || ""} // Use empty string instead of p1 as fallback
         onTaskAdded={refreshTasks} // Add this new prop
+        workspaceMembers={workspaceMembers} // Pass workspace members to modal
       />
 
       {/* Task Info Modal */}
       {selectedTask && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center ${isTaskInfoModalOpen ? "" : "hidden"}`}>
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center ${isTaskInfoModalOpen ? "" : "hidden"}`}
+        >
           {/* Semi-transparent overlay with stronger blur effect */}
-          <div 
-            className="absolute inset-0" 
+          <div
+            className="absolute inset-0"
             style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
             }}
             onClick={() => setIsTaskInfoModalOpen(false)}
           ></div>
           <div className="relative z-10 w-full max-w-4xl h-[80vh] overflow-y-auto rounded-lg shadow-xl">
-            <button 
+            <button
               className={`absolute top-4 right-4 z-20 p-2 rounded-full ${darkMode ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
               onClick={() => setIsTaskInfoModalOpen(false)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
-            <TaskInfo 
+            <TaskInfo
               taskId={selectedTask.id}
               title={selectedTask.title}
               description={selectedTask.description}
-              darkMode={darkMode} 
+              darkMode={darkMode}
               onTaskDeleted={handleTaskDeleted}
             />
           </div>

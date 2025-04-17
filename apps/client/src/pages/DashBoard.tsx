@@ -12,15 +12,13 @@ function DashBoard() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
-  const [selectedSprintId, setSelectedSprintId] = useState<string | null>(
-    null
-  );
+  const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
 
   // Reset project selection when workspace changes
   useEffect(() => {
     setSelectedProjectId(null);
     setSelectedSprintId(null);
-    setSelectedItem("sprints");
+    setSelectedItem("projects");
   }, [workspaceCode]);
 
   // Handle item selection from sidebar

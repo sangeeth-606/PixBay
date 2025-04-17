@@ -30,7 +30,8 @@ interface WorkspaceDetails {
 }
 
 export function Members({ workspaceName, darkMode = true }: MembersProps) {
-  const [workspaceDetails, setWorkspaceDetails] = useState<WorkspaceDetails | null>(null);
+  const [workspaceDetails, setWorkspaceDetails] =
+    useState<WorkspaceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { getToken } = useAuth();
@@ -39,15 +40,14 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
   const classNames = (...classes: string[]) => {
     return classes.filter(Boolean).join(" ");
   };
-  
 
   // Fetch workspace members
   const fetchWorkspaceMembers = async () => {
     if (!workspaceName) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const token = await getToken();
       const response = await axios.get(
@@ -56,11 +56,13 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       setWorkspaceDetails(response.data);
     } catch (err: any) {
       console.error("Error fetching workspace members:", err);
-      setError(err.response?.data?.error || "Failed to fetch workspace members");
+      setError(
+        err.response?.data?.error || "Failed to fetch workspace members"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -77,14 +79,14 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.3 } }
+    visible: { y: 0, opacity: 1, transition: { duration: 0.3 } },
   };
 
   // Get role icon
@@ -119,7 +121,7 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
         </motion.div>
         <h3 className="text-lg font-medium text-red-500">Error</h3>
         <p className="mt-1 text-sm text-gray-400">{error}</p>
-        <button 
+        <button
           onClick={fetchWorkspaceMembers}
           className="mt-4 rounded-md bg-[#2C2C2C] px-4 py-2 text-sm text-white hover:bg-[#3C3C3C] transition-colors"
         >
@@ -138,16 +140,19 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
         </div>
         {workspaceDetails && (
           <p className="mt-1 text-sm text-gray-400">
-            {workspaceDetails.memberCount} {workspaceDetails.memberCount === 1 ? 'member' : 'members'}
+            {workspaceDetails.memberCount}{" "}
+            {workspaceDetails.memberCount === 1 ? "member" : "members"}
           </p>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
         {!workspaceDetails ? (
-          <p className="text-gray-500 text-center py-8">No workspace data available</p>
+          <p className="text-gray-500 text-center py-8">
+            No workspace data available
+          </p>
         ) : (
-          <motion.div 
+          <motion.div
             className="space-y-2"
             variants={containerVariants}
             initial="hidden"
@@ -158,24 +163,33 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
                 key={member.id}
                 className="flex items-center justify-between rounded-md bg-[#1F1F1F] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
                 variants={itemVariants}
-                whileHover={{ scale: 1.02, backgroundColor: "rgba(44, 44, 44, 1)" }}
+                whileHover={{
+                  scale: 1.02,
+                  backgroundColor: "rgba(44, 44, 44, 1)",
+                }}
               >
                 <div className="flex items-center">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2C2C2C] text-emerald-500">
                     {member.name ? member.name[0].toUpperCase() : "?"}
                   </div>
                   <div className="ml-3">
-                    <p className="font-medium">{member.name || "Unknown User"}</p>
+                    <p className="font-medium">
+                      {member.name || "Unknown User"}
+                    </p>
                     <p className="text-xs text-gray-400">{member.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <span className={classNames(
-                    "flex items-center rounded-full px-2 py-1 text-xs",
-                    member.role === "ADMIN" ? "bg-emerald-500/20 text-emerald-500" :
-                    member.role === "MANAGER" ? "bg-blue-500/20 text-blue-500" :
-                    "bg-gray-500/20 text-gray-400"
-                  )}>
+                  <span
+                    className={classNames(
+                      "flex items-center rounded-full px-2 py-1 text-xs",
+                      member.role === "ADMIN"
+                        ? "bg-emerald-500/20 text-emerald-500"
+                        : member.role === "MANAGER"
+                          ? "bg-blue-500/20 text-blue-500"
+                          : "bg-gray-500/20 text-gray-400"
+                    )}
+                  >
                     {getRoleIcon(member.role)}
                     <span className="ml-1">{member.role}</span>
                   </span>
@@ -185,7 +199,7 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
           </motion.div>
         )}
       </div>
-      
+
       <div className="border-t border-[#2C2C2C] p-4">
         <motion.button
           className="flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"

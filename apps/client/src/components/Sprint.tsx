@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import React, { useState } from "react";
+import { CalendarDays } from "lucide-react";
+import { motion } from "framer-motion"; // Add framer-motion import
 
 // Type definitions based on your schema
-type SprintStatus = 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
-type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'ARCHIVED';
-type TaskType = 'TASK' | 'BUG' | 'STORY' | 'EPIC';
-type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
+type SprintStatus = "PLANNING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
+type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "ARCHIVED";
+type TaskType = "TASK" | "BUG" | "STORY" | "EPIC";
+type Priority = "HIGH" | "MEDIUM" | "LOW";
 
 interface Task {
   id: string;
@@ -61,8 +62,8 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
         assignee: {
           id: "as1",
           name: "Alice Smith",
-          initials: "AS"
-        }
+          initials: "AS",
+        },
       },
       {
         id: "2",
@@ -75,8 +76,8 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
         assignee: {
           id: "bj1",
           name: "Bob Johnson",
-          initials: "BJ"
-        }
+          initials: "BJ",
+        },
       },
       {
         id: "3",
@@ -89,61 +90,99 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
         assignee: {
           id: "cb1",
           name: "Charlie Brown",
-          initials: "CB"
-        }
-      }
+          initials: "CB",
+        },
+      },
     ],
     totalStoryPoints: 11,
-    completedStoryPoints: 3
+    completedStoryPoints: 3,
   });
 
   // Calculate task counts by status
   const taskCounts = {
-    todo: sprint.tasks.filter(task => task.status === 'TODO').length,
-    inProgress: sprint.tasks.filter(task => task.status === 'IN_PROGRESS').length,
-    done: sprint.tasks.filter(task => task.status === 'DONE').length
+    todo: sprint.tasks.filter((task) => task.status === "TODO").length,
+    inProgress: sprint.tasks.filter((task) => task.status === "IN_PROGRESS")
+      .length,
+    done: sprint.tasks.filter((task) => task.status === "DONE").length,
   };
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const getStatusBadgeClass = (status: SprintStatus) => {
     switch (status) {
-      case 'ACTIVE': return 'bg-teal-500 text-white';
-      case 'PLANNING': return 'bg-blue-500 text-white';
-      case 'COMPLETED': return 'bg-green-500 text-white';
-      case 'CANCELLED': return 'bg-gray-500 text-white';
-      default: return 'bg-gray-500 text-white';
+      case "ACTIVE":
+        return "bg-emerald-500 text-white";
+      case "PLANNING":
+        return "bg-blue-500 text-white";
+      case "COMPLETED":
+        return "bg-green-500 text-white";
+      case "CANCELLED":
+        return "bg-gray-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
     }
   };
 
   const getPriorityBadgeClass = (priority: Priority) => {
     switch (priority) {
-      case 'HIGH': return 'bg-red-500 text-white';
-      case 'MEDIUM': return 'bg-yellow-500 text-white';
-      case 'LOW': return 'bg-blue-500 text-white';
-      default: return 'bg-gray-500 text-white';
+      case "HIGH":
+        return "bg-red-500 text-white";
+      case "MEDIUM":
+        return "bg-yellow-500 text-white";
+      case "LOW":
+        return "bg-blue-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
     }
   };
 
   const getStatusClass = (status: TaskStatus) => {
     switch (status) {
-      case 'TODO': return 'bg-gray-200 text-gray-800';
-      case 'IN_PROGRESS': return 'bg-blue-200 text-blue-800';
-      case 'DONE': return 'bg-teal-200 text-teal-800';
-      case 'ARCHIVED': return 'bg-gray-200 text-gray-800';
-      default: return 'bg-gray-200 text-gray-800';
+      case "TODO":
+        return "bg-gray-200 text-gray-800";
+      case "IN_PROGRESS":
+        return "bg-blue-200 text-blue-800";
+      case "DONE":
+        return "bg-emerald-200 text-emerald-800";
+      case "ARCHIVED":
+        return "bg-gray-200 text-gray-800";
+      default:
+        return "bg-gray-200 text-gray-800";
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.5 } },
+  };
+
+  const itemVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="bg-gray-900 text-white p-6 rounded-lg w-full">
+    <motion.div
+      className="bg-[#171717] text-white p-6 rounded-md w-full"
+      initial="initial"
+      animate="animate"
+      variants={containerVariants}
+    >
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">{sprint.name}</h1>
+          <h1>{sprintId}</h1>
           <div className="flex items-center mt-1">
-            <span className={`text-xs px-2 py-1 rounded-full mr-2 ${getStatusBadgeClass(sprint.status)}`}>
+            <span
+              className={`text-xs px-2 py-1 rounded-md mr-2 ${getStatusBadgeClass(sprint.status)}`}
+            >
               {sprint.status}
             </span>
             <span className="text-sm text-gray-400 flex items-center">
@@ -153,26 +192,42 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-md bg-gray-800 hover:bg-gray-700 text-white">
+          <motion.button
+            className="px-4 py-2 rounded-md bg-[#2C2C2C] hover:bg-[#3C3C3C] text-white transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             Edit Sprint
-          </button>
-          <button className="px-4 py-2 rounded-md bg-teal-600 hover:bg-teal-500 text-white">
+          </motion.button>
+          <motion.button
+            className="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             Start Sprint
-          </button>
+          </motion.button>
         </div>
       </div>
-      
-      <div className="bg-gray-800 p-6 rounded-lg mb-6">
+
+      <motion.div
+        className="bg-[#2C2C2C] p-6 rounded-md mb-6 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
+        variants={itemVariants}
+      >
         <h2 className="text-lg font-semibold mb-2">Sprint Goal</h2>
-        <p className="text-gray-300">{sprint.goal || "No goal set for this sprint"}</p>
-      </div>
-      
+        <p className="text-gray-300">
+          {sprint.goal || "No goal set for this sprint"}
+        </p>
+      </motion.div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-gray-800 p-6 rounded-lg">
+        <motion.div
+          className="bg-[#2C2C2C] p-6 rounded-md shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
+          variants={itemVariants}
+        >
           <h3 className="text-sm font-medium text-gray-400 mb-2">Progress</h3>
-          <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-            <div 
-              className="bg-teal-500 h-2 rounded-full" 
+          <div className="w-full bg-[#171717] rounded-full h-2 mb-2">
+            <div
+              className="bg-emerald-500 h-2 rounded-full"
               style={{ width: `${sprint.progress}%` }}
             ></div>
           </div>
@@ -180,20 +235,33 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
             <span>{sprint.progress}% complete</span>
             <span>120% time elapsed</span>
           </div>
-        </div>
-        
-        <div className="bg-gray-800 p-6 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-400 mb-2">Story Points</h3>
+        </motion.div>
+
+        <motion.div
+          className="bg-[#2C2C2C] p-6 rounded-md shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
+          variants={itemVariants}
+        >
+          <h3 className="text-sm font-medium text-gray-400 mb-2">
+            Story Points
+          </h3>
           <div className="flex items-baseline">
-            <span className="text-2xl font-bold mr-2">{sprint.completedStoryPoints}</span>
+            <span className="text-2xl font-bold mr-2">
+              {sprint.completedStoryPoints}
+            </span>
             <span className="text-gray-400">/ {sprint.totalStoryPoints}</span>
           </div>
           <div className="text-sm text-gray-400 mt-1">
-            {Math.round((sprint.completedStoryPoints / sprint.totalStoryPoints) * 100)}% completed
+            {Math.round(
+              (sprint.completedStoryPoints / sprint.totalStoryPoints) * 100
+            )}
+            % completed
           </div>
-        </div>
-        
-        <div className="bg-gray-800 p-6 rounded-lg">
+        </motion.div>
+
+        <motion.div
+          className="bg-[#2C2C2C] p-6 rounded-md shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
+          variants={itemVariants}
+        >
           <h3 className="text-sm font-medium text-gray-400 mb-2">Issues</h3>
           <div className="flex justify-between">
             <div className="text-center">
@@ -209,19 +277,37 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
               <div className="text-sm text-gray-400">Done</div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-      
+
       <div className="mb-6">
-        <div className="flex space-x-2 border-b border-gray-700">
-          <button className="px-4 py-2 border-b-2 border-teal-500 font-medium">Issues</button>
-          <button className="px-4 py-2 text-gray-400 hover:text-white">Burndown Chart</button>
-          <button className="px-4 py-2 text-gray-400 hover:text-white">Board</button>
+        <div className="flex space-x-2 border-b border-[#2C2C2C]">
+          <motion.button
+            className="px-4 py-2 border-b-2 border-emerald-500 font-medium"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            Issues
+          </motion.button>
+          <motion.button
+            className="px-4 py-2 text-gray-400 hover:text-white"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            Burndown Chart
+          </motion.button>
+          <motion.button
+            className="px-4 py-2 text-gray-400 hover:text-white"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            Board
+          </motion.button>
         </div>
       </div>
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-gray-800 rounded-lg">
+
+      <motion.div className="overflow-x-auto" variants={itemVariants}>
+        <table className="min-w-full bg-[#2C2C2C] rounded-md shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]">
           <thead>
             <tr className="text-left text-gray-400 text-sm">
               <th className="py-3 px-4">Key</th>
@@ -233,31 +319,41 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
               <th className="py-3 px-4">Story Points</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700">
-            {sprint.tasks.map(task => (
-              <tr key={task.id} className="hover:bg-gray-700">
+          <tbody className="divide-y divide-[#3C3C3C]">
+            {sprint.tasks.map((task) => (
+              <motion.tr
+                key={task.id}
+                className="hover:bg-[#3C3C3C] transition-colors"
+                whileHover={{ backgroundColor: "#3C3C3C" }}
+              >
                 <td className="py-3 px-4 font-medium">{task.key}</td>
                 <td className="py-3 px-4">{task.title}</td>
                 <td className="py-3 px-4">
                   <span className="flex items-center text-gray-400">
-                    <span className="inline-block w-2 h-2 bg-teal-500 rounded-full mr-2"></span>
+                    <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
                     {task.type}
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className={`text-xs px-2 py-1 rounded-full ${getPriorityBadgeClass(task.priority)}`}>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-md ${getPriorityBadgeClass(task.priority)}`}
+                  >
                     {task.priority}
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className={`text-xs px-2 py-1 rounded-md ${getStatusClass(task.status)}`}>
-                    {task.status === 'IN_PROGRESS' ? 'IN_PROGRESS' : task.status}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-md ${getStatusClass(task.status)}`}
+                  >
+                    {task.status === "IN_PROGRESS"
+                      ? "IN_PROGRESS"
+                      : task.status}
                   </span>
                 </td>
                 <td className="py-3 px-4">
                   {task.assignee && (
                     <div className="flex items-center">
-                      <span className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-xs mr-2">
+                      <span className="w-6 h-6 bg-[#3C3C3C] rounded-full flex items-center justify-center text-xs mr-2">
                         {task.assignee.initials}
                       </span>
                       <span>{task.assignee.name}</span>
@@ -265,12 +361,12 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
                   )}
                 </td>
                 <td className="py-3 px-4 text-center">{task.storyPoints}</td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

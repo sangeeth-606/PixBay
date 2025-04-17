@@ -7,12 +7,13 @@ import { useAuth } from "@clerk/clerk-react";
 import AddTaskModal, { TaskStatus, Priority } from "./AddTaskModal";
 import TaskInfo from "./TaskInfo"; // Import the TaskInfo component
 
-// Define enums and interfaces based on the schema
-// Note: TaskStatus and Priority are now imported from AddTaskModal
-
+// Update User interface to match the one in AddTaskModal.tsx
 interface User {
   id: string;
-  name: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+  joinedAt: string;
 }
 
 interface Task {
@@ -62,9 +63,7 @@ const KanbanColumn: React.FC<ColumnProps> = ({
         darkMode ? "bg-[#171717]" : "bg-white"
       }`}
     >
-      <div
-        className={`p-6 h-full overflow-y-auto`}
-      >
+      <div className={`p-6 h-full overflow-y-auto`}>
         <div className="flex justify-between items-center mb-4">
           <h2
             className={`text-xl font-bold ${
@@ -100,11 +99,11 @@ const KanbanColumn: React.FC<ColumnProps> = ({
             </p>
           ) : (
             tasks.map((task) => (
-              <TaskCard 
-                key={task.id} 
-                task={task} 
+              <TaskCard
+                key={task.id}
+                task={task}
                 darkMode={darkMode}
-                onTaskClick={onTaskClick} 
+                onTaskClick={onTaskClick}
               />
             ))
           )}
@@ -206,15 +205,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode, onTaskClick }) => {
 
 interface KanbanBoardProps {
   projectId: string | null;
+  workspaceName?: string | null; // Add optional workspace name prop
 }
 
 // Main Kanban Board Component
-const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
-  const [tasks, setTasks] = useState<Task[]>([]); // Initialize with empty array instead of dummyTasks
+const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, workspaceName: propWorkspaceName }) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null); // Updated state variable for selected task
-  const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // New state variable for task info modal
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<User[]>([]);
+  const [workspaceName, setWorkspaceName] = useState<string | null>(propWorkspaceName || null);
+  const [isFetchingMembers, setIsFetchingMembers] = useState(false);
   const { getToken } = useAuth();
 
   // Extract projectId from URL if not provided explicitly
@@ -224,6 +227,61 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   };
 
   const effectiveProjectId = projectId || extractProjectIdFromUrl();
+
+  // Update workspaceName state when prop changes
+  useEffect(() => {
+    if (propWorkspaceName) {
+      setWorkspaceName(propWorkspaceName);
+    }
+  }, [propWorkspaceName]);
+
+  // We can remove or simplify fetchProjectDetails since we now get workspace name from props
+  const fetchProjectDetails = async () => {
+    // Only fetch if we don't have the workspace name from props
+    if (!workspaceName && effectiveProjectId) {
+      try {
+        const token = await getToken();
+        const response = await axios.get(
+          `http://localhost:5000/api/projects/${effectiveProjectId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.data && response.data.workspace) {
+          setWorkspaceName(response.data.workspace.name);
+        }
+      } catch (error) {
+        console.error("Failed to fetch project details:", error);
+      }
+    }
+  };
+
+  const fetchWorkspaceMembers = async () => {
+    if (!workspaceName) {
+      console.log("No workspaceName, skipping fetchWorkspaceMembers");
+      return;
+    }
+    setIsFetchingMembers(true);
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `http://localhost:5000/api/workspaces/${encodeURIComponent(workspaceName)}/members`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data && response.data.members) {
+        setWorkspaceMembers(response.data.members);
+      }
+    } catch (error) {
+      console.error("Failed to fetch workspace members:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error status:", error.response?.status);
+        console.error("Error data:", error.response?.data);
+      }
+    } finally {
+      setIsFetchingMembers(false);
+    }
+  };
 
   const fetchTasks = async () => {
     if (!effectiveProjectId) return;
@@ -238,7 +296,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
       );
 
       if (response.data) {
-        console.log("Fetched tasks:", response.data);
         setTasks(response.data);
       }
     } catch (error) {
@@ -251,10 +308,19 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
   useEffect(() => {
     if (effectiveProjectId) {
-      console.log("Project id from kanban board page ", effectiveProjectId);
       fetchTasks();
+      // Only fetch project details if we don't have the workspace name
+      if (!workspaceName) {
+        fetchProjectDetails();
+      }
     }
-  }, [effectiveProjectId]);
+  }, [effectiveProjectId, workspaceName]);
+
+  useEffect(() => {
+    if (workspaceName) {
+      fetchWorkspaceMembers();
+    }
+  }, [workspaceName]);
 
   const handleDrop = (taskId: string, newStatus: TaskStatus) => {
     setTasks((prevTasks) =>
@@ -268,14 +334,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
     setDarkMode(!darkMode);
   };
 
-  // Pass this function to refresh tasks after a new task is created
   const refreshTasks = () => {
-    console.log("Refreshing tasks...");
     fetchTasks();
   };
 
   const handleTaskClick = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId) || null;
+    const task = tasks.find((t) => t.id === taskId) || null;
     setSelectedTask(task);
     setIsTaskInfoModalOpen(true);
   };
@@ -339,37 +403,50 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         darkMode={darkMode}
-        projectId={effectiveProjectId || ""} // Use empty string instead of p1 as fallback
-        onTaskAdded={refreshTasks} // Add this new prop
+        projectId={effectiveProjectId || ""}
+        onTaskAdded={refreshTasks}
+        workspaceMembers={workspaceMembers}
+        isFetchingMembers={isFetchingMembers}
       />
 
-      {/* Task Info Modal */}
       {selectedTask && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center ${isTaskInfoModalOpen ? "" : "hidden"}`}>
-          {/* Semi-transparent overlay with stronger blur effect */}
-          <div 
-            className="absolute inset-0" 
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center ${isTaskInfoModalOpen ? "" : "hidden"}`}
+        >
+          <div
+            className="absolute inset-0"
             style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
             }}
             onClick={() => setIsTaskInfoModalOpen(false)}
           ></div>
           <div className="relative z-10 w-full max-w-4xl h-[80vh] overflow-y-auto rounded-lg shadow-xl">
-            <button 
+            <button
               className={`absolute top-4 right-4 z-20 p-2 rounded-full ${darkMode ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
               onClick={() => setIsTaskInfoModalOpen(false)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
-            <TaskInfo 
+            <TaskInfo
               taskId={selectedTask.id}
               title={selectedTask.title}
               description={selectedTask.description}
-              darkMode={darkMode} 
+              darkMode={darkMode}
               onTaskDeleted={handleTaskDeleted}
             />
           </div>

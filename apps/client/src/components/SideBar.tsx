@@ -94,7 +94,7 @@ export function Sidebar({
         "projectId"
       );
       if (projects.length > 0 && !currentProjectId) {
-        console.log("Auto-selecting first project:", projects[0].id);
+        // console.log("Auto-selecting first project:", projects[0].id);
         handleProjectSelect(projects[0].id);
       }
     } catch (error) {
@@ -113,17 +113,17 @@ export function Sidebar({
 
       // Ensure the workspace ID is properly encoded for the URL
       const encodedWorkspaceId = encodeURIComponent(workspaceCode);
-      console.log(`Fetching sprints for workspace: ${encodedWorkspaceId}`);
+      // console.log(`Fetching sprints for workspace: ${encodedWorkspaceId}`);
 
       // Make sure any + signs are properly handled (+ represents a space in URL encoding)
       const url = `http://localhost:5000/api/sprints/workspace/${encodedWorkspaceId}`;
-      console.log(`Making API request to: ${url}`);
+      // console.log(`Making API request to: ${url}`);
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log(`Successfully fetched ${response.data.length} sprints`);
+      // console.log(`Successfully fetched ${response.data.length} sprints`);
       setSprints(response.data);
     } catch (error) {
       console.error("Error fetching sprints:", error);
@@ -152,7 +152,7 @@ export function Sidebar({
     const projectIdFromUrl = url.searchParams.get("projectId");
 
     if (projectIdFromUrl) {
-      console.log("Found project ID in URL:", projectIdFromUrl);
+      // console.log("Found project ID in URL:", projectIdFromUrl);
       onProjectSelect(projectIdFromUrl);
     }
   }, []);
@@ -278,7 +278,7 @@ export function Sidebar({
                           <motion.button
                             key={proj.id}
                             onClick={() => {
-                              console.log("Project ID:", proj.id);
+                              // console.log("Project ID:", proj.id);
                               handleProjectSelect(proj.id);
                             }}
                             className={classNames(
@@ -542,7 +542,6 @@ export function Sidebar({
         </div>
       </motion.div>
     </>
-
   );
 }
 

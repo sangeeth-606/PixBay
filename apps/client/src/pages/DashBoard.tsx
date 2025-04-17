@@ -46,7 +46,12 @@ function DashBoard() {
   const renderMainContent = () => {
     switch (selectedItem) {
       case "projects":
-        return <KanbanBoard projectId={selectedProjectId} />;
+        return (
+          <KanbanBoard
+            projectId={selectedProjectId}
+            workspaceName={workspaceCode} // Pass workspace name directly
+          />
+        );
       case "members":
         return <Members workspaceName={workspaceCode || ""} />;
       case "sprints":

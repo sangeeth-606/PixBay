@@ -3,7 +3,7 @@ import prisma from '../db.js'
 // Create a new task
 export const createTask = async (req, res) => {
   try {
-    const { title, description, projectId, type, priority, dueDate, status } = req.body;
+    const { title, description, projectId, type, priority, dueDate, status,assigneeId } = req.body;
     const {emailAddresses}= req.auth 
     const email = emailAddresses?.[0]?.emailAddress;
 
@@ -49,7 +49,8 @@ export const createTask = async (req, res) => {
         priority: priority || 'MEDIUM', // Default to MEDIUM
         status: status || 'TODO', // Default to TODO if not provided
         dueDate: dueDate ? new Date(dueDate) : null,
-        creatorId: user.id, // Set the creator
+        creatorId: user.id, // Set the creator,
+        assigneeId:assigneeId
       },
     });
 

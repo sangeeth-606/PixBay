@@ -205,17 +205,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, darkMode, onTaskClick }) => {
 
 interface KanbanBoardProps {
   projectId: string | null;
+  workspaceName?: string | null; // Add optional workspace name prop
 }
 
 // Main Kanban Board Component
-const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
-  const [tasks, setTasks] = useState<Task[]>([]); // Initialize with empty array instead of dummyTasks
+const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, workspaceName: propWorkspaceName }) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null); // Updated state variable for selected task
-  const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // New state variable for task info modal
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
   const [workspaceMembers, setWorkspaceMembers] = useState<User[]>([]);
-  const [workspaceName, setWorkspaceName] = useState<string | null>(null);
+  const [workspaceName, setWorkspaceName] = useState<string | null>(propWorkspaceName || null);
+  const [isFetchingMembers, setIsFetchingMembers] = useState(false);
   const { getToken } = useAuth();
 
   // Extract projectId from URL if not provided explicitly
@@ -226,36 +228,45 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
   const effectiveProjectId = projectId || extractProjectIdFromUrl();
 
+  // Update workspaceName state when prop changes
+  useEffect(() => {
+    if (propWorkspaceName) {
+      setWorkspaceName(propWorkspaceName);
+    }
+  }, [propWorkspaceName]);
+
+  // We can remove or simplify fetchProjectDetails since we now get workspace name from props
   const fetchProjectDetails = async () => {
-    if (!effectiveProjectId) return;
-
-    try {
-      const token = await getToken();
-      const response = await axios.get(
-        `http://localhost:5000/api/projects/${effectiveProjectId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
+    // Only fetch if we don't have the workspace name from props
+    if (!workspaceName && effectiveProjectId) {
+      try {
+        const token = await getToken();
+        const response = await axios.get(
+          `http://localhost:5000/api/projects/${effectiveProjectId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.data && response.data.workspace) {
+          setWorkspaceName(response.data.workspace.name);
         }
-      );
-
-      if (response.data && response.data.workspace) {
-        setWorkspaceName(response.data.workspace.name);
+      } catch (error) {
+        console.error("Failed to fetch project details:", error);
       }
-    } catch (error) {
-      console.error("Failed to fetch project details:", error);
     }
   };
 
   const fetchWorkspaceMembers = async () => {
-    if (!workspaceName) return;
-
+    if (!workspaceName) {
+      console.log("No workspaceName, skipping fetchWorkspaceMembers");
+      return;
+    }
+    setIsFetchingMembers(true);
     try {
       const token = await getToken();
       const response = await axios.get(
         `http://localhost:5000/api/workspaces/${encodeURIComponent(workspaceName)}/members`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data && response.data.members) {
@@ -263,6 +274,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
       }
     } catch (error) {
       console.error("Failed to fetch workspace members:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error status:", error.response?.status);
+        console.error("Error data:", error.response?.data);
+      }
+    } finally {
+      setIsFetchingMembers(false);
     }
   };
 
@@ -279,7 +296,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
       );
 
       if (response.data) {
-        console.log("Fetched tasks:", response.data);
         setTasks(response.data);
       }
     } catch (error) {
@@ -292,11 +308,13 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
   useEffect(() => {
     if (effectiveProjectId) {
-      console.log("Project id from kanban board page ", effectiveProjectId);
       fetchTasks();
-      fetchProjectDetails();
+      // Only fetch project details if we don't have the workspace name
+      if (!workspaceName) {
+        fetchProjectDetails();
+      }
     }
-  }, [effectiveProjectId]);
+  }, [effectiveProjectId, workspaceName]);
 
   useEffect(() => {
     if (workspaceName) {
@@ -316,9 +334,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
     setDarkMode(!darkMode);
   };
 
-  // Pass this function to refresh tasks after a new task is created
   const refreshTasks = () => {
-    console.log("Refreshing tasks...");
     fetchTasks();
   };
 
@@ -387,17 +403,16 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         darkMode={darkMode}
-        projectId={effectiveProjectId || ""} // Use empty string instead of p1 as fallback
-        onTaskAdded={refreshTasks} // Add this new prop
-        workspaceMembers={workspaceMembers} // Pass workspace members to modal
+        projectId={effectiveProjectId || ""}
+        onTaskAdded={refreshTasks}
+        workspaceMembers={workspaceMembers}
+        isFetchingMembers={isFetchingMembers}
       />
 
-      {/* Task Info Modal */}
       {selectedTask && (
         <div
           className={`fixed inset-0 z-50 flex items-center justify-center ${isTaskInfoModalOpen ? "" : "hidden"}`}
         >
-          {/* Semi-transparent overlay with stronger blur effect */}
           <div
             className="absolute inset-0"
             style={{

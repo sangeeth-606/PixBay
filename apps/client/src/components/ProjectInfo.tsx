@@ -26,7 +26,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
 
   const projectId = searchParams.get("projectId");
 
-  console.log("ProjectInfo render - projectId:", projectId, "location:", location.search);
+  // console.log("ProjectInfo render - projectId:", projectId, "location:", location.search);
 
   const fetchProjectInfo = useCallback(async () => {
     if (!projectId) {
@@ -35,20 +35,20 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
       return;
     }
 
-    console.log("Fetching project info for projectId:", projectId);
+    // console.log("Fetching project info for projectId:", projectId);
     setLoading(true);
 
     try {
       const token = await getToken();
       const projectUrl = `http://localhost:5000/api/projects/${projectId}`;
 
-      console.log("Making API request to:", projectUrl);
+      // console.log("Making API request to:", projectUrl);
       const response = await axios.get(projectUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("API response success:", response.data);
-      console.log("Team members count from API:", response.data.teamMembers);
+      // console.log("API response success:", response.data);/
+      // console.log("Team members count from API:", response.data.teamMembers);
 
       const projectData = {
         ...response.data,
@@ -56,7 +56,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
         progress: response.data.progress || 0,
       };
 
-      console.log("Processed project data:", projectData);
+      // console.log("Processed project data:", projectData);
       setProject(projectData);
       setError(null);
     } catch (err: any) {
@@ -78,11 +78,11 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode }) => {
   }, [projectId, getToken]);
 
   useEffect(() => {
-    console.log("ProjectInfo useEffect triggered - projectId:", projectId);
+    // console.log("ProjectInfo useEffect triggered - projectId:", projectId);
     fetchProjectInfo();
   }, [fetchProjectInfo, projectId, location.search]);
 
-  console.log("Component state:", { loading, error, project });
+  // console.log("Component state:", { loading, error, project });
 
   if (loading) {
     return (

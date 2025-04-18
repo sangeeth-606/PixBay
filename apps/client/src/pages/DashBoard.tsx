@@ -5,6 +5,7 @@ import KanbanBoard from "../components/KanbanBoard";
 import Navbar from "../components/Navbar";
 import Members from "../components/Members";
 import Sprint from "../components/Sprint";
+import Calendar from "./Calendar";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -18,7 +19,7 @@ function DashBoard() {
   useEffect(() => {
     setSelectedProjectId(null);
     setSelectedSprintId(null);
-    setSelectedItem("projects");
+    setSelectedItem("");
   }, [workspaceCode]);
 
   // Handle item selection from sidebar
@@ -54,6 +55,8 @@ function DashBoard() {
         );
       case "members":
         return <Members workspaceName={workspaceCode || ""} />;
+      case "calendar":
+        return <Calendar/>
       case "sprints":
         return selectedSprintId ? (
           <Sprint sprintId={selectedSprintId} />

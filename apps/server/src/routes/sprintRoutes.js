@@ -4,7 +4,8 @@ import {
   getSprint, 
   getAllSprints, 
   updateSprint, 
-  deleteSprint 
+  deleteSprint ,
+  createTask
 } from '../controllers/sprintController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
@@ -16,5 +17,6 @@ router.get('/project/:projectId', authMiddleware, getAllSprints);
 router.get('/:sprintId', authMiddleware, getSprint);
 router.put('/:sprintId', authMiddleware, updateSprint);
 router.delete('/:sprintId', authMiddleware, deleteSprint);
+router.post('/tasks', authMiddleware, createTask);
 
 export default router;

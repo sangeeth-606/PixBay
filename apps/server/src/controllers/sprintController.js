@@ -1,5 +1,46 @@
-import prisma from '../db.js'
 
+
+import prisma from '../db.js';
+
+export const getSprint = async (req, res) => {
+  try {
+    const { sprintId } = req.params;
+
+    const sprint = await prisma.sprint.findUnique({
+      where: { id: sprintId },
+      include: {
+        project: { select: { id: true, key: true, name: true } },
+        owner: { select: { id: true, name: true } },
+        tasks: {
+          include: {
+            assignee: { select: { id: true, name: true } },
+            tags: true,
+            parent: { select: { id: true, title: true } },
+            subtasks: {
+              include: {
+                assignee: { select: { id: true, name: true } },
+                tags: true,
+                parent: { select: { id: true, title: true } },
+                subtasks: true // Nested subtasks for hierarchy
+              }
+            }
+          }
+        },
+      },
+    });
+
+    if (!sprint) {
+      return res.status(404).json({ error: "Sprint not found" });
+    }
+
+    res.status(200).json(sprint);
+  } catch (error) {
+    console.error("Get sprint error:", error);
+    res.status(500).json({ error: "Failed to fetch sprint" });
+  }
+};
+
+// Other existing controller functions remain unchanged
 export const createSprint = async (req, res) => {
   try {
     const { name, goal, startDate, endDate, projectId } = req.body;
@@ -14,7 +55,6 @@ export const createSprint = async (req, res) => {
       return res.status(400).json({ error: "Name and project ID are required" });
     }
 
-    // Find user by email
     const user = await prisma.user.findFirst({
       where: { email }
     });
@@ -23,7 +63,6 @@ export const createSprint = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Verify project exists and user has access
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: { workspace: { include: { members: true } } },
@@ -33,10 +72,7 @@ export const createSprint = async (req, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    // Extract workspace ID from project
     const workspaceId = project.workspaceId;
-
-    // Check if user is a member of the workspace
     const workspaceMember = await prisma.workspaceMember.findUnique({
       where: { 
         workspaceId_userId: { 
@@ -68,54 +104,14 @@ export const createSprint = async (req, res) => {
   }
 };
 
-// Get a single sprint
-// controllers/sprintController.js
-export const getSprint = async (req, res) => {
-  try {
-    const { sprintId } = req.params;
-
-    const sprint = await prisma.sprint.findUnique({
-      where: { id: sprintId },
-      include: {
-        project: { select: { id: true, key: true } },
-        owner: { select: { id: true, name: true } },
-        tasks: {
-          select: {
-            id: true,
-            title: true,
-            type: true,
-            status: true,
-            priority: true,
-            storyPoints: true,
-            assignee: { select: { id: true, name: true } },
-          },
-        },
-      },
-    });
-
-    if (!sprint) {
-      return res.status(404).json({ error: "Sprint not found" });
-    }
-
-    res.status(200).json(sprint);
-  } catch (error) {
-    console.error("Get sprint error:", error);
-    res.status(500).json({ error: "Failed to fetch sprint" });
-  }
-};
-
-// Get all sprints for a project or workspace
 export const getAllSprints = async (req, res) => {
   try {
-    // const { workspaceName } = req.params;
     const workspaceName = req.params.workspaceId;
-
 
     if (!workspaceName) {
       return res.status(400).json({ error: 'Workspace name is required' });
     }
 
-    // Find the workspace by name
     const workspace = await prisma.workspace.findFirst({
       where: { name: workspaceName },
       include: {
@@ -133,7 +129,6 @@ export const getAllSprints = async (req, res) => {
       return res.status(404).json({ error: 'Workspace not found' });
     }
 
-    // Verify the user has access to this workspace
     const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
 
@@ -145,7 +140,6 @@ export const getAllSprints = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if user is a workspace member
     const workspaceMember = await prisma.workspaceMember.findUnique({
       where: { workspaceId_userId: { workspaceId: workspace.id, userId: user.id } },
     });
@@ -154,14 +148,12 @@ export const getAllSprints = async (req, res) => {
       return res.status(403).json({ error: 'User is not a member of this workspace' });
     }
 
-    // Get all projects in the workspace
     const projectIds = workspace.projects.map(project => project.id);
 
     if (projectIds.length === 0) {
-      return res.status(200).json([]); // No projects, no sprints
+      return res.status(200).json([]);
     }
 
-    // Find all sprints in those projects
     const sprints = await prisma.sprint.findMany({
       where: {
         projectId: { in: projectIds },
@@ -175,15 +167,12 @@ export const getAllSprints = async (req, res) => {
     });
 
     return res.status(200).json(sprints);
-
   } catch (error) {
     console.error("Get all sprints error:", error);
     return res.status(500).json({ error: 'Failed to fetch sprints' });
   }
 };
 
-
-// Update a sprint
 export const updateSprint = async (req, res) => {
   try {
     const { sprintId } = req.params;
@@ -216,7 +205,6 @@ export const updateSprint = async (req, res) => {
   }
 };
 
-// Delete a sprint
 export const deleteSprint = async (req, res) => {
   try {
     const { sprintId } = req.params;
@@ -237,5 +225,52 @@ export const deleteSprint = async (req, res) => {
   } catch (error) {
     console.error("Delete sprint error:", error);
     res.status(500).json({ error: "Failed to delete sprint" });
+  }
+};
+
+
+export const createTask = async (req, res) => {
+  try {
+    const { title, description, type, status, priority, storyPoints, dueDate, projectId, sprintId, assigneeId } = req.body;
+    const { emailAddresses } = req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
+
+    if (!email) return res.status(401).json({ error: "Authentication required" });
+    if (!title || !projectId) return res.status(400).json({ error: "Title and project ID are required" });
+
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { workspace: { include: { members: true } } },
+    });
+    if (!project) return res.status(404).json({ error: "Project not found" });
+
+    const workspaceMember = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: project.workspaceId, userId: user.id } },
+    });
+    if (!workspaceMember) return res.status(403).json({ error: "User is not a member of this workspace" });
+
+    const taskData = {
+      title,
+      description,
+      type: type || "TASK",
+      status: status || "TODO",
+      priority: priority || "MEDIUM",
+      storyPoints: storyPoints ? parseInt(storyPoints) : null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      project: { connect: { id: projectId } },
+      creator: { connect: { id: user.id } },
+    };
+
+    if (sprintId) taskData.sprint = { connect: { id: sprintId } };
+    if (assigneeId) taskData.assignee = { connect: { id: assigneeId } };
+
+    const task = await prisma.task.create({ data: taskData });
+    res.status(201).json(task);
+  } catch (error) {
+    console.error("Create task error:", error);
+    res.status(500).json({ error: "Failed to create task" });
   }
 };

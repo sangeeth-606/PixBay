@@ -8,7 +8,7 @@ import Sprint from "../components/Sprint";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
-  const [selectedItem, setSelectedItem] = useState("projects");
+  const [selectedItem, setSelectedItem] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
@@ -58,16 +58,16 @@ function DashBoard() {
         return selectedSprintId ? (
           <Sprint sprintId={selectedSprintId} />
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-lg text-gray-500">
+          <div className="flex h-full items-center justify-center bg-[#121212]">
+            <p className="text-lg text-emerald-400 border border-emerald-700 rounded-md p-4 shadow-md bg-[#1E1E1E]">
               Select a sprint from the sidebar or create a new one
             </p>
           </div>
         );
       default:
         return (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-lg text-gray-500">
+          <div className="flex h-full items-center justify-center bg-[#121212]">
+            <p className="text-lg text-emerald-400 border border-emerald-700 rounded-md p-4 shadow-md bg-[#1E1E1E]">
               Select an option from the sidebar
             </p>
           </div>
@@ -76,7 +76,7 @@ function DashBoard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#121212]">
       {/* Sidebar */}
       <div className="w-64 h-screen">
         <SideBar
@@ -95,7 +95,7 @@ function DashBoard() {
         <Navbar workspaceCode={workspaceCode} />
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto bg-gray-50">
+        <main className="flex-1 overflow-auto bg-[#121212]">
           {renderMainContent()}
         </main>
       </div>

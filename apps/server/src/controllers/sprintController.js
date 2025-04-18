@@ -69,6 +69,7 @@ export const createSprint = async (req, res) => {
 };
 
 // Get a single sprint
+// controllers/sprintController.js
 export const getSprint = async (req, res) => {
   try {
     const { sprintId } = req.params;
@@ -76,9 +77,19 @@ export const getSprint = async (req, res) => {
     const sprint = await prisma.sprint.findUnique({
       where: { id: sprintId },
       include: {
-        project: true,
-        owner: true,
-        tasks: { select: { id: true, title: true, status: true } },
+        project: { select: { id: true, key: true } },
+        owner: { select: { id: true, name: true } },
+        tasks: {
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            status: true,
+            priority: true,
+            storyPoints: true,
+            assignee: { select: { id: true, name: true } },
+          },
+        },
       },
     });
 

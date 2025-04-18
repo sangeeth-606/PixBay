@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
-// Type definitions (unchanged from your code)
+
 type SprintStatus = "PLANNING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "ARCHIVED";
 type TaskType = "TASK" | "BUG" | "STORY" | "EPIC";
@@ -120,7 +120,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
   if (error) return <div className="text-red-500 p-6">Error: {error}</div>;
   if (!sprint) return <div className="text-white p-6">Sprint not found</div>;
 
-  // Utility functions (unchanged from your code)
+
   const totalStoryPoints = sprint.tasks?.reduce((sum, task) => sum + (task.storyPoints || 0), 0) || 0;
   const completedStoryPoints = sprint.tasks?.filter((task) => task.status === "DONE").reduce((sum, task) => sum + (task.storyPoints || 0), 0) || 0;
   const taskCounts = {

@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { CalendarDays } from "lucide-react";
-import { motion } from "framer-motion"; // Add framer-motion import
 
-// Type definitions based on your schema
+import React, { useState, useEffect } from "react";
+import { CalendarDays } from "lucide-react";
+import { motion } from "framer-motion";
+import axios from "axios";
+
+// Type definitions based on the schema
 type SprintStatus = "PLANNING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "ARCHIVED";
 type TaskType = "TASK" | "BUG" | "STORY" | "EPIC";
@@ -10,30 +12,25 @@ type Priority = "HIGH" | "MEDIUM" | "LOW";
 
 interface Task {
   id: string;
-  key: string;
   title: string;
   type: TaskType;
   status: TaskStatus;
   priority: Priority;
-  storyPoints: number;
-  assignee?: {
-    id: string;
-    name: string;
-    initials: string;
-  };
+  storyPoints: number | null;
+  assignee?: { id: string; name: string };
 }
 
 interface Sprint {
   id: string;
   name: string;
-  goal?: string;
+  goal?: string | null;
   status: SprintStatus;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   progress: number;
   tasks: Task[];
-  totalStoryPoints: number;
-  completedStoryPoints: number;
+  project: { id: string; key: string };
+  owner: { id: string; name: string };
 }
 
 interface SprintProps {
@@ -41,69 +38,63 @@ interface SprintProps {
 }
 
 const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
-  // This would come from your API in a real app
-  const [sprint, setSprint] = useState<Sprint>({
-    id: sprintId,
-    name: "Sprint 1 (Current)",
-    goal: "Complete the user authentication flow and dashboard UI",
-    status: "ACTIVE",
-    startDate: new Date("2025-04-01"),
-    endDate: new Date("2025-04-14"),
-    progress: 65,
-    tasks: [
-      {
-        id: "1",
-        key: "PIX-101",
-        title: "Implement login form validation",
-        type: "TASK",
-        status: "DONE",
-        priority: "HIGH",
-        storyPoints: 3,
-        assignee: {
-          id: "as1",
-          name: "Alice Smith",
-          initials: "AS",
-        },
-      },
-      {
-        id: "2",
-        key: "PIX-102",
-        title: "Create dashboard layout",
-        type: "TASK",
-        status: "IN_PROGRESS",
-        priority: "MEDIUM",
-        storyPoints: 5,
-        assignee: {
-          id: "bj1",
-          name: "Bob Johnson",
-          initials: "BJ",
-        },
-      },
-      {
-        id: "3",
-        key: "PIX-103",
-        title: "Implement password reset flow",
-        type: "TASK",
-        status: "TODO",
-        priority: "MEDIUM",
-        storyPoints: 3,
-        assignee: {
-          id: "cb1",
-          name: "Charlie Brown",
-          initials: "CB",
-        },
-      },
-    ],
-    totalStoryPoints: 11,
-    completedStoryPoints: 3,
-  });
+  const [sprint, setSprint] = useState<Sprint | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Calculate task counts by status
+  useEffect(() => {
+    const fetchSprint = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:5000/api/sprints/${sprintId}`);
+        const data = response.data;
+        console.log("Fetched sprint data:", data);
+        const parsedSprint = {
+          ...data,
+          startDate: new Date(data.startDate),
+          endDate: new Date(data.endDate),
+        };
+        setSprint(parsedSprint);
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          console.error("API error:", err.response?.data || err.message);
+          setError(err.response?.data?.error || err.message);
+        } else {
+          console.error("Unexpected error:", err);
+          setError("An unexpected error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSprint();
+  }, [sprintId]);
+
+  if (loading) return <div className="text-white p-6">Loading...</div>;
+  if (error) return <div className="text-red-500 p-6">Error: {error}</div>;
+  if (!sprint) return <div className="text-white p-6">Sprint not found</div>;
+
+  const totalStoryPoints = sprint.tasks?.reduce(
+    (sum, task) => sum + (task.storyPoints || 0),
+    0
+  ) || 0;
+  const completedStoryPoints = sprint.tasks
+    ?.filter((task) => task.status === "DONE")
+    .reduce((sum, task) => sum + (task.storyPoints || 0), 0) || 0;
+
   const taskCounts = {
-    todo: sprint.tasks.filter((task) => task.status === "TODO").length,
-    inProgress: sprint.tasks.filter((task) => task.status === "IN_PROGRESS")
-      .length,
-    done: sprint.tasks.filter((task) => task.status === "DONE").length,
+    todo: sprint.tasks?.filter((task) => task.status === "TODO").length || 0,
+    inProgress: sprint.tasks?.filter((task) => task.status === "IN_PROGRESS").length || 0,
+    done: sprint.tasks?.filter((task) => task.status === "DONE").length || 0,
+  };
+
+  const calculateTimeElapsed = (start: Date, end: Date) => {
+    const now = new Date();
+    const totalDuration = end.getTime() - start.getTime();
+    const elapsed = now.getTime() - start.getTime();
+    if (totalDuration <= 0) return 0;
+    return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
   };
 
   const formatDate = (date: Date): string => {
@@ -112,6 +103,11 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const getInitials = (name: string): string => {
+    const names = name.split(" ");
+    return names.map((n) => n[0]).join("").toUpperCase();
   };
 
   const getStatusBadgeClass = (status: SprintStatus) => {
@@ -157,7 +153,6 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
     }
   };
 
-  // Animation variants
   const containerVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { duration: 0.5 } },
@@ -177,8 +172,8 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
     >
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{sprint.name}</h1>
-          <h1>{sprintId}</h1>
+          <h1 className="text-2xl font-bold">{sprint.name} - {sprint.project.key}</h1>
+          <h2 className="text-sm text-gray-400">Owned by: {sprint.owner.name}</h2>
           <div className="flex items-center mt-1">
             <span
               className={`text-xs px-2 py-1 rounded-md mr-2 ${getStatusBadgeClass(sprint.status)}`}
@@ -187,7 +182,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
             </span>
             <span className="text-sm text-gray-400 flex items-center">
               <CalendarDays className="h-4 w-4 mr-1" />
-              {formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}
+              {formatDate(new Date(sprint.startDate))} - {formatDate(new Date(sprint.endDate))}
             </span>
           </div>
         </div>
@@ -204,7 +199,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            Start Sprint
+            {sprint.status === "PLANNING" ? "Start Sprint" : "Complete Sprint"}
           </motion.button>
         </div>
       </div>
@@ -233,7 +228,9 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
           </div>
           <div className="flex justify-between text-sm">
             <span>{sprint.progress}% complete</span>
-            <span>120% time elapsed</span>
+            <span>
+              {Math.round(calculateTimeElapsed(new Date(sprint.startDate), new Date(sprint.endDate)))}% time elapsed
+            </span>
           </div>
         </motion.div>
 
@@ -241,19 +238,15 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
           className="bg-[#2C2C2C] p-6 rounded-md shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
           variants={itemVariants}
         >
-          <h3 className="text-sm font-medium text-gray-400 mb-2">
-            Story Points
-          </h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-2">Story Points</h3>
           <div className="flex items-baseline">
-            <span className="text-2xl font-bold mr-2">
-              {sprint.completedStoryPoints}
-            </span>
-            <span className="text-gray-400">/ {sprint.totalStoryPoints}</span>
+            <span className="text-2xl font-bold mr-2">{completedStoryPoints}</span>
+            <span className="text-gray-400">/ {totalStoryPoints}</span>
           </div>
           <div className="text-sm text-gray-400 mt-1">
-            {Math.round(
-              (sprint.completedStoryPoints / sprint.totalStoryPoints) * 100
-            )}
+            {totalStoryPoints > 0
+              ? Math.round((completedStoryPoints / totalStoryPoints) * 100)
+              : 0}
             % completed
           </div>
         </motion.div>
@@ -320,13 +313,13 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#3C3C3C]">
-            {sprint.tasks.map((task) => (
+            {sprint.tasks?.map((task) => (
               <motion.tr
                 key={task.id}
                 className="hover:bg-[#3C3C3C] transition-colors"
                 whileHover={{ backgroundColor: "#3C3C3C" }}
               >
-                <td className="py-3 px-4 font-medium">{task.key}</td>
+                <td className="py-3 px-4 font-medium">{task.id}</td>
                 <td className="py-3 px-4">{task.title}</td>
                 <td className="py-3 px-4">
                   <span className="flex items-center text-gray-400">
@@ -345,24 +338,30 @@ const Sprint: React.FC<SprintProps> = ({ sprintId }) => {
                   <span
                     className={`text-xs px-2 py-1 rounded-md ${getStatusClass(task.status)}`}
                   >
-                    {task.status === "IN_PROGRESS"
-                      ? "IN_PROGRESS"
-                      : task.status}
+                    {task.status}
                   </span>
                 </td>
                 <td className="py-3 px-4">
                   {task.assignee && (
                     <div className="flex items-center">
                       <span className="w-6 h-6 bg-[#3C3C3C] rounded-full flex items-center justify-center text-xs mr-2">
-                        {task.assignee.initials}
+                        {getInitials(task.assignee.name)}
                       </span>
                       <span>{task.assignee.name}</span>
                     </div>
                   )}
                 </td>
-                <td className="py-3 px-4 text-center">{task.storyPoints}</td>
+                <td className="py-3 px-4 text-center">
+                  {task.storyPoints ?? "-"}
+                </td>
               </motion.tr>
-            ))}
+            )) || (
+              <tr>
+                <td colSpan={7} className="py-3 px-4 text-center text-gray-400">
+                  No tasks available
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </motion.div>

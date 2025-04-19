@@ -56,7 +56,7 @@ function DashBoard() {
       case "members":
         return <Members workspaceName={workspaceCode || ""} />;
       case "calendar":
-        return <Calendar/>
+        return <Calendar  workspaceName={workspaceCode || ""} />
       case "sprints":
         return selectedSprintId ? (
           <Sprint sprintId={selectedSprintId} />

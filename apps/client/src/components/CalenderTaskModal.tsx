@@ -33,7 +33,7 @@ interface User {
   joinedAt: string;
 }
 
-interface AddTaskModalProps {
+interface CalenderTaskModal {
   isOpen: boolean;
   onClose: () => void;
   darkMode: boolean;
@@ -41,9 +41,16 @@ interface AddTaskModalProps {
   onTaskAdded: () => void;
   workspaceMembers?: User[];
   isFetchingMembers?: boolean; // New prop for loading state
+  workspaceName?: string; // Make workspaceName optional
 }
+interface Project {
+    id: string;
+    name: string;
+    description?: string;
+    workspaceId: string;
+  }
 
-const AddTaskModal: React.FC<AddTaskModalProps> = ({
+const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
   isOpen,
   onClose,
   darkMode,
@@ -51,6 +58,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   onTaskAdded,
   workspaceMembers = [],
   isFetchingMembers = false,
+  workspaceName = '', // Provide empty string as default value
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -58,11 +66,33 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [taskType, setTaskType] = useState<TaskType>(TaskType.TASK);
   const [dueDate, setDueDate] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { getToken } = useAuth();
 
   // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen && workspaceName) {
+      const fetchProjects = async () => {
+        try {
+          const token = await getToken();
+          const response = await axios.get(
+            `http://localhost:5000/api/projects/workspace/${workspaceName}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setProjects(response.data);
+        } catch (err: any) {
+        //   setProjectsError("Failed to fetch projects");
+          console.error("Error fetching projects:", err);
+        }
+      };
+      fetchProjects();
+    }
+  }, [isOpen, workspaceName, getToken]);
   useEffect(() => {
     if (!isOpen) {
       setTitle("");
@@ -100,7 +130,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         assigneeId: assigneeId || undefined,
       };
 
-      console.log("Data being sent to backend:", data); // 👈 Log this
+      console.log("Data being sent to backend:", data); 
 
       const response = await axios.post(
         "http://localhost:5000/api/tasks/create",
@@ -124,6 +154,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       setIsLoading(false);
     }
   };
+  const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
+    darkMode
+      ? "bg-[#171717] border-[#2C2C2C] text-white"
+      : "bg-white border-gray-200 text-[#212121]"
+  }`;
 
   const inputClasses = `block w-full rounded-md border ${
     darkMode
@@ -212,6 +247,28 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     {Object.values(TaskType).map((type) => (
                       <option key={type} value={type}>
                         {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label
+                    className={`block mb-2 font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    Project <span className="text-emerald-400">*</span>
+                  </label>
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className={inputStyles}
+                    required
+                  >
+                    <option value="">Select a project</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
                       </option>
                     ))}
                   </select>
@@ -320,4 +377,4 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   );
 };
 
-export default AddTaskModal;
+export default CalenderTaskModal;

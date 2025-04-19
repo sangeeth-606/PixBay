@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
 
 interface Project {
   id: string;
@@ -24,18 +24,18 @@ export function SprintFormModal({
   onClose,
   darkMode = true,
   workspaceName,
-  onSprintCreated
+  onSprintCreated,
 }: SprintFormModalProps) {
-  const [name, setName] = useState('');
-  const [goal, setGoal] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [name, setName] = useState("");
+  const [goal, setGoal] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [projectsError, setProjectsError] = useState('');
-  
+  const [error, setError] = useState("");
+  const [projectsError, setProjectsError] = useState("");
+
   const { getToken } = useAuth();
 
   // Fetch projects when modal opens
@@ -47,13 +47,13 @@ export function SprintFormModal({
           const response = await axios.get(
             `http://localhost:5000/api/projects/workspace/${workspaceName}`,
             {
-              headers: { Authorization: `Bearer ${token}` }
+              headers: { Authorization: `Bearer ${token}` },
             }
           );
           setProjects(response.data);
         } catch (err: any) {
-          setProjectsError('Failed to fetch projects');
-          console.error('Error fetching projects:', err);
+          setProjectsError("Failed to fetch projects");
+          console.error("Error fetching projects:", err);
         }
       };
       fetchProjects();
@@ -63,55 +63,55 @@ export function SprintFormModal({
   // Reset form state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setName('');
-      setGoal('');
-      setStartDate('');
-      setEndDate('');
-      setSelectedProjectId('');
-      setError('');
-      setProjectsError('');
+      setName("");
+      setGoal("");
+      setStartDate("");
+      setEndDate("");
+      setSelectedProjectId("");
+      setError("");
+      setProjectsError("");
     }
   }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedProjectId) {
-      setError('Please select a project');
+      setError("Please select a project");
       return;
     }
-    
+
     if (!name) {
-      setError('Sprint name is required');
+      setError("Sprint name is required");
       return;
     }
-    
+
     setIsLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       const token = await getToken();
       await axios.post(
-        'http://localhost:5000/api/sprints/create',
+        "http://localhost:5000/api/sprints/create",
         {
           name,
           goal,
           startDate: startDate || null,
           endDate: endDate || null,
-          projectId: selectedProjectId
+          projectId: selectedProjectId,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       onClose();
       if (onSprintCreated) {
         onSprintCreated();
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create sprint');
-      console.error('Error creating sprint:', err);
+      setError(err.response?.data?.error || "Failed to create sprint");
+      console.error("Error creating sprint:", err);
     } finally {
       setIsLoading(false);
     }
@@ -119,12 +119,12 @@ export function SprintFormModal({
 
   const backdropVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1 }
+    visible: { opacity: 1 },
   };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1 }
+    visible: { opacity: 1, scale: 1 },
   };
 
   const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
@@ -143,7 +143,7 @@ export function SprintFormModal({
           exit="hidden"
           variants={backdropVariants}
         >
-          <div 
+          <div
             className="absolute inset-0 backdrop-blur-md bg-black/30"
             onClick={onClose}
           ></div>
@@ -176,7 +176,7 @@ export function SprintFormModal({
                   <X size={20} />
                 </button>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
@@ -195,7 +195,7 @@ export function SprintFormModal({
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label
                     className={`block mb-2 font-medium ${
@@ -218,7 +218,7 @@ export function SprintFormModal({
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label
                     className={`block mb-2 font-medium ${
@@ -235,7 +235,7 @@ export function SprintFormModal({
                     rows={3}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
@@ -252,7 +252,7 @@ export function SprintFormModal({
                       className={inputStyles}
                     />
                   </div>
-                  
+
                   <div>
                     <label
                       className={`block mb-2 font-medium ${
@@ -269,15 +269,13 @@ export function SprintFormModal({
                     />
                   </div>
                 </div>
-                
-                {error && (
-                  <div className="text-red-500 text-sm">{error}</div>
-                )}
-                
+
+                {error && <div className="text-red-500 text-sm">{error}</div>}
+
                 {projectsError && (
                   <div className="text-red-500 text-sm">{projectsError}</div>
                 )}
-                
+
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -286,7 +284,10 @@ export function SprintFormModal({
                   {isLoading ? (
                     <>
                       <span className="absolute inset-0 flex items-center justify-center">
-                        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2"
+                          viewBox="0 0 24 24"
+                        >
                           <circle
                             className="opacity-25"
                             cx="12"
@@ -306,7 +307,7 @@ export function SprintFormModal({
                       <span className="opacity-0">Create Sprint</span>
                     </>
                   ) : (
-                    'Create Sprint'
+                    "Create Sprint"
                   )}
                   {isLoading && (
                     <span className="absolute inset-0 bg-gradient-to-r from-emerald-700/40 to-emerald-600/40 animate-pulse rounded-lg"></span>

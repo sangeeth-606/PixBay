@@ -5,6 +5,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import '../styles/calendar-styles.css';
+import CalenderTaskModal from '../components/CalenderTaskModal';
+
 
 interface CalendarEvent {
   id: string;
@@ -13,6 +15,12 @@ interface CalendarEvent {
   startTime?: string;
   endTime?: string;
   color: string;
+  workspaceName?: string
+}
+
+// Define props interface for Calendar component
+interface CalendarProps {
+  workspaceName?: string;
 }
 
 const convertTailwindColorToHex = (color: string) => {
@@ -61,10 +69,13 @@ const convertEventsToFullCalendarFormat = (events: CalendarEvent[]) => {
   });
 };
 
-const Calendar: React.FC = () => {
+const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
   const calendarRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState<number>(0);
+  const [taskState, setTaskState] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
   const [events, setEvents] = useState<CalendarEvent[]>([
     {
       id: '1',
@@ -94,12 +105,19 @@ const Calendar: React.FC = () => {
 
   const handleDateClick = (arg: any) => {
     // Implement adding an event when clicking on a date
+    setTaskState(true)
+
     console.log('Date clicked', arg);
   };
 
   const handleEventClick = (arg: any) => {
     // Implement editing an event when clicking on it
     console.log('Event clicked', arg);
+  };
+
+  const handleTaskAdded = () => {
+    // Refresh events or handle any logic after task is added
+    console.log("Task added successfully");
   };
 
  
@@ -138,7 +156,16 @@ const Calendar: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
         <div className="flex items-center space-x-3">
           <h2 className="text-2xl font-bold font-inter">Calendar</h2>
+          {workspaceName && <span className="text-sm text-gray-400">({workspaceName})</span>}
         </div>
+        <CalenderTaskModal 
+          workspaceName={workspaceName}
+          isOpen={taskState} 
+          onClose={() => setTaskState(false)}
+          darkMode={isDarkMode}
+          projectId="" // You'll need to provide a default or actual project ID
+          onTaskAdded={handleTaskAdded}
+        />
         
         {/* View selection buttons */}
         <div className="flex space-x-2 bg-[#171717] rounded-md p-1">

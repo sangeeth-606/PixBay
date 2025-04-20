@@ -31,6 +31,32 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
+  text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.fullcalendar-dark .fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 1.5em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fullcalendar-dark .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:nth-child(1) {
+  flex: 1;
+  text-align: left;
+}
+
+.fullcalendar-dark .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:nth-child(2) {
+  flex: 2;
+  text-align: center;
+}
+
+.fullcalendar-dark .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:nth-child(3) {
+  flex: 1;
+  text-align: right;
 }
 
 .fullcalendar-dark .fc th {

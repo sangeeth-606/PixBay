@@ -222,11 +222,6 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
             </button>
           ))}
         </div>
-
-        <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 font-medium transition-all transform hover:scale-105">
-          <Plus size={18} />
-          <span>New Event</span>
-        </button>
       </div>
 
       <div className="fullcalendar-dark flex-grow overflow-hidden">

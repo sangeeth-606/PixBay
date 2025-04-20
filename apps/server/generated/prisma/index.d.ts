@@ -2089,13 +2089,11 @@ export namespace Prisma {
    */
 
   export type TaskCountOutputType = {
-    subtasks: number
     tags: number
     activities: number
   }
 
   export type TaskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    subtasks?: boolean | TaskCountOutputTypeCountSubtasksArgs
     tags?: boolean | TaskCountOutputTypeCountTagsArgs
     activities?: boolean | TaskCountOutputTypeCountActivitiesArgs
   }
@@ -2109,13 +2107,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the TaskCountOutputType
      */
     select?: TaskCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * TaskCountOutputType without action
-   */
-  export type TaskCountOutputTypeCountSubtasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TaskWhereInput
   }
 
   /**
@@ -7122,8 +7113,6 @@ export namespace Prisma {
     sprint?: boolean | Task$sprintArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    parent?: boolean | Task$parentArgs<ExtArgs>
-    subtasks?: boolean | Task$subtasksArgs<ExtArgs>
     tags?: boolean | Task$tagsArgs<ExtArgs>
     activities?: boolean | Task$activitiesArgs<ExtArgs>
     _count?: boolean | TaskCountOutputTypeDefaultArgs<ExtArgs>
@@ -7149,7 +7138,6 @@ export namespace Prisma {
     sprint?: boolean | Task$sprintArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    parent?: boolean | Task$parentArgs<ExtArgs>
   }, ExtArgs["result"]["task"]>
 
   export type TaskSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -7172,7 +7160,6 @@ export namespace Prisma {
     sprint?: boolean | Task$sprintArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    parent?: boolean | Task$parentArgs<ExtArgs>
   }, ExtArgs["result"]["task"]>
 
   export type TaskSelectScalar = {
@@ -7199,8 +7186,6 @@ export namespace Prisma {
     sprint?: boolean | Task$sprintArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    parent?: boolean | Task$parentArgs<ExtArgs>
-    subtasks?: boolean | Task$subtasksArgs<ExtArgs>
     tags?: boolean | Task$tagsArgs<ExtArgs>
     activities?: boolean | Task$activitiesArgs<ExtArgs>
     _count?: boolean | TaskCountOutputTypeDefaultArgs<ExtArgs>
@@ -7210,14 +7195,12 @@ export namespace Prisma {
     sprint?: boolean | Task$sprintArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    parent?: boolean | Task$parentArgs<ExtArgs>
   }
   export type TaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     project?: boolean | ProjectDefaultArgs<ExtArgs>
     sprint?: boolean | Task$sprintArgs<ExtArgs>
     assignee?: boolean | Task$assigneeArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    parent?: boolean | Task$parentArgs<ExtArgs>
   }
 
   export type $TaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7227,8 +7210,6 @@ export namespace Prisma {
       sprint: Prisma.$SprintPayload<ExtArgs> | null
       assignee: Prisma.$UserPayload<ExtArgs> | null
       creator: Prisma.$UserPayload<ExtArgs>
-      parent: Prisma.$TaskPayload<ExtArgs> | null
-      subtasks: Prisma.$TaskPayload<ExtArgs>[]
       tags: Prisma.$TaskTagPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
     }
@@ -7646,8 +7627,6 @@ export namespace Prisma {
     sprint<T extends Task$sprintArgs<ExtArgs> = {}>(args?: Subset<T, Task$sprintArgs<ExtArgs>>): Prisma__SprintClient<$Result.GetResult<Prisma.$SprintPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     assignee<T extends Task$assigneeArgs<ExtArgs> = {}>(args?: Subset<T, Task$assigneeArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    parent<T extends Task$parentArgs<ExtArgs> = {}>(args?: Subset<T, Task$parentArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    subtasks<T extends Task$subtasksArgs<ExtArgs> = {}>(args?: Subset<T, Task$subtasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tags<T extends Task$tagsArgs<ExtArgs> = {}>(args?: Subset<T, Task$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends Task$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Task$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -8125,49 +8104,6 @@ export namespace Prisma {
      */
     include?: UserInclude<ExtArgs> | null
     where?: UserWhereInput
-  }
-
-  /**
-   * Task.parent
-   */
-  export type Task$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Task
-     */
-    select?: TaskSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Task
-     */
-    omit?: TaskOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaskInclude<ExtArgs> | null
-    where?: TaskWhereInput
-  }
-
-  /**
-   * Task.subtasks
-   */
-  export type Task$subtasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Task
-     */
-    select?: TaskSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Task
-     */
-    omit?: TaskOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TaskInclude<ExtArgs> | null
-    where?: TaskWhereInput
-    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
-    cursor?: TaskWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
   }
 
   /**
@@ -15601,8 +15537,6 @@ export namespace Prisma {
     sprint?: XOR<SprintNullableScalarRelationFilter, SprintWhereInput> | null
     assignee?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
-    parent?: XOR<TaskNullableScalarRelationFilter, TaskWhereInput> | null
-    subtasks?: TaskListRelationFilter
     tags?: TaskTagListRelationFilter
     activities?: ActivityListRelationFilter
   }
@@ -15627,8 +15561,6 @@ export namespace Prisma {
     sprint?: SprintOrderByWithRelationInput
     assignee?: UserOrderByWithRelationInput
     creator?: UserOrderByWithRelationInput
-    parent?: TaskOrderByWithRelationInput
-    subtasks?: TaskOrderByRelationAggregateInput
     tags?: TaskTagOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
   }
@@ -15656,8 +15588,6 @@ export namespace Prisma {
     sprint?: XOR<SprintNullableScalarRelationFilter, SprintWhereInput> | null
     assignee?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
-    parent?: XOR<TaskNullableScalarRelationFilter, TaskWhereInput> | null
-    subtasks?: TaskListRelationFilter
     tags?: TaskTagListRelationFilter
     activities?: ActivityListRelationFilter
   }, "id">
@@ -16426,12 +16356,11 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     project: ProjectCreateNestedOneWithoutTasksInput
     sprint?: SprintCreateNestedOneWithoutTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     tags?: TaskTagCreateNestedManyWithoutTaskInput
     activities?: ActivityCreateNestedManyWithoutTaskInput
   }
@@ -16452,7 +16381,6 @@ export namespace Prisma {
     assigneeId?: string | null
     creatorId: string
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
     activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -16468,12 +16396,11 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     sprint?: SprintUpdateOneWithoutTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     tags?: TaskTagUpdateManyWithoutTaskNestedInput
     activities?: ActivityUpdateManyWithoutTaskNestedInput
   }
@@ -16494,7 +16421,6 @@ export namespace Prisma {
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -16528,6 +16454,7 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TaskUncheckedUpdateManyInput = {
@@ -17379,11 +17306,6 @@ export namespace Prisma {
     isNot?: UserWhereInput | null
   }
 
-  export type TaskNullableScalarRelationFilter = {
-    is?: TaskWhereInput | null
-    isNot?: TaskWhereInput | null
-  }
-
   export type TaskTagListRelationFilter = {
     every?: TaskTagWhereInput
     some?: TaskTagWhereInput
@@ -17724,6 +17646,11 @@ export namespace Prisma {
     in?: $Enums.ActivityType[] | ListEnumActivityTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.ActivityType[] | ListEnumActivityTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumActivityTypeFilter<$PrismaModel> | $Enums.ActivityType
+  }
+
+  export type TaskNullableScalarRelationFilter = {
+    is?: TaskWhereInput | null
+    isNot?: TaskWhereInput | null
   }
 
   export type ActivityCountOrderByAggregateInput = {
@@ -18401,19 +18328,6 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type TaskCreateNestedOneWithoutSubtasksInput = {
-    create?: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
-    connectOrCreate?: TaskCreateOrConnectWithoutSubtasksInput
-    connect?: TaskWhereUniqueInput
-  }
-
-  export type TaskCreateNestedManyWithoutParentInput = {
-    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
-    createMany?: TaskCreateManyParentInputEnvelope
-    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-  }
-
   export type TaskTagCreateNestedManyWithoutTaskInput = {
     create?: XOR<TaskTagCreateWithoutTaskInput, TaskTagUncheckedCreateWithoutTaskInput> | TaskTagCreateWithoutTaskInput[] | TaskTagUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskTagCreateOrConnectWithoutTaskInput | TaskTagCreateOrConnectWithoutTaskInput[]
@@ -18426,13 +18340,6 @@ export namespace Prisma {
     connectOrCreate?: ActivityCreateOrConnectWithoutTaskInput | ActivityCreateOrConnectWithoutTaskInput[]
     createMany?: ActivityCreateManyTaskInputEnvelope
     connect?: ActivityWhereUniqueInput | ActivityWhereUniqueInput[]
-  }
-
-  export type TaskUncheckedCreateNestedManyWithoutParentInput = {
-    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
-    createMany?: TaskCreateManyParentInputEnvelope
-    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
   }
 
   export type TaskTagUncheckedCreateNestedManyWithoutTaskInput = {
@@ -18509,30 +18416,6 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedTasksInput, UserUpdateWithoutCreatedTasksInput>, UserUncheckedUpdateWithoutCreatedTasksInput>
   }
 
-  export type TaskUpdateOneWithoutSubtasksNestedInput = {
-    create?: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
-    connectOrCreate?: TaskCreateOrConnectWithoutSubtasksInput
-    upsert?: TaskUpsertWithoutSubtasksInput
-    disconnect?: TaskWhereInput | boolean
-    delete?: TaskWhereInput | boolean
-    connect?: TaskWhereUniqueInput
-    update?: XOR<XOR<TaskUpdateToOneWithWhereWithoutSubtasksInput, TaskUpdateWithoutSubtasksInput>, TaskUncheckedUpdateWithoutSubtasksInput>
-  }
-
-  export type TaskUpdateManyWithoutParentNestedInput = {
-    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
-    upsert?: TaskUpsertWithWhereUniqueWithoutParentInput | TaskUpsertWithWhereUniqueWithoutParentInput[]
-    createMany?: TaskCreateManyParentInputEnvelope
-    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    update?: TaskUpdateWithWhereUniqueWithoutParentInput | TaskUpdateWithWhereUniqueWithoutParentInput[]
-    updateMany?: TaskUpdateManyWithWhereWithoutParentInput | TaskUpdateManyWithWhereWithoutParentInput[]
-    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
-  }
-
   export type TaskTagUpdateManyWithoutTaskNestedInput = {
     create?: XOR<TaskTagCreateWithoutTaskInput, TaskTagUncheckedCreateWithoutTaskInput> | TaskTagCreateWithoutTaskInput[] | TaskTagUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskTagCreateOrConnectWithoutTaskInput | TaskTagCreateOrConnectWithoutTaskInput[]
@@ -18559,20 +18442,6 @@ export namespace Prisma {
     update?: ActivityUpdateWithWhereUniqueWithoutTaskInput | ActivityUpdateWithWhereUniqueWithoutTaskInput[]
     updateMany?: ActivityUpdateManyWithWhereWithoutTaskInput | ActivityUpdateManyWithWhereWithoutTaskInput[]
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
-  }
-
-  export type TaskUncheckedUpdateManyWithoutParentNestedInput = {
-    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
-    upsert?: TaskUpsertWithWhereUniqueWithoutParentInput | TaskUpsertWithWhereUniqueWithoutParentInput[]
-    createMany?: TaskCreateManyParentInputEnvelope
-    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
-    update?: TaskUpdateWithWhereUniqueWithoutParentInput | TaskUpdateWithWhereUniqueWithoutParentInput[]
-    updateMany?: TaskUpdateManyWithWhereWithoutParentInput | TaskUpdateManyWithWhereWithoutParentInput[]
-    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
   }
 
   export type TaskTagUncheckedUpdateManyWithoutTaskNestedInput = {
@@ -19235,11 +19104,10 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     project: ProjectCreateNestedOneWithoutTasksInput
     sprint?: SprintCreateNestedOneWithoutTasksInput
     creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     tags?: TaskTagCreateNestedManyWithoutTaskInput
     activities?: ActivityCreateNestedManyWithoutTaskInput
   }
@@ -19259,7 +19127,6 @@ export namespace Prisma {
     sprintId?: string | null
     creatorId: string
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
     activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -19285,11 +19152,10 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     project: ProjectCreateNestedOneWithoutTasksInput
     sprint?: SprintCreateNestedOneWithoutTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     tags?: TaskTagCreateNestedManyWithoutTaskInput
     activities?: ActivityCreateNestedManyWithoutTaskInput
   }
@@ -19309,7 +19175,6 @@ export namespace Prisma {
     sprintId?: string | null
     assigneeId?: string | null
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
     activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -19945,11 +19810,10 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     sprint?: SprintCreateNestedOneWithoutTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     tags?: TaskTagCreateNestedManyWithoutTaskInput
     activities?: ActivityCreateNestedManyWithoutTaskInput
   }
@@ -19969,7 +19833,6 @@ export namespace Prisma {
     assigneeId?: string | null
     creatorId: string
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
     activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -20273,101 +20136,6 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutCreatedTasksInput, UserUncheckedCreateWithoutCreatedTasksInput>
   }
 
-  export type TaskCreateWithoutSubtasksInput = {
-    id?: string
-    title: string
-    description?: string | null
-    type?: $Enums.TaskType
-    status?: $Enums.TaskStatus
-    priority?: $Enums.Priority
-    storyPoints?: number | null
-    dueDate?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    project: ProjectCreateNestedOneWithoutTasksInput
-    sprint?: SprintCreateNestedOneWithoutTasksInput
-    assignee?: UserCreateNestedOneWithoutAssignedTasksInput
-    creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    tags?: TaskTagCreateNestedManyWithoutTaskInput
-    activities?: ActivityCreateNestedManyWithoutTaskInput
-  }
-
-  export type TaskUncheckedCreateWithoutSubtasksInput = {
-    id?: string
-    title: string
-    description?: string | null
-    type?: $Enums.TaskType
-    status?: $Enums.TaskStatus
-    priority?: $Enums.Priority
-    storyPoints?: number | null
-    dueDate?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    projectId: string
-    sprintId?: string | null
-    assigneeId?: string | null
-    creatorId: string
-    parentId?: string | null
-    tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
-    activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
-  }
-
-  export type TaskCreateOrConnectWithoutSubtasksInput = {
-    where: TaskWhereUniqueInput
-    create: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
-  }
-
-  export type TaskCreateWithoutParentInput = {
-    id?: string
-    title: string
-    description?: string | null
-    type?: $Enums.TaskType
-    status?: $Enums.TaskStatus
-    priority?: $Enums.Priority
-    storyPoints?: number | null
-    dueDate?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    project: ProjectCreateNestedOneWithoutTasksInput
-    sprint?: SprintCreateNestedOneWithoutTasksInput
-    assignee?: UserCreateNestedOneWithoutAssignedTasksInput
-    creator: UserCreateNestedOneWithoutCreatedTasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
-    tags?: TaskTagCreateNestedManyWithoutTaskInput
-    activities?: ActivityCreateNestedManyWithoutTaskInput
-  }
-
-  export type TaskUncheckedCreateWithoutParentInput = {
-    id?: string
-    title: string
-    description?: string | null
-    type?: $Enums.TaskType
-    status?: $Enums.TaskStatus
-    priority?: $Enums.Priority
-    storyPoints?: number | null
-    dueDate?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    projectId: string
-    sprintId?: string | null
-    assigneeId?: string | null
-    creatorId: string
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
-    tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
-    activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
-  }
-
-  export type TaskCreateOrConnectWithoutParentInput = {
-    where: TaskWhereUniqueInput
-    create: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput>
-  }
-
-  export type TaskCreateManyParentInputEnvelope = {
-    data: TaskCreateManyParentInput | TaskCreateManyParentInput[]
-    skipDuplicates?: boolean
-  }
-
   export type TaskTagCreateWithoutTaskInput = {
     id?: string
     name: string
@@ -20576,73 +20344,6 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
-  export type TaskUpsertWithoutSubtasksInput = {
-    update: XOR<TaskUpdateWithoutSubtasksInput, TaskUncheckedUpdateWithoutSubtasksInput>
-    create: XOR<TaskCreateWithoutSubtasksInput, TaskUncheckedCreateWithoutSubtasksInput>
-    where?: TaskWhereInput
-  }
-
-  export type TaskUpdateToOneWithWhereWithoutSubtasksInput = {
-    where?: TaskWhereInput
-    data: XOR<TaskUpdateWithoutSubtasksInput, TaskUncheckedUpdateWithoutSubtasksInput>
-  }
-
-  export type TaskUpdateWithoutSubtasksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
-    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
-    sprint?: SprintUpdateOneWithoutTasksNestedInput
-    assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
-    creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    tags?: TaskTagUpdateManyWithoutTaskNestedInput
-    activities?: ActivityUpdateManyWithoutTaskNestedInput
-  }
-
-  export type TaskUncheckedUpdateWithoutSubtasksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
-    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    projectId?: StringFieldUpdateOperationsInput | string
-    sprintId?: NullableStringFieldUpdateOperationsInput | string | null
-    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
-    creatorId?: StringFieldUpdateOperationsInput | string
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
-    activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
-  }
-
-  export type TaskUpsertWithWhereUniqueWithoutParentInput = {
-    where: TaskWhereUniqueInput
-    update: XOR<TaskUpdateWithoutParentInput, TaskUncheckedUpdateWithoutParentInput>
-    create: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput>
-  }
-
-  export type TaskUpdateWithWhereUniqueWithoutParentInput = {
-    where: TaskWhereUniqueInput
-    data: XOR<TaskUpdateWithoutParentInput, TaskUncheckedUpdateWithoutParentInput>
-  }
-
-  export type TaskUpdateManyWithWhereWithoutParentInput = {
-    where: TaskScalarWhereInput
-    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutParentInput>
-  }
-
   export type TaskTagUpsertWithWhereUniqueWithoutTaskInput = {
     where: TaskTagWhereUniqueInput
     update: XOR<TaskTagUpdateWithoutTaskInput, TaskTagUncheckedUpdateWithoutTaskInput>
@@ -20696,12 +20397,11 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     project: ProjectCreateNestedOneWithoutTasksInput
     sprint?: SprintCreateNestedOneWithoutTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     activities?: ActivityCreateNestedManyWithoutTaskInput
   }
 
@@ -20721,7 +20421,6 @@ export namespace Prisma {
     assigneeId?: string | null
     creatorId: string
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
   }
 
@@ -20752,12 +20451,11 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     sprint?: SprintUpdateOneWithoutTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     activities?: ActivityUpdateManyWithoutTaskNestedInput
   }
 
@@ -20777,7 +20475,6 @@ export namespace Prisma {
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
   }
 
@@ -20860,11 +20557,10 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     project: ProjectCreateNestedOneWithoutTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     tags?: TaskTagCreateNestedManyWithoutTaskInput
     activities?: ActivityCreateNestedManyWithoutTaskInput
   }
@@ -20884,7 +20580,6 @@ export namespace Prisma {
     assigneeId?: string | null
     creatorId: string
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
     activities?: ActivityUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -21422,12 +21117,11 @@ export namespace Prisma {
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentId?: string | null
     project: ProjectCreateNestedOneWithoutTasksInput
     sprint?: SprintCreateNestedOneWithoutTasksInput
     assignee?: UserCreateNestedOneWithoutAssignedTasksInput
     creator: UserCreateNestedOneWithoutCreatedTasksInput
-    parent?: TaskCreateNestedOneWithoutSubtasksInput
-    subtasks?: TaskCreateNestedManyWithoutParentInput
     tags?: TaskTagCreateNestedManyWithoutTaskInput
   }
 
@@ -21447,7 +21141,6 @@ export namespace Prisma {
     assigneeId?: string | null
     creatorId: string
     parentId?: string | null
-    subtasks?: TaskUncheckedCreateNestedManyWithoutParentInput
     tags?: TaskTagUncheckedCreateNestedManyWithoutTaskInput
   }
 
@@ -21519,12 +21212,11 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     sprint?: SprintUpdateOneWithoutTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     tags?: TaskTagUpdateManyWithoutTaskNestedInput
   }
 
@@ -21544,7 +21236,6 @@ export namespace Prisma {
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
   }
 
@@ -21718,11 +21409,10 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     sprint?: SprintUpdateOneWithoutTasksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     tags?: TaskTagUpdateManyWithoutTaskNestedInput
     activities?: ActivityUpdateManyWithoutTaskNestedInput
   }
@@ -21742,7 +21432,6 @@ export namespace Prisma {
     sprintId?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -21775,11 +21464,10 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     sprint?: SprintUpdateOneWithoutTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     tags?: TaskTagUpdateManyWithoutTaskNestedInput
     activities?: ActivityUpdateManyWithoutTaskNestedInput
   }
@@ -21799,7 +21487,6 @@ export namespace Prisma {
     sprintId?: NullableStringFieldUpdateOperationsInput | string | null
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -22106,11 +21793,10 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     sprint?: SprintUpdateOneWithoutTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     tags?: TaskTagUpdateManyWithoutTaskNestedInput
     activities?: ActivityUpdateManyWithoutTaskNestedInput
   }
@@ -22130,7 +21816,6 @@ export namespace Prisma {
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -22236,23 +21921,6 @@ export namespace Prisma {
     ownerId?: StringFieldUpdateOperationsInput | string
   }
 
-  export type TaskCreateManyParentInput = {
-    id?: string
-    title: string
-    description?: string | null
-    type?: $Enums.TaskType
-    status?: $Enums.TaskStatus
-    priority?: $Enums.Priority
-    storyPoints?: number | null
-    dueDate?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    projectId: string
-    sprintId?: string | null
-    assigneeId?: string | null
-    creatorId: string
-  }
-
   export type TaskTagCreateManyTaskInput = {
     id?: string
     name: string
@@ -22265,63 +21933,6 @@ export namespace Prisma {
     content: string
     createdAt?: Date | string
     userId: string
-  }
-
-  export type TaskUpdateWithoutParentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
-    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
-    sprint?: SprintUpdateOneWithoutTasksNestedInput
-    assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
-    creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
-    tags?: TaskTagUpdateManyWithoutTaskNestedInput
-    activities?: ActivityUpdateManyWithoutTaskNestedInput
-  }
-
-  export type TaskUncheckedUpdateWithoutParentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
-    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    projectId?: StringFieldUpdateOperationsInput | string
-    sprintId?: NullableStringFieldUpdateOperationsInput | string | null
-    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
-    creatorId?: StringFieldUpdateOperationsInput | string
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
-    tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
-    activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
-  }
-
-  export type TaskUncheckedUpdateManyWithoutParentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
-    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
-    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
-    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
-    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    projectId?: StringFieldUpdateOperationsInput | string
-    sprintId?: NullableStringFieldUpdateOperationsInput | string | null
-    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
-    creatorId?: StringFieldUpdateOperationsInput | string
   }
 
   export type TaskTagUpdateWithoutTaskInput = {
@@ -22394,11 +22005,10 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     assignee?: UserUpdateOneWithoutAssignedTasksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedTasksNestedInput
-    parent?: TaskUpdateOneWithoutSubtasksNestedInput
-    subtasks?: TaskUpdateManyWithoutParentNestedInput
     tags?: TaskTagUpdateManyWithoutTaskNestedInput
     activities?: ActivityUpdateManyWithoutTaskNestedInput
   }
@@ -22418,7 +22028,6 @@ export namespace Prisma {
     assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    subtasks?: TaskUncheckedUpdateManyWithoutParentNestedInput
     tags?: TaskTagUncheckedUpdateManyWithoutTaskNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutTaskNestedInput
   }

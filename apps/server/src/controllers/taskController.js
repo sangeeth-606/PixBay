@@ -200,3 +200,58 @@ export const deleteTask = async (req, res) => {
     res.status(500).json({ error: "Failed to delete task" });
   }
 };
+// server-side: add this to your server file (e.g., where getProjectTasks is defined)
+export const getTasksByWorkspaceName = async (req, res) => {
+  try {
+    const { workspaceName } = req.params; // Workspace name passed as a URL parameter
+    const { emailAddresses } = req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
+
+    // Find user by email
+    const user = await prisma.user.findFirst({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Find the workspace by name
+    const workspace = await prisma.workspace.findUnique({
+      where: { name: workspaceName },
+      select: { id: true, name: true },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found" });
+    }
+
+    // Check if user is a member of the workspace
+    const workspaceMember = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workspace.id,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!workspaceMember) {
+      return res.status(403).json({ error: "User is not a member of the workspace" });
+    }
+
+    // Fetch tasks where parentId matches the workspace name
+    const tasks = await prisma.task.findMany({
+      where: { parentId: workspaceName },
+      include: {
+        assignee: { select: { id: true, name: true } },
+        creator: { select: { id: true, name: true } },
+      },
+    });
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch tasks" });
+  }
+};

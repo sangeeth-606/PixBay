@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 
-// Enum definitions
 export enum TaskStatus {
   TODO = "TODO",
   IN_PROGRESS = "IN_PROGRESS",
@@ -33,34 +31,34 @@ interface User {
   joinedAt: string;
 }
 
-interface CalenderTaskModal {
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  workspaceId: string;
+}
+
+interface CalenderTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   darkMode: boolean;
   projectId: string;
   onTaskAdded: () => void;
   workspaceMembers?: User[];
-  isFetchingMembers?: boolean; // New prop for loading state
-  workspaceName?: string; // Make workspaceName optional
-  selectedDate?: string; // New prop to receive the selected date
+  isFetchingMembers?: boolean;
+  workspaceName?: string;
+  selectedDate?: string;
+  getToken: () => Promise<string | null>;
 }
-interface Project {
-    id: string;
-    name: string;
-    description?: string;
-    workspaceId: string;
-  }
 
-const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
+const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
   isOpen,
   onClose,
   darkMode,
-  projectId,
   onTaskAdded,
-  workspaceMembers = [],
-  isFetchingMembers = false,
-  workspaceName = '', // Provide empty string as default value
-  selectedDate = '', // Default to empty string if not provided
+  workspaceName = "",
+  selectedDate = "",
+  getToken,
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -72,9 +70,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { getToken } = useAuth();
 
-  // Reset form when modal opens/closes, and pre-fill due date if available
   useEffect(() => {
     if (isOpen) {
       if (selectedDate) {
@@ -85,6 +81,9 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
         const fetchProjects = async () => {
           try {
             const token = await getToken();
+            if (!token) {
+              throw new Error("Authentication token not available");
+            }
             const response = await axios.get(
               `http://localhost:5000/api/projects/workspace/${workspaceName}`,
               {
@@ -92,9 +91,9 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
               }
             );
             setProjects(response.data);
-          } catch (err: any) {
-          //   setProjectsError("Failed to fetch projects");
+          } catch (err: unknown) {
             console.error("Error fetching projects:", err);
+            setError("Failed to fetch projects");
           }
         };
         fetchProjects();
@@ -108,13 +107,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
       setAssigneeId("");
       setError("");
     }
-  }, [isOpen, workspaceName, getToken, selectedDate]);
-
-  // Debugging log for workspaceMembers
-  useEffect(() => {
-    console.log("AddTaskModal received workspaceMembers:", workspaceMembers);
-    console.log("AddTaskModal isFetchingMembers:", isFetchingMembers);
-  }, [workspaceMembers, isFetchingMembers]);
+  }, [isOpen, workspaceName, selectedDate, getToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,6 +116,9 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
 
     try {
       const token = await getToken();
+      if (!token) {
+        throw new Error("Authentication token not available");
+      }
 
       const data = {
         title,
@@ -130,12 +126,12 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
         priority,
         type: taskType,
         status: TaskStatus.TODO,
-        projectId: selectedProjectId, 
+        projectId: selectedProjectId,
         dueDate: dueDate || undefined,
         assigneeId: assigneeId || undefined,
       };
 
-      console.log("Data being sent to backend:", data); 
+      console.log("Data being sent to backend:", data);
 
       const response = await axios.post(
         "http://localhost:5000/api/tasks/create",
@@ -148,10 +144,12 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
       console.log("Task created:", response.data);
       onTaskAdded();
       onClose();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to create task:", error);
       if (axios.isAxiosError(error)) {
         setError(error.response?.data?.error || "Failed to create task");
+      } else if (error instanceof Error) {
+        setError(error.message);
       } else {
         setError("An unexpected error occurred");
       }
@@ -159,6 +157,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
       setIsLoading(false);
     }
   };
+
   const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
     darkMode
       ? "bg-[#171717] border-[#2C2C2C] text-white"

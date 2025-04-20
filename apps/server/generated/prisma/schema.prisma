@@ -97,9 +97,7 @@ model Task {
   assigneeId  String?
   creator     User       @relation("TaskCreator", fields: [creatorId], references: [id])
   creatorId   String
-  parent      Task?      @relation("SubTasks", fields: [parentId], references: [id])
   parentId    String?
-  subtasks    Task[]     @relation("SubTasks")
   tags        TaskTag[]
   activities  Activity[]
 }

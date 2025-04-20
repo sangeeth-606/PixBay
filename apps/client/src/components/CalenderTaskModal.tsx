@@ -42,6 +42,7 @@ interface CalenderTaskModal {
   workspaceMembers?: User[];
   isFetchingMembers?: boolean; // New prop for loading state
   workspaceName?: string; // Make workspaceName optional
+  selectedDate?: string; // New prop to receive the selected date
 }
 interface Project {
     id: string;
@@ -59,6 +60,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
   workspaceMembers = [],
   isFetchingMembers = false,
   workspaceName = '', // Provide empty string as default value
+  selectedDate = '', // Default to empty string if not provided
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -72,29 +74,32 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
   const [error, setError] = useState("");
   const { getToken } = useAuth();
 
-  // Reset form when modal opens/closes
+  // Reset form when modal opens/closes, and pre-fill due date if available
   useEffect(() => {
-    if (isOpen && workspaceName) {
-      const fetchProjects = async () => {
-        try {
-          const token = await getToken();
-          const response = await axios.get(
-            `http://localhost:5000/api/projects/workspace/${workspaceName}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          setProjects(response.data);
-        } catch (err: any) {
-        //   setProjectsError("Failed to fetch projects");
-          console.error("Error fetching projects:", err);
-        }
-      };
-      fetchProjects();
-    }
-  }, [isOpen, workspaceName, getToken]);
-  useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      if (selectedDate) {
+        setDueDate(selectedDate);
+      }
+
+      if (workspaceName) {
+        const fetchProjects = async () => {
+          try {
+            const token = await getToken();
+            const response = await axios.get(
+              `http://localhost:5000/api/projects/workspace/${workspaceName}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            setProjects(response.data);
+          } catch (err: any) {
+          //   setProjectsError("Failed to fetch projects");
+            console.error("Error fetching projects:", err);
+          }
+        };
+        fetchProjects();
+      }
+    } else {
       setTitle("");
       setDescription("");
       setPriority(Priority.MEDIUM);
@@ -103,7 +108,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
       setAssigneeId("");
       setError("");
     }
-  }, [isOpen]);
+  }, [isOpen, workspaceName, getToken, selectedDate]);
 
   // Debugging log for workspaceMembers
   useEffect(() => {
@@ -125,7 +130,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
         priority,
         type: taskType,
         status: TaskStatus.TODO,
-        projectId,
+        projectId: selectedProjectId, 
         dueDate: dueDate || undefined,
         assigneeId: assigneeId || undefined,
       };
@@ -261,7 +266,10 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
                   </label>
                   <select
                     value={selectedProjectId}
-                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    onChange={(e) => {
+                      console.log("Selected project ID:", e.target.value);
+                      setSelectedProjectId(e.target.value);
+                    }}
                     className={inputStyles}
                     required
                   >
@@ -295,55 +303,6 @@ const CalenderTaskModal: React.FC<CalenderTaskModal> = ({
                   </select>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="dueDate"
-                    className="block mb-1 text-sm font-medium"
-                  >
-                    Due Date
-                  </label>
-                  <input
-                    id="dueDate"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className={inputClasses}
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="assignee"
-                    className="block mb-1 text-sm font-medium"
-                  >
-                    Assignee
-                  </label>
-                  {isFetchingMembers ? (
-                    <p className="text-sm text-gray-500">Loading members...</p>
-                  ) : workspaceMembers.length > 0 ? (
-                    <select
-                      id="assignee"
-                      value={assigneeId}
-                      onChange={(e) => setAssigneeId(e.target.value)}
-                      className={inputClasses}
-                    >
-                      <option value="">Unassigned</option>
-                      {workspaceMembers.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.name || member.email || "Unknown User"}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      No members available
-                    </p>
-                  )}
-                </div>
-              </div>
-
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"

@@ -75,6 +75,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [taskState, setTaskState] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   const [events, setEvents] = useState<CalendarEvent[]>([
     {
@@ -96,7 +97,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
     {
       id: '3',
       title: 'Sprint Planning',
-      date: new Date(new Date().setDate(new Date().getDate() + 3)),
+      date: new Date("2025-04-19"),
       startTime: '09:00',
       endTime: '10:30',
       color: 'bg-indigo-600'
@@ -104,8 +105,9 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
   ]);
 
   const handleDateClick = (arg: any) => {
-    // Implement adding an event when clicking on a date
-    setTaskState(true)
+    // Store the selected date and open the modal
+    setSelectedDate(arg.dateStr);
+    setTaskState(true);
 
     console.log('Date clicked', arg);
   };
@@ -165,6 +167,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
           darkMode={isDarkMode}
           projectId="" // You'll need to provide a default or actual project ID
           onTaskAdded={handleTaskAdded}
+          selectedDate={selectedDate}
         />
         
         {/* View selection buttons */}

@@ -1,13 +1,12 @@
-import prisma from "../db";
+import prisma from "../db.js";
 
-//helper function to check the user is part of the workspace
-const checkWorkspaceMemberShip = async (useRevalidator, workspaceId) => {
+const checkWorkspaceMembership = async (userId, workspaceId) => {
   const workspaceMember = await prisma.workspaceMember.findUnique({
     where: {
-      workspaceId_userId: { workspaceId, userId },
+      workspaceId_userId: { workspaceId, userId }, // Ensure userId is defined
     },
   });
-  return !!workspaceMember;
+  return !!workspaceMember; // Returns true if the user is a member
 };
 
 export const createMilestone = async (req, res) => {
@@ -15,7 +14,7 @@ export const createMilestone = async (req, res) => {
     const { projectId } = req.params;
     const { title, description, status, startDate, endDate } = req.body;
     const { emailAddresses } = req.auth;
-    const email = emailAddresses?.[0]?.emailAddresses;
+    const email = emailAddresses?.[0]?.emailAddress;
 
     if (!email) {
       return res.status(401).json({ error: "Authentication required" });
@@ -40,16 +39,16 @@ export const createMilestone = async (req, res) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    const isMember = await checkWorkspaceMemberShip(
+    const isMember = await checkWorkspaceMembership(
       user.id,
       project.workspaceId
     );
-
     if (!isMember) {
       return res
         .status(403)
         .json({ error: "User is not a member of this workspace" });
     }
+
     const milestone = await prisma.milestone.create({
       data: {
         title,
@@ -58,7 +57,7 @@ export const createMilestone = async (req, res) => {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         project: { connect: { id: projectId } },
-        owner: { connect: { id: user.id } },
+        owner: { connect: { id: user.id } }, // Owner set to authenticated user
       },
     });
 
@@ -95,40 +94,6 @@ export const getMilestone = async (req, res) => {
   } catch (error) {
     console.error("Get milestone error:", error);
     res.status(500).json({ error: "Failed to fetch milestone" });
-  }
-};
-export const getTasksForMilestone = async (req, res) => {
-  try {
-    const { milestoneId } = req.params;
-    const milestone = await prisma.milestone.findUnique({
-      where: { id: milestoneId },
-      include: { project: true },
-    });
-    if (!milestone) {
-      return res.status(404).json({ error: "Milestone not found" });
-    }
-    const tasks = await prisma.task.findMany({
-      where: {
-        projectId: milestone.projectId,
-        dueDate: {
-          gte: milestone.startDate,
-          lte: milestone.endDate,
-        },
-      },
-      include: {
-        assignee: { select: { id: true, name: true } },
-        tags: true,
-      },
-    });
-    // Generate project keys client-side or here (e.g., "PX-201" from project.key + task.id)
-    const tasksWithKeys = tasks.map((task) => ({
-      ...task,
-      key: `${milestone.project.key}-${task.id}`,
-    }));
-    res.status(200).json(tasksWithKeys);
-  } catch (error) {
-    console.error("Get tasks for milestone error:", error);
-    res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
 
@@ -182,6 +147,70 @@ export const getMilestonesByProject = async (req, res) => {
   } catch (error) {
     console.error("Get milestones error:", error);
     res.status(500).json({ error: "Failed to fetch milestones" });
+  }
+};
+
+export const getMilestonesByWorkspace = async (req, res) => {
+  try {
+    const { workspaceName } = req.params;
+    const { emailAddresses } = req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
+
+    if (!email) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Find workspace by name
+    const workspace = await prisma.workspace.findUnique({
+      where: { name: workspaceName },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found" });
+    }
+
+    // Check if user is a member of the workspace
+    const isMember = await checkWorkspaceMembership(user.id, workspace.id);
+    if (!isMember) {
+      return res
+        .status(403)
+        .json({ error: "User is not a member of this workspace" });
+    }
+
+    // Get all projects in the workspace
+    const projects = await prisma.project.findMany({
+      where: { workspaceId: workspace.id },
+      select: { id: true, name: true, key: true },
+    });
+
+    const projectIds = projects.map((project) => project.id);
+
+    // Get all milestones for these projects
+    const milestones = await prisma.milestone.findMany({
+      where: {
+        projectId: { in: projectIds },
+      },
+      include: {
+        project: { select: { id: true, name: true, key: true } },
+        owner: { select: { id: true, name: true } },
+        dependencies: {
+          include: { dependsOn: { select: { id: true, title: true } } },
+        },
+        dependents: {
+          include: { milestone: { select: { id: true, title: true } } },
+        },
+      },
+    });
+
+    res.status(200).json(milestones);
+  } catch (error) {
+    console.error("Get milestones by workspace error:", error);
+    res.status(500).json({ error: "Failed to fetch milestones for workspace" });
   }
 };
 
@@ -337,5 +366,40 @@ export const deleteDependency = async (req, res) => {
   } catch (error) {
     console.error("Delete dependency error:", error);
     res.status(500).json({ error: "Failed to delete dependency" });
+  }
+};
+
+export const getTasksForMilestone = async (req, res) => {
+  try {
+    const { milestoneId } = req.params;
+    const milestone = await prisma.milestone.findUnique({
+      where: { id: milestoneId },
+      include: { project: true },
+    });
+    if (!milestone) {
+      return res.status(404).json({ error: "Milestone not found" });
+    }
+    const tasks = await prisma.task.findMany({
+      where: {
+        projectId: milestone.projectId,
+        dueDate: {
+          gte: milestone.startDate,
+          lte: milestone.endDate,
+        },
+      },
+      include: {
+        assignee: { select: { id: true, name: true } },
+        tags: true,
+      },
+    });
+    // Generate project keys client-side or here (e.g., "PX-201" from project.key + task.id)
+    const tasksWithKeys = tasks.map((task) => ({
+      ...task,
+      key: `${milestone.project.key}-${task.id}`,
+    }));
+    res.status(200).json(tasksWithKeys);
+  } catch (error) {
+    console.error("Get tasks for milestone error:", error);
+    res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };

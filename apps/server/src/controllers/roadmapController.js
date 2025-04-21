@@ -68,3 +68,33 @@ export const createMilestone = async (req, res) => {
     res.status(500).json({ error: "Failed to create milestone" });
   }
 };
+
+export const getMilestone = async (req, res) => {
+  try {
+    const { milestoneId } = req.params;
+
+    const milestone = await prisma.milestone.findUnique({
+      where: { id: milestoneId },
+      include: {
+        project: { select: { id: true, name: true } },
+        owner: { select: { id: true, name: true } },
+        dependencies: {
+          include: { dependsOn: { select: { id: true, title: true } } },
+        },
+        dependents: {
+          include: { milestone: { select: { id: true, title: true } } },
+        },
+      },
+    });
+
+    if (!milestone) {
+      return res.status(404).json({ error: "Milestone not found" });
+    }
+
+    res.status(200).json(milestone);
+  } catch (error) {
+    console.error("Get milestone error:", error);
+    res.status(500).json({ error: "Failed to fetch milestone" });
+  }
+  
+};

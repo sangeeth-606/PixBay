@@ -1,6 +1,4 @@
-
-
-import prisma from '../db.js';
+import prisma from "../db.js";
 
 export const getSprint = async (req, res) => {
   try {
@@ -15,16 +13,9 @@ export const getSprint = async (req, res) => {
           include: {
             assignee: { select: { id: true, name: true } },
             tags: true,
-            parent: { select: { id: true, title: true } },
-            subtasks: {
-              include: {
-                assignee: { select: { id: true, name: true } },
-                tags: true,
-                parent: { select: { id: true, title: true } },
-                subtasks: true // Nested subtasks for hierarchy
-              }
-            }
-          }
+
+            
+          },
         },
       },
     });
@@ -52,11 +43,13 @@ export const createSprint = async (req, res) => {
     }
 
     if (!name || !projectId) {
-      return res.status(400).json({ error: "Name and project ID are required" });
+      return res
+        .status(400)
+        .json({ error: "Name and project ID are required" });
     }
 
     const user = await prisma.user.findFirst({
-      where: { email }
+      where: { email },
     });
 
     if (!user) {
@@ -74,16 +67,18 @@ export const createSprint = async (req, res) => {
 
     const workspaceId = project.workspaceId;
     const workspaceMember = await prisma.workspaceMember.findUnique({
-      where: { 
-        workspaceId_userId: { 
-          workspaceId, 
-          userId: user.id 
-        } 
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: user.id,
+        },
       },
     });
 
     if (!workspaceMember) {
-      return res.status(403).json({ error: 'User is not a member of this workspace' });
+      return res
+        .status(403)
+        .json({ error: "User is not a member of this workspace" });
     }
 
     const sprint = await prisma.sprint.create({
@@ -109,7 +104,7 @@ export const getAllSprints = async (req, res) => {
     const workspaceName = req.params.workspaceId;
 
     if (!workspaceName) {
-      return res.status(400).json({ error: 'Workspace name is required' });
+      return res.status(400).json({ error: "Workspace name is required" });
     }
 
     const workspace = await prisma.workspace.findFirst({
@@ -120,13 +115,13 @@ export const getAllSprints = async (req, res) => {
             id: true,
             name: true,
             workspaceId: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     if (!workspace) {
-      return res.status(404).json({ error: 'Workspace not found' });
+      return res.status(404).json({ error: "Workspace not found" });
     }
 
     const { emailAddresses } = req.auth;
@@ -137,18 +132,22 @@ export const getAllSprints = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const workspaceMember = await prisma.workspaceMember.findUnique({
-      where: { workspaceId_userId: { workspaceId: workspace.id, userId: user.id } },
+      where: {
+        workspaceId_userId: { workspaceId: workspace.id, userId: user.id },
+      },
     });
 
     if (!workspaceMember) {
-      return res.status(403).json({ error: 'User is not a member of this workspace' });
+      return res
+        .status(403)
+        .json({ error: "User is not a member of this workspace" });
     }
 
-    const projectIds = workspace.projects.map(project => project.id);
+    const projectIds = workspace.projects.map((project) => project.id);
 
     if (projectIds.length === 0) {
       return res.status(200).json([]);
@@ -161,15 +160,15 @@ export const getAllSprints = async (req, res) => {
       include: {
         owner: { select: { id: true, name: true } },
         tasks: { select: { id: true, title: true, status: true } },
-        project: { select: { id: true, name: true, key: true } }
+        project: { select: { id: true, name: true, key: true } },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
 
     return res.status(200).json(sprints);
   } catch (error) {
     console.error("Get all sprints error:", error);
-    return res.status(500).json({ error: 'Failed to fetch sprints' });
+    return res.status(500).json({ error: "Failed to fetch sprints" });
   }
 };
 
@@ -228,15 +227,29 @@ export const deleteSprint = async (req, res) => {
   }
 };
 
-
 export const createTask = async (req, res) => {
   try {
-    const { title, description, type, status, priority, storyPoints, dueDate, projectId, sprintId, assigneeId } = req.body;
+    const {
+      title,
+      description,
+      type,
+      status,
+      priority,
+      storyPoints,
+      dueDate,
+      projectId,
+      sprintId,
+      assigneeId,
+    } = req.body;
     const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
 
-    if (!email) return res.status(401).json({ error: "Authentication required" });
-    if (!title || !projectId) return res.status(400).json({ error: "Title and project ID are required" });
+    if (!email)
+      return res.status(401).json({ error: "Authentication required" });
+    if (!title || !projectId)
+      return res
+        .status(400)
+        .json({ error: "Title and project ID are required" });
 
     const user = await prisma.user.findFirst({ where: { email } });
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -248,9 +261,17 @@ export const createTask = async (req, res) => {
     if (!project) return res.status(404).json({ error: "Project not found" });
 
     const workspaceMember = await prisma.workspaceMember.findUnique({
-      where: { workspaceId_userId: { workspaceId: project.workspaceId, userId: user.id } },
+      where: {
+        workspaceId_userId: {
+          workspaceId: project.workspaceId,
+          userId: user.id,
+        },
+      },
     });
-    if (!workspaceMember) return res.status(403).json({ error: "User is not a member of this workspace" });
+    if (!workspaceMember)
+      return res
+        .status(403)
+        .json({ error: "User is not a member of this workspace" });
 
     const taskData = {
       title,

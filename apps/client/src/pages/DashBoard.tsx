@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import Members from "../components/Members";
 import Sprint from "../components/Sprint";
 import Calendar from "./Calendar";
+import Roadmap from "../components/Roadmap";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -56,7 +57,9 @@ function DashBoard() {
       case "members":
         return <Members workspaceName={workspaceCode || ""} />;
       case "calendar":
-        return <Calendar  workspaceName={workspaceCode || ""} />
+        return <Calendar workspaceName={workspaceCode || ""} />;
+      case "roadmap":
+        return <Roadmap workspaceName={workspaceCode || ""} />;
       case "sprints":
         return selectedSprintId ? (
           <Sprint sprintId={selectedSprintId} />

@@ -1,6 +1,109 @@
 import prisma from "../db.js";
 
 // Create a new task
+// export const createTask = async (req, res) => {
+//   try {
+//     const {
+//       title,
+//       description,
+//       projectId,
+//       type,
+//       priority,
+//       dueDate,
+//       status,
+//       assigneeId,
+//     } = req.body;
+//     const { emailAddresses } = req.auth;
+//     const email = emailAddresses?.[0]?.emailAddress;
+
+//     if (!title || !projectId) {
+//       return res
+//         .status(400)
+//         .json({ error: "Title and project ID are required" });
+//     }
+
+//     // Find user by email
+//     const user = await prisma.user.findFirst({
+//       where: { email: email },
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+
+//     // Find the project and its workspace
+//     const project = await prisma.project.findUnique({
+//       where: { id: projectId },
+//       select: { id: true, workspaceId: true },
+//     });
+
+//     if (!project) {
+//       return res.status(404).json({ error: "Project not found" });
+//     }
+
+//     // Fetch the workspace name using the workspaceId
+//     const workspace = await prisma.workspace.findUnique({
+//       where: { id: project.workspaceId },
+//       select: { name: true }, // Assuming you want the workspace name
+//     });
+
+//     if (!workspace) {
+//       return res.status(404).json({ error: "Workspace not found" });
+//     }
+
+//     // Check if user is a member of the workspace
+//     const workspaceMember = await prisma.workspaceMember.findUnique({
+//       where: {
+//         workspaceId_userId: {
+//           workspaceId: project.workspaceId,
+//           userId: user.id,
+//         },
+//       },
+//     });
+
+//     if (!workspaceMember) {
+//       return res
+//         .status(403)
+//         .json({ error: "User is not a member of the project’s workspace" });
+//     }
+
+//     // Create the task with the workspace name as parentId
+//     const task = await prisma.task.create({
+//       data: {
+//         title,
+//         description: description || null,
+//         projectId,
+//         type: type || "TASK", // Default to TASK if not provided
+//         priority: priority || "MEDIUM", // Default to MEDIUM
+//         status: status || "TODO", // Default to TODO if not provided
+//         dueDate: dueDate ? new Date(dueDate) : null,
+//         creatorId: user.id, // Set the creator
+//         assigneeId: assigneeId,
+//         parentId: workspace.name, // Set parentId to the workspace name
+//       },
+//     });
+
+//     // Log activity for task creation
+//     try {
+//       await prisma.activity.create({
+//         data: {
+//           type: "CREATED",
+//           content: `Task "${task.title}" was created`,
+//           userId: user.id,
+//           taskId: task.id,
+//         },
+//       });
+//     } catch (activityError) {
+//       console.error("Failed to log activity:", activityError);
+//     }
+
+//     res.status(201).json({ message: "Task created successfully", task });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to create task" });
+//   }
+// };
+
 export const createTask = async (req, res) => {
   try {
     const {
@@ -44,7 +147,7 @@ export const createTask = async (req, res) => {
     // Fetch the workspace name using the workspaceId
     const workspace = await prisma.workspace.findUnique({
       where: { id: project.workspaceId },
-      select: { name: true }, // Assuming you want the workspace name
+      select: { name: true },
     });
 
     if (!workspace) {
@@ -73,13 +176,13 @@ export const createTask = async (req, res) => {
         title,
         description: description || null,
         projectId,
-        type: type || "TASK", // Default to TASK if not provided
-        priority: priority || "MEDIUM", // Default to MEDIUM
-        status: status || "TODO", // Default to TODO if not provided
+        type: type || "TASK",
+        priority: priority || "MEDIUM",
+        status: status || "TODO",
         dueDate: dueDate ? new Date(dueDate) : null,
-        creatorId: user.id, // Set the creator
+        creatorId: user.id,
         assigneeId: assigneeId,
-        parentId: workspace.name, // Set parentId to the workspace name
+        parentId: workspace.name,
       },
     });
 
@@ -95,6 +198,36 @@ export const createTask = async (req, res) => {
       });
     } catch (activityError) {
       console.error("Failed to log activity:", activityError);
+    }
+
+    // Create a notification for the creator
+    try {
+      await prisma.notification.create({
+        data: {
+          title: `You Created a Task: ${task.title}`,
+          content: `You have created a new task: ${task.title} in project ${projectId}`,
+          userId: user.id,
+          isRead: false,
+        },
+      });
+    } catch (notificationError) {
+      console.error("Failed to create notification:", notificationError);
+    }
+
+    // Create a notification for the assignee (if there is one)
+    if (assigneeId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            title: `New Task Assigned: ${task.title}`,
+            content: `You have been assigned a new task: ${task.title} in project ${projectId}`,
+            userId: assigneeId,
+            isRead: false,
+          },
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification:", notificationError);
+      }
     }
 
     res.status(201).json({ message: "Task created successfully", task });

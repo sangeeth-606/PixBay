@@ -6,6 +6,7 @@ import projectRoutes from './routes/projectRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import sprintRoutes from './routes/sprintRoutes.js';
 import roadmapRoutes from './routes/roadmapRoutes.js';
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes); 
 app.use('/api/sprints', sprintRoutes);
 app.use('/api/roadmap',roadmapRoutes)
+app.use("/api/notifications", notificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Server is running' });

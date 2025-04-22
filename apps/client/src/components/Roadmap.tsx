@@ -14,12 +14,14 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import RoadMapForm from "./ RoadMapForm";
+import RoadMapForm from "./RoadMapForm";
 
 interface Task {
   id: string;
   title: string;
   key: string;
+  status?: string; // Added status property
+  priority?: string; // Added priority property
   assignee?: { id: string; name: string };
   tags?: { id: string; name: string }[];
 }
@@ -112,6 +114,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // Add this new state
 
   // State variables for the form
   const [title, setTitle] = useState("");
@@ -191,7 +194,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
             throw new Error("Authentication token not found");
           }
           const response = await axios.get(
-            `/api/roadmap/milestones/${milestoneId}/tasks`,
+            `http://localhost:5000/api/roadmap/milestones/${milestoneId}/tasks`,
             {
               headers: { Authorization: `Bearer ${authToken}` },
             }
@@ -239,6 +242,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
       setError("Please select a project");
       return;
     }
+    setIsSubmitting(true); // Set loading state to true before API call
     try {
       const authToken = await getToken();
       if (!authToken) {
@@ -270,11 +274,13 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
         errorMsg = err.message;
       }
       setError(errorMsg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-[#1C1C1C] text-white rounded-lg border border-[#2C2C2C] overflow-hidden">
+    <div className="bg-[#1C1C1C] text-white rounded-lg border border-[#2C2C2C] overflow-hidden my-6 mx-4">
       {/* Header Section */}
       <div className="p-6 border-b border-[#2C2C2C] flex justify-between items-center">
         <div>
@@ -446,9 +452,18 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                                   <span className="font-medium">
                                     {task.title}
                                   </span>
-                                  <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded">
-                                    {task.key}
-                                  </span>
+                                  <div>
+                                    <span
+                                      className={`text-xs ${task.status === "DONE" ? "text-green-500" : "text-orange-500"}`}
+                                    >
+                                      {task.status}
+                                    </span>
+                                    <span
+                                      className={`text-xs ml-2 ${task.priority === "HIGH" ? "text-red-500" : "text-yellow-500"}`}
+                                    >
+                                      {task.priority}
+                                    </span>
+                                  </div>
                                 </div>
                                 {task.assignee && (
                                   <p className="text-xs text-gray-400 mt-1">
@@ -518,6 +533,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           error={error}
+          isLoading={isSubmitting} // Pass the loading state to the form
           onClose={() => {
             setShowCreateForm(false);
             setError(null);

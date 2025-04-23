@@ -35,6 +35,16 @@ export const createWorkspace = async (req, res) => {
     res
       .status(201)
       .json({ message: "Workspace created successfully", Workspace });
+
+    const room = await prisma.room.create({
+      data: {
+        name,
+        ownerId: user.id,
+      },
+    });
+
+    // Respond with success
+    res.status(201).json({ message: "Room created successfully", room });
   } catch (error) {
     console.error("Error creating workspace:", error);
     res.status(500).json({ error: "failed to create workspace" });
@@ -118,12 +128,12 @@ export const getUserWorkspaces = async (req, res) => {
 export const workSpaceMembers = async (req, res) => {
   try {
     const { name } = req.params;
-    console.log("Workspace name received:", name); 
-    
+    console.log("Workspace name received:", name);
+
     if (!name) {
       return res.status(400).json({ error: "Workspace name is required" });
     }
-    
+
     // Find the workspace by name
     const workspace = await prisma.workspace.findFirst({
       where: { name },
@@ -135,9 +145,9 @@ export const workSpaceMembers = async (req, res) => {
                 id: true,
                 name: true,
                 email: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         projects: {
           select: {
@@ -145,10 +155,10 @@ export const workSpaceMembers = async (req, res) => {
             name: true,
             key: true,
             status: true,
-            progress: true
-          }
-        }
-      }
+            progress: true,
+          },
+        },
+      },
     });
 
     if (!workspace) {
@@ -161,16 +171,16 @@ export const workSpaceMembers = async (req, res) => {
       name: workspace.name,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
-      members: workspace.members.map(member => ({
+      members: workspace.members.map((member) => ({
         id: member.user.id,
         name: member.user.name,
         email: member.user.email,
         role: member.role,
-        joinedAt: member.joinedAt
+        joinedAt: member.joinedAt,
       })),
       projects: workspace.projects,
       memberCount: workspace.members.length,
-      projectCount: workspace.projects.length
+      projectCount: workspace.projects.length,
     };
 
     res.status(200).json(workspaceDetails);

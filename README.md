@@ -101,4 +101,3 @@ PixBay Workspace builds on the original idea of real-time collaboration (video, 
 
 It’s designed for small to medium-sized teams who need an all-in-one solution for remote or distributed work, eliminating the need to juggle multiple tools.  
 
-

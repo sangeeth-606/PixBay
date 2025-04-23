@@ -8,6 +8,7 @@ import Sprint from "../components/Sprint";
 import Calendar from "./Calendar";
 import Roadmap from "../components/Roadmap";
 import Inbox from "../components/Inbox";
+import { JoinCallButton } from "../components/VideoButton";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -104,8 +105,11 @@ function DashBoard() {
         <Navbar workspaceCode={workspaceCode} />
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto bg-[#121212]">
+        <main className="flex-1 overflow-auto bg-[#121212] relative">
           {renderMainContent()}
+          <div className="absolute bottom-4 right-4 z-50">
+            <JoinCallButton />
+          </div>
         </main>
       </div>
     </div>

@@ -22,6 +22,28 @@ model User {
   workspaces      WorkspaceMember[]
   notifications   Notification[]
   activities      Activity[]
+  rooms           Room[]
+  messages        ChatMessage[]
+}
+
+model Room {
+  id             String        @id @default(uuid())
+  name           String        @unique
+  ownerId        String
+  owner          User          @relation(fields: [ownerId], references: [id])
+  createdAt      DateTime      @default(now())
+  whiteboardData Json?
+  chatMessages   ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  roomName  String
+  room      Room     @relation(fields: [roomName], references: [name])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
 }
 
 enum UserRole {

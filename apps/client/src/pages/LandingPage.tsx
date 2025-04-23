@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   ArrowRight,
@@ -17,7 +18,7 @@ import SignIn from "../components/SignIn";
 interface Workspace {
   id: string | number;
   name: string;
-  // Add other properties your workspace objects have
+
 }
 
 const WorkSpaceNameCode = () => {
@@ -52,7 +53,7 @@ const LandingPage = () => {
       if (isSignedIn && email) {
         const storedName = localStorage.getItem("userName");
         
-        // Always check if user exists in database regardless of localStorage
+      
         try {
           const token = await getToken();
           const response = await axios.get(
@@ -63,7 +64,7 @@ const LandingPage = () => {
           );
 
           if (response.data.exists && storedName) {
-            // User exists in database AND we have a stored name
+        
             setUserName(storedName);
           } else {
             // Either user doesn't exist in DB OR we don't have a stored name

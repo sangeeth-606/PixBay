@@ -11,6 +11,7 @@ import {
   GitPullRequest,
   BarChart2,
   Plus,
+  MessageCircle,
 } from "lucide-react";
 import { FormModal } from "./FormModal";
 import { SprintFormModal } from "./SprintFormModal";
@@ -487,6 +488,30 @@ export function Sidebar({
                 <Users className="mr-2 h-4 w-4" />
               </motion.div>
               <span>Members</span>
+            </motion.button>
+
+            {/* Messages - new item */}
+            <motion.button
+              className={classNames(
+                "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                selectedItem === "messages"
+                  ? "bg-emerald-500 text-white"
+                  : "hover:bg-[#2C2C2C]"
+              )}
+              onClick={() => onItemSelect("messages")}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              variants={itemVariants}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.div
+                whileHover={{ rotate: selectedItem === "messages" ? 0 : 15 }}
+                transition={{ duration: 0.2 }}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+              </motion.div>
+              <span>Messages</span>
             </motion.button>
 
             {/* Inbox */}

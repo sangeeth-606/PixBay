@@ -8,7 +8,9 @@ import Sprint from "../components/Sprint";
 import Calendar from "./Calendar";
 import Roadmap from "../components/Roadmap";
 import Inbox from "../components/Inbox";
+import ChatRoom from "../components/ChatRoom";
 import { JoinCallButton } from "../components/VideoButton";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -17,6 +19,11 @@ function DashBoard() {
     null
   );
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
+  const { userId } = useAuth();
+  const { user } = useUser();
+
+  const email = user?.emailAddresses?.[0]?.emailAddress || null;
+  console.log("dashBo", email);
 
   // Reset project selection when workspace changes
   useEffect(() => {
@@ -46,7 +53,10 @@ function DashBoard() {
     console.log("Current selected item:", selectedItem);
   }, [selectedItem]);
 
-  // Render the appropriate component based on selected item
+  const handleCloseChatRoom = () => {
+    setSelectedItem("");
+  };
+
   const renderMainContent = () => {
     switch (selectedItem) {
       case "projects":
@@ -63,7 +73,23 @@ function DashBoard() {
       case "roadmap":
         return <Roadmap workspaceName={workspaceCode || ""} />;
       case "inbox":
-        return <Inbox/>
+        return <Inbox />;
+      case "messages":
+      case "messages":
+        return (
+          <div className="h-full w-full flex">
+            <div className="w-[32rem] bg-[#1E1E1E] border-r border-emerald-700">
+              <ChatRoom
+                roomCode={workspaceCode || "general"}
+                userId={email || "anonymous"}
+                onClose={handleCloseChatRoom}
+              />
+            </div>
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-lg text-emerald-400  ">Hey</p>
+            </div>
+          </div>
+        );
       case "sprints":
         return selectedSprintId ? (
           <Sprint sprintId={selectedSprintId} />

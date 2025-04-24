@@ -75,7 +75,6 @@ function DashBoard() {
       case "inbox":
         return <Inbox />;
       case "messages":
-      case "messages":
         return (
           <div className="h-full w-full flex">
             <div className="w-[32rem] bg-[#1E1E1E] border-r border-emerald-700">

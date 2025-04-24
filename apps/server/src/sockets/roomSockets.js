@@ -30,11 +30,10 @@ export const roomSockets = (io) => {
         socket.to(roomName).emit("user-disconnected", peerId);
       });
     });
- 
+
     socket.on("send-message", async ({ roomCode, message, email }) => {
       console.log("Chat message received:", message, "for room:", roomCode);
       try {
-        // Look up the User by email to get the correct User.id
         const user = await prisma.user.findFirst({
           where: { email: email },
         });
@@ -54,7 +53,7 @@ export const roomSockets = (io) => {
 
         // Use user's name as sender instead of the email
         const messageData = {
-          sender: user.name, // Use user.name instead of message.sender
+          sender: user.name,
           text: message.text,
           timestamp: newMessage.createdAt,
         };

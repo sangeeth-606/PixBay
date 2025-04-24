@@ -9,6 +9,8 @@ import roadmapRoutes from './routes/roadmapRoutes.js';
 import notificationRoutes from "./routes/notificationRoutes.js";
 import { roomSockets } from './sockets/roomSockets.js';
 import { Server } from 'socket.io';
+import http from 'http';
+import { ExpressPeerServer } from 'peer';
 
 const app = express();
 const server = http.createServer(app);
@@ -54,6 +56,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

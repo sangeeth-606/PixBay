@@ -32,9 +32,7 @@ export const createWorkspace = async (req, res) => {
         },
       },
     });
-    res
-      .status(201)
-      .json({ message: "Workspace created successfully", Workspace });
+    
 
     const room = await prisma.room.create({
       data: {

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, Video, UserPlus, MicOff, VideoOff } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface TooltipProps {
   content: string;
@@ -51,19 +52,37 @@ const Tooltip = ({ content, children, side = "top" }: TooltipProps) => {
 
 interface JoinCallButtonProps {
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left" | "none";
+  roomCode: string;
+  userId: string;
 }
 
-export function JoinCallButton({ position = "bottom-right" }: JoinCallButtonProps) {
+export function JoinCallButton({ position = "bottom-right", roomCode, userId }: JoinCallButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const navigate = useNavigate();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Manage hover state
+  const handleMouseEnter = () => {
+    setIsExpanded(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsExpanded(false);
+  };
+
+  // Handle join call button click
+  const handleJoinCall = () => {
+    navigate('/Call', { state: { roomCode, userId, isMuted, isVideoOff } });
+  };
 
   // Close the expanded menu when clicking outside
-  const menuRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsExpanded(false);
       }
     };
@@ -100,6 +119,8 @@ export function JoinCallButton({ position = "bottom-right" }: JoinCallButtonProp
   return (
     <div
       ref={menuRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={`z-50 flex flex-col items-end space-y-2 ${position !== "none" ? getPositionClasses() : ""}`}
     >
       {isExpanded && (
@@ -153,13 +174,14 @@ export function JoinCallButton({ position = "bottom-right" }: JoinCallButtonProp
       )}
 
       <motion.button
+        ref={buttonRef}
         aria-label="Join video call"
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         className="flex items-center rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white 
         hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-600/20 
         ring-2 ring-emerald-600/50 ring-offset-2 ring-offset-[#171717]"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleJoinCall}
         animate={{
           boxShadow: [
             "0 10px 15px -3px rgba(16,185,129,0.2)",

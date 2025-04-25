@@ -10,7 +10,7 @@ import Roadmap from "../components/Roadmap";
 import Inbox from "../components/Inbox";
 import ChatRoom from "../components/ChatRoom";
 import { JoinCallButton } from "../components/VideoButton";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -19,7 +19,7 @@ function DashBoard() {
     null
   );
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
-  const { userId } = useAuth();
+  // const { userId } = useAuth();
   const { user } = useUser();
 
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
@@ -133,7 +133,8 @@ function DashBoard() {
         <main className="flex-1 overflow-auto bg-[#121212] relative">
           {renderMainContent()}
           <div className="absolute bottom-4 right-4 z-50">
-            <JoinCallButton />
+            <JoinCallButton roomCode={workspaceCode || "general"}
+                userId={email || "anonymous"}  />
           </div>
         </main>
       </div>

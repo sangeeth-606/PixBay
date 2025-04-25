@@ -1,6 +1,7 @@
 import LandingPage from "./pages/LandingPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashBoard from "./pages/DashBoard";
+import Call from "./pages/Call";
 // import Members from "./components/Members";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         {/* <Route path="/member" element={<Members workspaceName={work} />} /> */}
         <Route path="/workspace/:workspaceCode" element={<DashBoard />} />
+        <Route path="/call" element={<Call />} />
       </Routes>
     </BrowserRouter>
   );

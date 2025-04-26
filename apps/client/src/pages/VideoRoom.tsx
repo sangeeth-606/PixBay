@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
 import io from "socket.io-client";
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import ChatRoom from "../components/ChatRoom";
 import { motion, AnimatePresence } from "framer-motion";
+// import Excalidraww from "../components/Excalidraww";
 
 interface RoomProps {
   roomCode: string;
@@ -205,7 +207,8 @@ const VideoRoom: React.FC<RoomProps> = ({
     );
 
     // Skip if this is the user's own stream
-    if (peerId && (peerId === myPeerIdRef.current || peerId === myPeerId)) {
+    // Use only myPeerIdRef.current as the single source of truth
+    if (peerId && peerId === myPeerIdRef.current) {
       console.log("Ignoring own stream in remote videos");
       return;
     }
@@ -381,20 +384,11 @@ const VideoRoom: React.FC<RoomProps> = ({
           >
             <MessageCircle size={20} />
           </motion.button>
-
-          {/* <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={buttonClass(false)}
-            aria-label="Share room"
-          >
-            <Share2 size={20} />
-          </motion.button> */}
         </motion.div>
       </header>
 
       <AnimatePresence>
-        <motion.main
+        {/* <motion.main
           className={`flex-1 p-6 flex flex-col items-center justify-center overflow-hidden bg-[#171717] transition-all duration-300 ease-in-out ${
             showChatModal ? "mr-[320px]" : "mr-0"
           }`}
@@ -410,23 +404,15 @@ const VideoRoom: React.FC<RoomProps> = ({
               <p>{error}</p>
             </motion.div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-5xl h-full bg-[#1A1A1A] rounded-lg flex items-center justify-center border border-gray-800 shadow-lg overflow-hidden"
-            >
-              <div className="text-center p-6">
-                <h1 className="text-3xl font-bold text-white">
-                  <span className="block mb-2">Whiteboard</span>
-                  <span className="text-emerald-400">Coming Soon</span>
-                </h1>
-                <p className="text-gray-400 mt-2">
-                  This is a placeholder for future whiteboard functionality
-                </p>
+            <div>
+              <h1>My Excalidraw Thingyy</h1>
+              <div style={{ width: "800px", height: "500px" }}>
+                <Excalidraww />
               </div>
-            </motion.div>
+            </div>
           )}
-        </motion.main>
+        </motion.main> */}
+        <div>heyy</div>
       </AnimatePresence>
 
       <footer

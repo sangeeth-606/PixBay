@@ -1,3 +1,10 @@
+// Load environment variables first, before any other imports
+import dotenv from 'dotenv';
+const result = dotenv.config();
+if (result.error) {
+  console.error('⚠️ Error loading .env file:', result.error);
+}
+
 import express from 'express';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
@@ -11,6 +18,15 @@ import { roomSockets } from './sockets/roomSockets.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import { ExpressPeerServer } from 'peer';
+import { verifyDatabaseConnection } from './db.js';
+
+// Log environment variables for debugging (only non-sensitive ones)
+console.log('Environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  DATABASE_URL: process.env.DATABASE_URL ? '✓ SET' : '✗ MISSING',
+});
 
 const app = express();
 const server = http.createServer(app);
@@ -56,6 +72,19 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
+// Start server only after database connection is verified
+async function startServer() {
+  try {
+    await verifyDatabaseConnection();
+    
+    server.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+startServer();

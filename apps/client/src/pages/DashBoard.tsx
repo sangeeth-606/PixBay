@@ -85,7 +85,25 @@ function DashBoard() {
               />
             </div>
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-lg text-emerald-400  ">Hey</p>
+            <p 
+  className="
+    text-lg 
+    font-bold 
+    bg-gradient-to-r from-emerald-400 to-teal-500 
+    bg-clip-text text-transparent 
+    relative 
+    overflow-hidden 
+    animate-pulse
+    transform transition-all duration-1000
+    animate-bounce
+  "
+>
+  <span className="relative z-10 inline-block animate-pulse">
+    Hey
+  </span>
+  <span className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-500/20 opacity-50 animate-pulse blur-md"></span>
+  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-300 animate-[gradient_3s_ease-in-out_infinite] origin-left"></span>
+</p>
             </div>
           </div>
         );

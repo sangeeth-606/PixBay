@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.25.6",
-    "@excalidraw/excalidraw": "^0.18.0",
-    "@tailwindcss/vite": "^4.1.4",
     "@fontsource/inter": "^5.2.5",
     "@fullcalendar/core": "^6.1.17",
     "@fullcalendar/daygrid": "^6.1.17",
@@ -23,6 +21,7 @@
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@tailwindcss/vite": "^4.1.2",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.6.3",

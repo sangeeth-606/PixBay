@@ -6,6 +6,7 @@ import TaskInfo from "./TaskInfo";
 import Board from "./Board";
 import Projectinfo from "./ProjectInfo";
 import { Task, User, TaskStatus } from "../utils/taskTypes";
+import { motion, AnimatePresence } from "framer-motion"; // Import these
 
 interface KanbanBoardProps {
   projectId: string | null;
@@ -26,6 +27,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     propWorkspaceName || null
   );
   const [isFetchingMembers, setIsFetchingMembers] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
   const { getToken } = useAuth();
 
   const extractProjectIdFromUrl = () => {
@@ -83,6 +85,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   const fetchTasks = async () => {
     if (!effectiveProjectId) return;
+    setIsLoading(true); // Set loading to true when fetching starts
     try {
       const token = await getToken();
       const response = await axios.get(
@@ -101,6 +104,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
       setTasks([]);
+    } finally {
+      setIsLoading(false); // Set loading to false when done
     }
   };
 
@@ -163,6 +168,15 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     fetchTasks();
   };
 
+  const handleDescriptionUpdated = (taskId: string, newDescription: string) => {
+    // Update the task in the local state
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, description: newDescription } : task
+      )
+    );
+  };
+
   console.log("Tasks before rendering Board:", tasks); // Debug log
 
   return (
@@ -180,15 +194,41 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
             darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
           }`}
         >
-          <Board
-            tasks={tasks}
-            setTasks={setTasks}
-            onTaskMoved={handleTaskMoved}
-            onTaskDeleted={handleTaskDeleted}
-            onTaskClick={handleTaskClick}
-            onAddTaskClick={() => setIsAddModalOpen(true)}
-            darkMode={darkMode}
-          />
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex h-full w-full gap-6 p-6 overflow-x-auto overflow-y-auto"
+              >
+                <TaskColumnSkeleton darkMode={darkMode} title="TODO" />
+                <TaskColumnSkeleton darkMode={darkMode} title="IN PROGRESS" />
+                <TaskColumnSkeleton darkMode={darkMode} title="DONE" />
+                <TaskColumnSkeleton darkMode={darkMode} title="ARCHIVED" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Board
+                  tasks={tasks}
+                  setTasks={setTasks}
+                  onTaskMoved={handleTaskMoved}
+                  onTaskDeleted={handleTaskDeleted}
+                  onTaskClick={handleTaskClick}
+                  onAddTaskClick={() => setIsAddModalOpen(true)}
+                  darkMode={darkMode}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -202,59 +242,85 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         isFetchingMembers={isFetchingMembers}
       />
 
-      {selectedTask && (
-        <div
-          className={`fixed inset-0 z-50 flex items-center justify-center ${
-            isTaskInfoModalOpen ? "" : "hidden"
-          }`}
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-            }}
-            onClick={() => setIsTaskInfoModalOpen(false)}
-          ></div>
-          <div className="relative z-10 w-full max-w-4xl h-[80vh] overflow-y-auto rounded-lg shadow-xl">
-            <button
-              className={`absolute top-4 right-4 z-20 p-2 rounded-full ${
-                darkMode
-                  ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-              onClick={() => setIsTaskInfoModalOpen(false)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <TaskInfo
-              taskId={selectedTask.id}
-              title={selectedTask.title}
-              description={selectedTask.description}
-              darkMode={darkMode}
-              onTaskDeleted={() => {
-                setIsTaskInfoModalOpen(false);
-                setSelectedTask(null);
-                refreshTasks();
+      <AnimatePresence>
+        {selectedTask && isTaskInfoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`fixed inset-0 z-50 flex items-center justify-center`}
+          >
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
               }}
-            />
+              onClick={() => setIsTaskInfoModalOpen(false)}
+            ></div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 w-full max-w-4xl h-[80vh] overflow-y-auto rounded-lg shadow-xl"
+            >
+              <TaskInfo
+                taskId={selectedTask.id}
+                title={selectedTask.title}
+                description={selectedTask.description}
+                darkMode={darkMode}
+                onClose={() => setIsTaskInfoModalOpen(false)}
+                onTaskDeleted={() => {
+                  setIsTaskInfoModalOpen(false);
+                  setSelectedTask(null);
+                  refreshTasks();
+                }}
+                onDescriptionUpdated={(newDescription) => {
+                  handleDescriptionUpdated(selectedTask.id, newDescription);
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// Loading skeleton component for task columns
+interface SkeletonProps {
+  darkMode: boolean;
+  title: string;
+}
+
+const TaskColumnSkeleton: React.FC<SkeletonProps> = ({ darkMode, title }) => {
+  return (
+    <div className="w-72 shrink-0 animate-pulse">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className={`font-medium ${darkMode ? 'text-neutral-400' : 'text-gray-400'}`}>{title}</h3>
+        <span className="rounded text-sm text-neutral-400">-</span>
+      </div>
+      <div className={`h-full w-full ${darkMode ? 'bg-neutral-800/10' : 'bg-gray-200/50'}`}>
+        {/* Task card skeletons */}
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="mb-2">
+            <div className={`h-2 my-2 ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
+            <div 
+              className={`rounded p-3 ${
+                darkMode 
+                  ? 'border-neutral-700 bg-neutral-800/50' 
+                  : 'border-gray-300 bg-gray-200/70'
+              }`}
+            >
+              <div className={`h-4 w-3/4 rounded ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
+              <div className={`h-3 w-1/2 mt-2 rounded ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 };

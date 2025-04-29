@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiPlus, FiTrash } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // Import AnimatePresence
 import { FaFire } from "react-icons/fa";
 import { Task, User, TaskStatus, Priority } from "../utils/taskTypes";
 
@@ -222,15 +222,17 @@ const Column: React.FC<ColumnProps> = ({
             : "bg-gray-100/0"
         }`}
       >
-        {filteredTasks.map((t) => (
-          <Card
-            key={t.id}
-            task={t}
-            handleDragStart={handleDragStart}
-            onClick={() => onTaskClick(t.id)}
-            darkMode={darkMode}
-          />
-        ))}
+        <AnimatePresence>
+          {filteredTasks.map((t) => (
+            <Card
+              key={t.id}
+              task={t}
+              handleDragStart={handleDragStart}
+              onClick={() => onTaskClick(t.id)}
+              darkMode={darkMode}
+            />
+          ))}
+        </AnimatePresence>
         <DropIndicator beforeId={null} column={column} />
         {showAddButton && (
           <button
@@ -263,15 +265,23 @@ const Card: React.FC<CardProps> = ({ task, handleDragStart, onClick, darkMode })
   return (
     <>
       <DropIndicator beforeId={task.id} column={task.status} />
-      <motion.div layout layoutId={task.id}>
+      <motion.div 
+        layout 
+        layoutId={task.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="hover:shadow-md transition-shadow duration-200"
+      >
         <div
           draggable="true"
           onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, task)}
           onClick={onClick}
-          className={`cursor-grab rounded border p-3 active:cursor-grabbing ${
+          className={`cursor-grab rounded border p-3 active:cursor-grabbing hover:border-opacity-80 transition-colors ${
             darkMode
-              ? "border-neutral-700 bg-neutral-800 text-neutral-100"
-              : "border-gray-300 bg-white text-gray-900"
+              ? "border-neutral-700 bg-neutral-800 text-neutral-100 hover:bg-neutral-750"
+              : "border-gray-300 bg-white text-gray-900 hover:bg-gray-50"
           }`}
         >
           <p className="text-sm">{task.title}</p>
@@ -330,7 +340,7 @@ const BurnBarrel: React.FC<BurnBarrelProps> = ({ setTasks, onTaskDeleted, darkMo
       onDrop={handleDragEnd}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      className={`grid h-48 w-56 shrink-0 place-content-center rounded border text-3xl ${
+      className={`grid h-48 w-56 shrink-0 place-content-center rounded border text-3xl transition-colors duration-200 ${
         active
           ? darkMode
             ? "border-red-800 bg-red-800/20 text-red-500"
@@ -340,7 +350,16 @@ const BurnBarrel: React.FC<BurnBarrelProps> = ({ setTasks, onTaskDeleted, darkMo
           : "border-gray-400 bg-gray-400/20 text-gray-400"
       }`}
     >
-      {active ? <FaFire className="animate-bounce" /> : <FiTrash />}
+      {active ? 
+        <motion.div 
+          initial={{ scale: 0.9 }} 
+          animate={{ scale: 1.1 }} 
+          transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
+        >
+          <FaFire />
+        </motion.div> 
+        : <FiTrash />
+      }
     </div>
   );
 };

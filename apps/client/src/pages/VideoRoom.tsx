@@ -12,6 +12,7 @@ import {
   Share2,
 } from "lucide-react";
 import ChatRoom from "../components/ChatRoom";
+import WhiteBoard from "../components/WhiteBoard";
 import { motion, AnimatePresence } from "framer-motion";
 // import Excalidraww from "../components/Excalidraww";
 
@@ -366,11 +367,8 @@ const VideoRoom: React.FC<RoomProps> = ({
               <p>{error}</p>
             </motion.div>
           ) : (
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-white mb-4">Interactive Whiteboard</h1>
-              <div className="w-[800px] h-[500px] bg-gray-800/40 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center">
-                <p className="text-xl text-gray-400">Whiteboard Component Coming Soon</p>
-              </div>
+            <div className="w-full h-full">
+              <WhiteBoard roomCode={roomCode} userId={userId} />
             </div>
           )}
         </motion.main>

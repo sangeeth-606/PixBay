@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from "@clerk/clerk-react";
-import { motion } from 'framer-motion'; // Import motion
+import { motion } from 'framer-motion'; 
 
 interface TaskInfoProps {
   taskId: string;   

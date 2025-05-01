@@ -337,18 +337,7 @@ const VideoRoom: React.FC<RoomProps> = ({
       exit={{ opacity: 0 }}
       className="flex flex-col h-screen bg-[#171717] text-white font-sans relative overflow-hidden"
     >
-      <header className="flex justify-between items-center px-6 py-4 bg-[#171717] border-b border-gray-800 z-20 shadow-md">
-        <motion.p
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className="text-lg font-medium"
-        >
-          Room:{" "}
-          <span className="text-emerald-500 font-semibold">
-            {roomCode || "No Room Code"}
-          </span>
-        </motion.p>
-      </header>
+     
 
       <AnimatePresence>
         <motion.main
@@ -379,12 +368,7 @@ const VideoRoom: React.FC<RoomProps> = ({
           showChatModal ? "mr-[320px]" : "mr-0"
         }`}
       >
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xl font-medium text-white flex items-center">
-            <Users size={20} className="mr-2 text-emerald-500" />
-            Participants
-          </h3>
-        </div>
+     
 
         <div className="flex space-x-4 overflow-x-auto py-2">
           <motion.div
@@ -415,9 +399,9 @@ const VideoRoom: React.FC<RoomProps> = ({
                   )}
                 </span>
                 <div className="flex space-x-1">
-                  <span className="px-1.5 py-0.5 text-xs bg-emerald-500/20 text-emerald-400 rounded-sm">
+                  {/* <span className="px-1.5 py-0.5 text-xs bg-emerald-500/20 text-emerald-400 rounded-sm">
                     Host
-                  </span>
+                  </span> */}
                 </div>
               </div>
             </div>

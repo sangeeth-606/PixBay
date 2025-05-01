@@ -20,7 +20,7 @@ type DrawingAction = {
 const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [color, setColor] = useState("#000000");
+  const [color, setColor] = useState("#D3D3D3");
   const [brushSize, setBrushSize] = useState(5);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [tool, setTool] = useState("pen");
@@ -47,8 +47,8 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Initialize white background
-    ctx.fillStyle = "#ffffff";
+    // Initialize dark background
+    ctx.fillStyle = "#121212";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Set up socket connection
@@ -86,7 +86,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     if (!ctx) return;
 
     // Clear and redraw background
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#121212";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Redraw all actions
@@ -98,7 +98,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
 
     actions.forEach(action => {
       if (action.type === 'clear') {
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#121212";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else if (action.type === 'start') {
         currentX = action.x || 0;
@@ -132,7 +132,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     if (!ctx) return;
 
     if (action.type === 'clear') {
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "#121212";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else if (action.type === 'start') {
       ctx.beginPath();
@@ -165,7 +165,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       type: 'start',
       x,
       y,
-      color: tool === 'eraser' ? '#ffffff' : color,
+      color: tool === 'eraser' ? '#121212' : color,
       brushSize,
       tool
     };
@@ -175,7 +175,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     // Local drawing
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.strokeStyle = tool === 'eraser' ? '#ffffff' : color;
+    ctx.strokeStyle = tool === 'eraser' ? '#121212' : color;
     ctx.lineWidth = brushSize;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -227,7 +227,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     setPrevActions(prev => [...prev, action]);
 
     // Local clear
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#121212";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
@@ -251,10 +251,62 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       animate={{ opacity: 1 }}
       className="w-full h-full flex flex-col bg-[#171717]"
     >
-      <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
+      {/* <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
         <h2 className="text-xl font-bold text-white flex items-center">
-          <span className="text-emerald-500 mr-2">Collaborative Whiteboard</span>
+        
         </h2>
+      </div> */}
+      
+      {/* Toolbar - now has justify-between to push items to sides */}
+      <div className="flex justify-between items-center p-2 bg-[#1F1F1F] border-b border-gray-800">
+        {/* Left side tools */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setTool("pen")}
+            className={`p-2 rounded-md ${tool === 'pen' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#2C2C2C] text-gray-300'} hover:bg-[#3C3C3C] transition`}
+            title="Pen"
+          >
+            <Pen size={18} />
+          </button>
+          <button
+            onClick={() => setTool("eraser")}
+            className={`p-2 rounded-md ${tool === 'eraser' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#2C2C2C] text-gray-300'} hover:bg-[#3C3C3C] transition`}
+            title="Eraser"
+          >
+            <Eraser size={18} />
+          </button>
+          <div className="h-6 w-px bg-gray-700 mx-1"></div>
+          <div className="flex items-center ml-2">
+            <label htmlFor="color-picker" className="text-white mr-2 text-sm">
+              Color:
+            </label>
+            <input
+              type="color"
+              id="color-picker"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="h-8 w-8 cursor-pointer rounded border border-gray-600"
+              disabled={tool === 'eraser'}
+            />
+          </div>
+          <div className="flex items-center">
+            <label htmlFor="brush-size" className="text-white mr-2 text-sm">
+              Size:
+            </label>
+            <input
+              type="range"
+              id="brush-size"
+              min="1"
+              max="30"
+              value={brushSize}
+              onChange={(e) => setBrushSize(parseInt(e.target.value))}
+              className="w-24 accent-emerald-500"
+            />
+            <span className="text-white ml-2 w-6 text-sm">{brushSize}</span>
+          </div>
+        </div>
+        
+        {/* Right side - Undo and Clear buttons moved here */}
         <div className="flex items-center space-x-2">
           <button
             onClick={undoLastAction}
@@ -273,53 +325,6 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
         </div>
       </div>
       
-      {/* Toolbar */}
-      <div className="flex items-center p-2 bg-[#1F1F1F] border-b border-gray-800 space-x-2">
-        <button
-          onClick={() => setTool("pen")}
-          className={`p-2 rounded-md ${tool === 'pen' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#2C2C2C] text-gray-300'} hover:bg-[#3C3C3C] transition`}
-          title="Pen"
-        >
-          <Pen size={18} />
-        </button>
-        <button
-          onClick={() => setTool("eraser")}
-          className={`p-2 rounded-md ${tool === 'eraser' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#2C2C2C] text-gray-300'} hover:bg-[#3C3C3C] transition`}
-          title="Eraser"
-        >
-          <Eraser size={18} />
-        </button>
-        <div className="h-6 w-px bg-gray-700 mx-1"></div>
-        <div className="flex items-center ml-2">
-          <label htmlFor="color-picker" className="text-white mr-2 text-sm">
-            Color:
-          </label>
-          <input
-            type="color"
-            id="color-picker"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            className="h-8 w-8 cursor-pointer rounded border border-gray-600"
-            disabled={tool === 'eraser'}
-          />
-        </div>
-        <div className="flex items-center">
-          <label htmlFor="brush-size" className="text-white mr-2 text-sm">
-            Size:
-          </label>
-          <input
-            type="range"
-            id="brush-size"
-            min="1"
-            max="30"
-            value={brushSize}
-            onChange={(e) => setBrushSize(parseInt(e.target.value))}
-            className="w-24 accent-emerald-500"
-          />
-          <span className="text-white ml-2 w-6 text-sm">{brushSize}</span>
-        </div>
-      </div>
-      
       {/* Canvas */}
       <div className="flex-1 relative bg-gray-800 overflow-hidden">
         <canvas
@@ -328,7 +333,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
-          className="absolute top-0 left-0 w-full h-full cursor-crosshair bg-white"
+          className="absolute top-0 left-0 w-full h-full cursor-crosshair bg-[#121212]"
         />
       </div>
     </motion.div>

@@ -19,48 +19,85 @@ function DashBoard() {
     null
   );
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    return savedMode !== null ? savedMode === "true" : true;
+  });
   const { user } = useUser();
 
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
-  console.log("dashBo", email);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // You could also save this preference to localStorage here
-  };
-
-  // Reset project selection when workspace changes
+  // Load saved selections only once when component mounts and workspaceCode is available
   useEffect(() => {
-    setSelectedProjectId(null);
-    setSelectedSprintId(null);
-    setSelectedItem("");
+    if (workspaceCode) {
+      const storageKey = `workspace-${workspaceCode}-selectedItem`;
+      const savedItem = localStorage.getItem(storageKey);
+      console.log("Loading from localStorage:", storageKey, savedItem);
+
+      if (savedItem) {
+        setSelectedItem(savedItem);
+      }
+
+      // Load project and sprint IDs if needed
+      const savedProjectId = localStorage.getItem(
+        `workspace-${workspaceCode}-projectId`
+      );
+      const savedSprintId = localStorage.getItem(
+        `workspace-${workspaceCode}-sprintId`
+      );
+
+      if (savedProjectId) setSelectedProjectId(savedProjectId);
+      if (savedSprintId) setSelectedSprintId(savedSprintId);
+    }
   }, [workspaceCode]);
 
-  // Handle item selection from sidebar
+  // Save to localStorage whenever selectedItem changes
+  useEffect(() => {
+    if (workspaceCode && selectedItem) {
+      const storageKey = `workspace-${workspaceCode}-selectedItem`;
+      console.log("Saving to localStorage:", storageKey, selectedItem);
+      localStorage.setItem(storageKey, selectedItem);
+    }
+  }, [workspaceCode, selectedItem]);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prevMode) => {
+      const newMode = !prevMode;
+      localStorage.setItem("darkMode", String(newMode));
+      return newMode;
+    });
+  };
+
+
   const handleItemSelect = (itemKey: string) => {
-    console.log("Dashboard setting selected item to:", itemKey);
+    console.log("Selecting item:", itemKey);
     setSelectedItem(itemKey);
+
   };
 
   const handleProjectSelect = (projectId: string) => {
     setSelectedProjectId(projectId);
-    setSelectedItem("projects"); // Switch to projects view when a project is selected
+    setSelectedItem("projects");
+
+    if (workspaceCode) {
+      localStorage.setItem(`workspace-${workspaceCode}-projectId`, projectId);
+    }
   };
 
   const handleSprintSelect = (sprintId: string) => {
     setSelectedSprintId(sprintId);
-    setSelectedItem("sprints"); // Switch to sprints view when a sprint is selected
-  };
+    setSelectedItem("sprints");
 
-  // Add this to debug which content is being rendered
-  useEffect(() => {
-    console.log("Current selected item:", selectedItem);
-  }, [selectedItem]);
+    if (workspaceCode) {
+      localStorage.setItem(`workspace-${workspaceCode}-sprintId`, sprintId);
+    }
+  };
 
   const handleCloseChatRoom = () => {
     setSelectedItem("");
   };
+
+
 
   const renderMainContent = () => {
     switch (selectedItem) {
@@ -68,27 +105,26 @@ function DashBoard() {
         return (
           <KanbanBoard
             projectId={selectedProjectId}
-            workspaceName={workspaceCode} // Pass workspace name directly
-            darkMode={darkMode} // Pass darkMode to KanbanBoard
+            workspaceName={workspaceCode}
+            darkMode={darkMode}
           />
         );
       case "members":
         return <Members workspaceName={workspaceCode || ""} darkMode={darkMode} />;
       case "calendar":
-        return <Calendar  darkMode={darkMode} workspaceName={workspaceCode || ""} />;
+        return <Calendar darkMode={darkMode} workspaceName={workspaceCode || ""} />;
       case "roadmap":
-        return <Roadmap  darkMode={darkMode} workspaceName={workspaceCode || ""} />;
+        return <Roadmap darkMode={darkMode} workspaceName={workspaceCode || ""} />;
       case "inbox":
-        return <Inbox  darkMode={darkMode} />;
+        return <Inbox darkMode={darkMode} />;
       case "messages":
         return (
           <div className="h-full w-full flex">
             <div
-              className={`w-[32rem] ${
-                darkMode
-                  ? "bg-[#1E1E1E] border-emerald-700"
-                  : "bg-gray-50 border-emerald-300"
-              } border-r`}
+              className={`w-[32rem] ${darkMode
+                ? "bg-[#1E1E1E] border-emerald-700"
+                : "bg-gray-50 border-emerald-300"
+                } border-r`}
             >
               <ChatRoom
                 roomCode={workspaceCode || "general"}
@@ -113,16 +149,14 @@ function DashBoard() {
           <Sprint sprintId={selectedSprintId} darkMode={darkMode} /> // Pass darkMode prop
         ) : (
           <div
-            className={`flex h-full items-center justify-center ${
-              darkMode ? "bg-[#121212]" : "bg-gray-50"
-            }`}
+            className={`flex h-full items-center justify-center ${darkMode ? "bg-[#121212]" : "bg-gray-50"
+              }`}
           >
             <p
-              className={`text-lg ${
-                darkMode
-                  ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
-                  : "text-emerald-600 border-emerald-300 bg-white"
-              } border rounded-md p-4 shadow-md`}
+              className={`text-lg ${darkMode
+                ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
+                : "text-emerald-600 border-emerald-300 bg-white"
+                } border rounded-md p-4 shadow-md`}
             >
               Select a sprint from the sidebar or create a new one
             </p>
@@ -131,16 +165,14 @@ function DashBoard() {
       default:
         return (
           <div
-            className={`flex h-full items-center justify-center ${
-              darkMode ? "bg-[#121212]" : "bg-gray-50"
-            }`}
+            className={`flex h-full items-center justify-center ${darkMode ? "bg-[#121212]" : "bg-gray-50"
+              }`}
           >
             <p
-              className={`text-lg ${
-                darkMode
-                  ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
-                  : "text-emerald-600 border-emerald-300 bg-white"
-              } border rounded-md p-4 shadow-md`}
+              className={`text-lg ${darkMode
+                ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
+                : "text-emerald-600 border-emerald-300 bg-white"
+                } border rounded-md p-4 shadow-md`}
             >
               Select an option from the sidebar
             </p>
@@ -157,35 +189,9 @@ function DashBoard() {
           selectedItem={selectedItem}
           darkMode={darkMode}
           workspaceCode={workspaceCode || ""}
-          onProjectSelect={handleProjectSelect}
-          onSprintSelect={handleSprintSelect}
-          onItemSelect={handleItemSelect}
-        />
-      </div>
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top navigation bar */}
-        <Navbar
-          workspaceCode={workspaceCode}
-          darkMode={darkMode}
-          toggleDarkMode={toggleDarkMode}
-        />
-
-        {/* Main content */}
-        <main
-          className={`flex-1 overflow-auto ${
-            darkMode ? "bg-[#121212]" : "bg-gray-50"
-          } relative`}
-        >
-          {renderMainContent()}
-          <div className="absolute bottom-4 right-4 z-50">
-            <JoinCallButton
-              roomCode={workspaceCode || "general"}
-              userId={email || "anonymous"}
-            />
+          onProjectSelect={handleProjectSelect} onSprintSelect={handleSprintSelect} onItemSelect={handleItemSelect} />      </div>      {/* Main content area */}      <div className="flex-1 flex flex-col overflow-hidden">        {/* Top navigation bar */}        <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />        {/* Main content */}        <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}        >          {renderMainContent()}          <div className="absolute bottom-4 right-4 z-50">            <JoinCallButton roomCode={workspaceCode || "general"} userId={email || "anonymous"} />
           </div>
-        </main>
+          </main>
       </div>
     </div>
   );

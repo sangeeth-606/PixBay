@@ -129,7 +129,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose, darkMode
                       ? "bg-emerald-600"
                       : "bg-emerald-100"
                     : darkMode
-                      ? "bg-[#2C2C2C]"
+                      ? "" // Removed "bg-[#2C2C2C]" to eliminate the background
                       : "bg-gray-100"
                 )}
                 initial={{ opacity: 0 }}

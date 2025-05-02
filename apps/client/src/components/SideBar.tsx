@@ -26,7 +26,7 @@ interface SidebarProps {
   workspaceCode: string;
   onProjectCreated?: () => void;
   onProjectSelect: (projectId: string) => void;
-  onSprintSelect: (sprintId: string) => void; // Added parameter here
+  onSprintSelect: (sprintId: string) => void;
   onItemSelect: (item: string) => void;
 }
 interface Project {
@@ -48,7 +48,7 @@ export function Sidebar({
   darkMode = true,
   workspaceCode,
   onProjectSelect,
-  onSprintSelect, // Added parameter here
+  onSprintSelect,
   onItemSelect,
 }: SidebarProps) {
   const [projectsExpanded, setProjectsExpanded] = useState(true);
@@ -200,20 +200,20 @@ export function Sidebar({
       <FormModal
         isOpen={isProjectModalOpen}
         onClose={closeProjectModal}
-        darkMode={true}
+        darkMode={darkMode}
         onProjectCreated={getProjects}
       />
 
       <SprintFormModal
         isOpen={isSprintModalOpen}
         onClose={closeSprintModal}
-        darkMode={true}
+        darkMode={darkMode}
         workspaceName={workspaceCode}
         onSprintCreated={() => getSprints()}
       />
 
       <motion.div
-        className="flex h-full w-64 flex-col bg-[#171717] text-white "
+        className={`flex h-full w-64 flex-col ${darkMode ? 'bg-[#171717] text-white' : 'bg-white text-gray-800'}`}
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -227,7 +227,9 @@ export function Sidebar({
                   "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   selectedItem === "projects"
                     ? "bg-[#00875A] text-white hover:bg-[#006644] shadow-[0_0_0_1px_rgba(255,255,255,0.15),0_0_2px_0_rgba(255,255,255,0.1)]"
-                    : "hover:bg-[#2C2C2C] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
+                    : darkMode 
+                      ? "hover:bg-[#2C2C2C] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]" 
+                      : "hover:bg-gray-100 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_0_1px_0_rgba(0,0,0,0.03)]"
                 )}
                 onClick={() => {
                   setProjectsExpanded(!projectsExpanded);
@@ -279,14 +281,13 @@ export function Sidebar({
                           <motion.button
                             key={proj.id}
                             onClick={() => {
-                              // console.log("Project ID:", proj.id);
                               handleProjectSelect(proj.id);
                             }}
                             className={classNames(
                               "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                               selectedItem === proj.id
                                 ? "bg-emerald-500/20 text-emerald-500"
-                                : "hover:bg-[#2C2C2C]"
+                                : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
                             )}
                             variants={subItemVariants}
                             whileTap={{ scale: 0.98 }}
@@ -296,7 +297,7 @@ export function Sidebar({
                         ))}
                         {!isProjectModalOpen && (
                           <motion.div
-                            className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
+                            className={`w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 ${darkMode ? 'hover:bg-[#2C2C2C]' : 'hover:bg-gray-100'}`}
                             variants={subItemVariants}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -320,7 +321,7 @@ export function Sidebar({
                   "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   selectedItem === "sprints"
                     ? "bg-emerald-500 text-white"
-                    : "hover:bg-[#2C2C2C]"
+                    : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
                 )}
                 onClick={() => {
                   setSprintsExpanded(!sprintsExpanded);
@@ -373,12 +374,12 @@ export function Sidebar({
                                 "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                                 selectedItem === sprint.id
                                   ? "bg-emerald-500/20 text-emerald-500"
-                                  : "hover:bg-[#2C2C2C]"
+                                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
                               )}
                               variants={subItemVariants}
                               whileTap={{ scale: 0.98 }}
                               onClick={() => {
-                                onSprintSelect(sprint.id); // Use the onSprintSelect prop
+                                onSprintSelect(sprint.id);
                                 onItemSelect("sprints");
                               }}
                             >
@@ -398,12 +399,12 @@ export function Sidebar({
                             </motion.button>
                           ))
                         ) : (
-                          <div className="text-sm text-gray-400 px-3 py-2">
+                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} px-3 py-2`}>
                             No sprints found
                           </div>
                         )}
                         <motion.button
-                          className="w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 hover:bg-[#2C2C2C]"
+                          className={`w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 ${darkMode ? 'hover:bg-[#2C2C2C]' : 'hover:bg-gray-100'}`}
                           variants={subItemVariants}
                           whileTap={{ scale: 0.95 }}
                           onClick={openSprintModal}
@@ -424,7 +425,7 @@ export function Sidebar({
                 "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 selectedItem === "roadmap"
                   ? "bg-emerald-500 text-white"
-                  : "hover:bg-[#2C2C2C]"
+                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
               )}
               onClick={() => onItemSelect("roadmap")}
               whileHover={{ scale: 1.02 }}
@@ -448,7 +449,7 @@ export function Sidebar({
                 "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 selectedItem === "calendar"
                   ? "bg-emerald-500 text-white"
-                  : "hover:bg-[#2C2C2C]"
+                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
               )}
               onClick={() => onItemSelect("calendar")}
               whileHover={{ scale: 1.02 }}
@@ -472,7 +473,7 @@ export function Sidebar({
                 "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 selectedItem === "members"
                   ? "bg-emerald-500 text-white"
-                  : "hover:bg-[#2C2C2C]"
+                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
               )}
               onClick={() => onItemSelect("members")}
               whileHover={{ scale: 1.02 }}
@@ -496,7 +497,7 @@ export function Sidebar({
                 "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 selectedItem === "messages"
                   ? "bg-emerald-500 text-white"
-                  : "hover:bg-[#2C2C2C]"
+                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
               )}
               onClick={() => onItemSelect("messages")}
               whileHover={{ scale: 1.02 }}
@@ -511,7 +512,7 @@ export function Sidebar({
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
               </motion.div>
-              <span>Messages</span>
+              <span>Chat</span>
             </motion.button>
 
             {/* Inbox */}
@@ -520,7 +521,7 @@ export function Sidebar({
                 "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 selectedItem === "inbox"
                   ? "bg-emerald-500 text-white"
-                  : "hover:bg-[#2C2C2C]"
+                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
               )}
               onClick={() => onItemSelect("inbox")}
               whileHover={{ scale: 1.02 }}
@@ -541,13 +542,13 @@ export function Sidebar({
         </div>
 
         {/* Settings button at bottom */}
-        <div className="p-4 border-t border-[#2C2C2C]">
+        <div className={`p-4 border-t ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-200'}`}>
           <motion.button
             className={classNames(
               "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
               selectedItem === "settings"
                 ? "bg-emerald-500 text-white"
-                : "hover:bg-[#2C2C2C]"
+                : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
             )}
             onClick={() => onItemSelect("settings")}
             whileHover={{ scale: 1.02 }}

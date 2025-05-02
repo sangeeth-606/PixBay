@@ -20,8 +20,8 @@ interface Task {
   id: string;
   title: string;
   key: string;
-  status?: string; // Added status property
-  priority?: string; // Added priority property
+  status?: string;
+  priority?: string;
   assignee?: { id: string; name: string };
   tags?: { id: string; name: string }[];
 }
@@ -45,6 +45,7 @@ interface Project {
 
 interface RoadmapProps {
   workspaceName?: string;
+  darkMode: boolean;
 }
 
 const statusConfig = {
@@ -92,7 +93,7 @@ const statusConfig = {
   },
 };
 
-const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
+const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
   console.log("Workspace name prop:", workspaceName);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [expandedMilestones, setExpandedMilestones] = useState<string[]>([]);
@@ -114,9 +115,8 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // Add this new state
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // State variables for the form
   const [title, setTitle] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -242,7 +242,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
       setError("Please select a project");
       return;
     }
-    setIsSubmitting(true); // Set loading state to true before API call
+    setIsSubmitting(true);
     try {
       const authToken = await getToken();
       if (!authToken) {
@@ -280,19 +280,22 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
   };
 
   return (
-    <div className="bg-[#1C1C1C] text-white rounded-lg border border-[#2C2C2C] overflow-hidden my-6 mx-4">
+    <div className={`rounded-lg border overflow-hidden my-6 mx-4 ${darkMode ? 'bg-[#1C1C1C] text-white border-[#2C2C2C]' : 'bg-white text-black border-gray-300'}`}>
       {/* Header Section */}
-      <div className="p-6 border-b border-[#2C2C2C] flex justify-between items-center">
+      <div className={`p-6 border-b flex justify-between items-center ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-300'}`}>
         <div>
           <h2 className="text-2xl font-semibold tracking-tight">Roadmap</h2>
-          <p className="text-sm text-gray-400">
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Long-term planning and milestone tracking
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setCurrentView("timeline")}
-            className="flex items-center gap-1 px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+            className={`flex items-center gap-1 px-3 py-1 rounded transition-colors ${darkMode
+                ? 'bg-gray-700 text-white hover:bg-gray-600'
+                : 'bg-gray-200 text-black hover:bg-gray-300'
+              }`}
           >
             <Calendar className="w-4 h-4" />
             Timeline View
@@ -308,34 +311,43 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
       </div>
 
       {/* View Options */}
-      <div className="p-4 flex gap-2 border-b border-[#2C2C2C]">
+      <div className={`p-4 flex gap-2 border-b ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-300'}`}>
         <button
           onClick={() => setCurrentView("list")}
-          className={`px-3 py-1 rounded ${
-            currentView === "list"
-              ? "bg-[#252525] text-white"
-              : "bg-[#1C1C1C] text-gray-400"
-          } hover:bg-[#252525] transition-colors`}
+          className={`px-3 py-1 rounded transition-colors ${darkMode
+              ? currentView === "list"
+                ? "bg-[#252525] text-white"
+                : "bg-[#1C1C1C] text-gray-400"
+              : currentView === "list"
+                ? "bg-gray-200 text-black"
+                : "bg-white text-gray-700"
+            } hover:${darkMode ? 'bg-[#252525]' : 'bg-gray-100'}`}
         >
           List View
         </button>
         <button
           onClick={() => setCurrentView("timeline")}
-          className={`px-3 py-1 rounded ${
-            currentView === "timeline"
-              ? "bg-[#252525] text-white"
-              : "bg-[#1C1C1C] text-gray-400"
-          } hover:bg-[#252525] transition-colors`}
+          className={`px-3 py-1 rounded transition-colors ${darkMode
+              ? currentView === "timeline"
+                ? "bg-[#252525] text-white"
+                : "bg-[#1C1C1C] text-gray-400"
+              : currentView === "timeline"
+                ? "bg-gray-200 text-black"
+                : "bg-white text-gray-700"
+            } hover:${darkMode ? 'bg-[#252525]' : 'bg-gray-100'}`}
         >
           Timeline View
         </button>
         <button
           onClick={() => setCurrentView("dependencies")}
-          className={`px-3 py-1 rounded ${
-            currentView === "dependencies"
-              ? "bg-[#252525] text-white"
-              : "bg-[#1C1C1C] text-gray-400"
-          } hover:bg-[#252525] transition-colors`}
+          className={`px-3 py-1 rounded transition-colors ${darkMode
+              ? currentView === "dependencies"
+                ? "bg-[#252525] text-white"
+                : "bg-[#1C1C1C] text-gray-400"
+              : currentView === "dependencies"
+                ? "bg-gray-200 text-black"
+                : "bg-white text-gray-700"
+            } hover:${darkMode ? 'bg-[#252525]' : 'bg-gray-100'}`}
         >
           Dependencies
         </button>
@@ -348,21 +360,24 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
           </div>
         ) : error ? (
-          <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 flex items-start gap-2">
+          <div className={`p-4 rounded-lg flex items-start gap-2 ${darkMode
+              ? 'bg-red-500/10 border border-red-500/20 text-red-500'
+              : 'bg-red-100 border border-red-200 text-red-700'
+            }`}>
             <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
             <div>{error}</div>
           </div>
         ) : !workspaceName ? (
-          <div className="text-center py-8 text-gray-400">
+          <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Select a workspace to view its roadmap.
           </div>
         ) : milestones.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
+          <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             No milestones found for this workspace. Click "New Milestone" to
             create one.
           </div>
         ) : (
-          <div className="divide-y divide-[#2C2C2C]">
+          <div className={`divide-y ${darkMode ? 'divide-[#2C2C2C]' : 'divide-gray-200'}`}>
             {milestones.map((milestone) => {
               const status = statusConfig[milestone.status];
               const isExpanded = expandedMilestones.includes(milestone.id);
@@ -372,7 +387,8 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                 <div key={milestone.id} className="group">
                   <button
                     onClick={() => toggleMilestone(milestone.id)}
-                    className="w-full text-left p-6 hover:bg-[#252525] transition-colors duration-150 flex flex-col gap-3"
+                    className={`w-full text-left p-6 transition-colors duration-150 flex flex-col gap-3 ${darkMode ? 'hover:bg-[#252525]' : 'hover:bg-gray-100'
+                      }`}
                     aria-expanded={isExpanded}
                     aria-controls={`milestone-${milestone.id}-tasks`}
                   >
@@ -387,24 +403,24 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                             {status.label}
                           </span>
                         </h3>
-                        <p className="text-sm text-gray-400 mt-1">
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
                           {formatDateRange(
                             milestone.startDate,
                             milestone.endDate
                           )}
                         </p>
                         {milestone.owner && (
-                          <p className="text-sm text-gray-500">
+                          <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-700'}`}>
                             Owner: {milestone.owner.name}
                           </p>
                         )}
-                        <p className="text-sm text-gray-500">
+                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-700'}`}>
                           Project:{" "}
                           {projects.find((p) => p.id === milestone.projectId)
                             ?.name || "Unknown"}
                         </p>
                       </div>
-                      <span className="text-gray-400">
+                      <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
                         {isExpanded ? (
                           <ChevronUp className="w-5 h-5" />
                         ) : (
@@ -412,24 +428,24 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                         )}
                       </span>
                     </div>
-                    <div className="w-full bg-[#2C2C2C] rounded-full h-2 group-hover:bg-[#353535] transition-colors">
+                    <div className={`w-full rounded-full h-2 transition-colors ${darkMode ? 'bg-[#2C2C2C] group-hover:bg-[#353535]' : 'bg-gray-200 group-hover:bg-gray-300'
+                      }`}>
                       <div
                         className={`h-full rounded-full ${status.color} transition-all duration-300`}
                         style={{ width: `${milestone.progress}%` }}
                       ></div>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-400">
+                    <div className={`flex justify-between text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       <span>Progress</span>
                       <span>{milestone.progress}%</span>
                     </div>
                   </button>
                   <div
                     id={`milestone-${milestone.id}-tasks`}
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      isExpanded
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${isExpanded
                         ? "max-h-[1000px] opacity-100"
                         : "max-h-0 opacity-0"
-                    }`}
+                      }`}
                   >
                     <div className="px-6 pb-6 pt-2">
                       {loadingTasks[milestone.id] && isExpanded ? (
@@ -437,7 +453,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                           <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-500"></div>
                         </div>
                       ) : taskErrors[milestone.id] && isExpanded ? (
-                        <div className="p-3 text-center text-red-500 text-sm">
+                        <div className={`p-3 text-center text-sm ${darkMode ? 'text-red-500' : 'text-red-700'}`}>
                           {taskErrors[milestone.id]}
                         </div>
                       ) : (
@@ -446,7 +462,10 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                             tasksByMilestone[milestone.id].map((task) => (
                               <div
                                 key={task.id}
-                                className="p-3 bg-[#252525] rounded-lg border border-[#2C2C2C] hover:border-[#3C3C3C] transition-colors"
+                                className={`p-3 rounded-lg border transition-colors ${darkMode
+                                    ? 'bg-[#252525] border-[#2C2C2C] hover:border-[#3C3C3C]'
+                                    : 'bg-white border-gray-200 hover:border-gray-300'
+                                  }`}
                               >
                                 <div className="flex justify-between items-center">
                                   <span className="font-medium">
@@ -466,7 +485,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                                   </div>
                                 </div>
                                 {task.assignee && (
-                                  <p className="text-xs text-gray-400 mt-1">
+                                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
                                     Assigned to: {task.assignee.name}
                                   </p>
                                 )}
@@ -475,7 +494,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                                     {task.tags.map((tag) => (
                                       <span
                                         key={tag.id}
-                                        className="text-xs bg-[#2C2C2C] text-gray-300 px-1.5 py-0.5 rounded"
+                                        className={`text-xs px-1.5 py-0.5 rounded ${darkMode ? 'bg-[#2C2C2C] text-gray-300' : 'bg-gray-200 text-gray-700'}`}
                                       >
                                         {tag.name}
                                       </span>
@@ -485,7 +504,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                               </div>
                             ))
                           ) : (
-                            <div className="p-3 text-center text-gray-400 text-sm">
+                            <div className={`p-3 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                               No tasks found for this milestone
                             </div>
                           )}
@@ -493,10 +512,10 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
                             milestone.dependencies &&
                             milestone.dependencies.length > 0 && (
                               <div className="mt-2">
-                                <p className="text-xs text-gray-400">
+                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                   Depends on:
                                 </p>
-                                <ul className="list-disc list-inside text-sm text-gray-300">
+                                <ul className={`list-disc list-inside text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                   {milestone.dependencies.map((dep) => (
                                     <li key={dep.dependsOn.id}>
                                       {dep.dependsOn.title}
@@ -519,6 +538,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
       {/* Create Milestone Form */}
       {showCreateForm && (
         <RoadMapForm
+          darkMode={darkMode}
           projects={projects}
           title={title}
           setTitle={setTitle}
@@ -533,7 +553,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName }) => {
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           error={error}
-          isLoading={isSubmitting} // Pass the loading state to the form
+          isLoading={isSubmitting}
           onClose={() => {
             setShowCreateForm(false);
             setError(null);

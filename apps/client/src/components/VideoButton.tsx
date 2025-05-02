@@ -13,7 +13,7 @@ const Tooltip = ({ content, children, side = "top" }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  // Don't render tooltip if content is empty
+
   if (!content) {
     return <>{children}</>;
   }
@@ -32,17 +32,15 @@ const Tooltip = ({ content, children, side = "top" }: TooltipProps) => {
           ref={tooltipRef}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={`absolute z-50 rounded-md bg-[#1F1F1F] px-2 py-1 text-xs text-white shadow-lg border border-[#2C2C2C] ${
-            side === "top" ? "bottom-full mb-2 left-1/2 -translate-x-1/2" : "right-full mr-2 top-1/2 -translate-y-1/2"
-          }`}
+          className={`absolute z-50 rounded-md bg-[#1F1F1F] px-2 py-1 text-xs text-white shadow-lg border border-[#2C2C2C] ${side === "top" ? "bottom-full mb-2 left-1/2 -translate-x-1/2" : "right-full mr-2 top-1/2 -translate-y-1/2"
+            }`}
         >
           {content}
           <div
-            className={`absolute ${
-              side === "top"
+            className={`absolute ${side === "top"
                 ? "top-full left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#1F1F1F]"
                 : "left-full top-1/2 -translate-y-1/2 border-b-4 border-l-4 border-t-4 border-b-transparent border-l-[#1F1F1F] border-t-transparent"
-            }`}
+              }`}
           />
         </motion.div>
       )}
@@ -82,7 +80,7 @@ export function JoinCallButton({ position = "bottom-right", roomCode, userId }: 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+        buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsExpanded(false);
       }
     };
@@ -121,13 +119,13 @@ export function JoinCallButton({ position = "bottom-right", roomCode, userId }: 
       ref={menuRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`z-50 flex flex-col items-end space-y-2 ${position !== "none" ? getPositionClasses() : ""}`}
+      className={`z-50 flex flex-col items-center ${position !== "none" ? getPositionClasses() : ""}`}
     >
       {isExpanded && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex space-x-2 rounded-lg bg-[#171717] p-2 shadow-lg border border-[#2C2C2C]"
+          className="flex justify-between w-[140px] rounded-lg bg-[#171717] p-2 shadow-lg border border-[#2C2C2C] mb-[-1px]"
         >
           <Tooltip content={isMuted ? "Unmute" : "Mute"} side="top">
             <motion.button
@@ -135,9 +133,8 @@ export function JoinCallButton({ position = "bottom-right", roomCode, userId }: 
               variants={buttonVariants}
               whileHover="hover"
               whileTap="tap"
-              className={`flex h-9 w-9 items-center justify-center rounded-md border border-[#2C2C2C] ${
-                isMuted ? "bg-red-500/20 text-red-500" : "bg-[#1F1F1F] text-gray-300"
-              }`}
+              className={`flex h-9 w-9 items-center justify-center rounded-md border border-[#2C2C2C] ${isMuted ? "bg-red-500/20 text-red-500" : "bg-[#1F1F1F] text-gray-300"
+                }`}
               onClick={() => setIsMuted(!isMuted)}
             >
               {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -150,24 +147,11 @@ export function JoinCallButton({ position = "bottom-right", roomCode, userId }: 
               variants={buttonVariants}
               whileHover="hover"
               whileTap="tap"
-              className={`flex h-9 w-9 items-center justify-center rounded-md border border-[#2C2C2C] ${
-                isVideoOff ? "bg-red-500/20 text-red-500" : "bg-[#1F1F1F] text-gray-300"
-              }`}
+              className={`flex h-9 w-9 items-center justify-center rounded-md border border-[#2C2C2C] ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-[#1F1F1F] text-gray-300"
+                }`}
               onClick={() => setIsVideoOff(!isVideoOff)}
             >
               {isVideoOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
-            </motion.button>
-          </Tooltip>
-
-          <Tooltip content="Invite Others" side="top">
-            <motion.button
-              aria-label="Invite others to call"
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-[#2C2C2C] bg-[#1F1F1F] text-gray-300"
-            >
-              <UserPlus className="h-4 w-4" />
             </motion.button>
           </Tooltip>
         </motion.div>
@@ -178,7 +162,7 @@ export function JoinCallButton({ position = "bottom-right", roomCode, userId }: 
         aria-label="Join video call"
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        className="flex items-center rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white 
+        className="flex items-center rounded-md bg-emerald-600 px-5 py-3.5 text-sm font-medium text-white 
         hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-600/20 
         ring-2 ring-emerald-600/50 ring-offset-2 ring-offset-[#171717]"
         onClick={handleJoinCall}

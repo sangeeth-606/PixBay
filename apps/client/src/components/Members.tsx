@@ -200,9 +200,9 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
         )}
       </div>
 
-      <div className="border-t border-[#2C2C2C] p-4">
+      <div className="border-t border-[#2C2C2C] p-4 flex justify-center">
         <motion.button
-          className="flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+          className="flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

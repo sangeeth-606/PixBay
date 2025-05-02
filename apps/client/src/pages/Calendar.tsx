@@ -33,6 +33,7 @@ interface Task {
 
 interface CalendarProps {
   workspaceName?: string;
+  darkMode: boolean;
 }
 
 const convertTailwindColorToHex = (color: string) => {
@@ -81,12 +82,11 @@ const convertEventsToFullCalendarFormat = (events: CalendarEvent[]) => {
   });
 };
 
-const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
+const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
   const calendarRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [taskState, setTaskState] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const { getToken } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -191,32 +191,35 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-[#1C1C1C] text-white p-6 rounded-lg flex flex-col"
+      className={`w-full h-full rounded-lg flex flex-col p-6 ${
+        darkMode ? 'bg-[#1C1C1C] text-white' : 'bg-white text-black'
+      }`}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
-        <div className="flex items-center space-x-3">
-          <h2 className="text-2xl font-bold font-inter">Calendar</h2>
-          {workspaceName && (
-            <span className="text-sm text-gray-400">({workspaceName})</span>
-          )}
-        </div>
+        {/* <div className="flex items-center space-x-3">
+         
+        </div> */}
         <CalenderTaskModal
           workspaceName={workspaceName}
           isOpen={taskState}
           onClose={() => setTaskState(false)}
-          darkMode={isDarkMode}
+          darkMode={darkMode}
           projectId=""
           onTaskAdded={handleTaskAdded}
           selectedDate={selectedDate}
           getToken={getToken}
         />
 
-        <div className="flex space-x-2 bg-[#171717] rounded-md p-1">
+        <div className={`flex space-x-2 rounded-md p-1 ${
+          darkMode ? 'bg-[#171717]' : 'bg-gray-200'
+        }`}>
           {viewOptions.map((option) => (
             <button
               key={option.view}
               onClick={() => changeView(option.view)}
-              className="px-4 py-2 rounded-md text-sm font-medium transition-colors hover:bg-[#333] focus:outline-none"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors hover:${
+                darkMode ? 'bg-[#333]' : 'bg-gray-300'
+              } focus:outline-none`}
             >
               {option.name}
             </button>
@@ -224,7 +227,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
         </div>
       </div>
 
-      <div className="fullcalendar-dark flex-grow overflow-hidden">
+      <div className={`fullcalendar-${darkMode ? 'dark' : 'light'} flex-grow overflow-hidden`}>
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -243,10 +246,10 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
           eventClick={handleEventClick}
           height={containerHeight || "auto"}
           themeSystem="standard"
-          dayCellClassNames="bg-[#171717] hover:bg-[#333] border-[#2C2C2C]"
+          dayCellClassNames={darkMode ? "bg-[#171717] hover:bg-[#333] border-[#2C2C2C]" : "bg-white hover:bg-gray-100 border-gray-200"}
           eventClassNames="rounded-md"
-          slotLabelClassNames="text-gray-400"
-          dayHeaderClassNames="text-gray-400 font-medium"
+          slotLabelClassNames={darkMode ? "text-gray-400" : "text-gray-600"}
+          dayHeaderClassNames={darkMode ? "text-gray-400 font-medium" : "text-gray-700 font-medium"}
           titleFormat={{ year: "numeric", month: "long" }}
           buttonText={{
             today: "Today",
@@ -254,8 +257,8 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName }) => {
             week: "Week",
             day: "Day",
           }}
-          viewClassNames="bg-[#1C1C1C]"
-          allDayClassNames="bg-[#1C1C1C] text-white"
+          viewClassNames={darkMode ? "bg-[#1C1C1C]" : "bg-white"}
+          allDayClassNames={darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-black"}
           nowIndicatorClassNames="bg-emerald-500"
         />
       </div>

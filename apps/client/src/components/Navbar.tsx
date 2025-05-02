@@ -1,23 +1,17 @@
 import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
-import { useState } from "react";
 import SignIn from "./SignIn";
 
 interface NavbarProps {
   workspaceCode?: string;
+  darkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
-function Navbar({ workspaceCode }: NavbarProps) {
-  const [darkMode, setDarkMode] = useState(true);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // In a real implementation, you would apply dark mode changes to the app
-  };
-
+function Navbar({ workspaceCode, darkMode, toggleDarkMode }: NavbarProps) {
   return (
     <motion.header 
-      className="bg-[#171717] text-white border-b border-[#2C2C2C] h-16 flex items-center justify-between px-6 "
+      className={`${darkMode ? 'bg-[#171717] text-white' : 'bg-white text-gray-800'} border-b ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-200'} h-16 flex items-center justify-between px-6`}
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -36,7 +30,7 @@ function Navbar({ workspaceCode }: NavbarProps) {
       <div className="flex items-center space-x-4">
         <motion.button 
           onClick={toggleDarkMode} 
-          className="p-2 rounded-md hover:bg-[#2C2C2C]"
+          className={`p-2 rounded-md ${darkMode ? 'hover:bg-[#2C2C2C]' : 'hover:bg-gray-100'}`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

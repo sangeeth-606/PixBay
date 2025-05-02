@@ -6,19 +6,20 @@ import TaskInfo from "./TaskInfo";
 import Board from "./Board";
 import Projectinfo from "./ProjectInfo";
 import { Task, User, TaskStatus } from "../utils/taskTypes";
-import { motion, AnimatePresence } from "framer-motion"; // Import these
+import { motion, AnimatePresence } from "framer-motion";
 
 interface KanbanBoardProps {
   projectId: string | null;
   workspaceName?: string | null;
+  darkMode?: boolean; // Add darkMode as a prop
 }
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
   projectId,
   workspaceName: propWorkspaceName,
+  darkMode = true, // Default to dark mode if not provided
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
@@ -27,7 +28,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     propWorkspaceName || null
   );
   const [isFetchingMembers, setIsFetchingMembers] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
   const { getToken } = useAuth();
 
   const extractProjectIdFromUrl = () => {

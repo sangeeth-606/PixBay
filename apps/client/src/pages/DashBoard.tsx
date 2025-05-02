@@ -73,13 +73,13 @@ function DashBoard() {
           />
         );
       case "members":
-        return <Members workspaceName={workspaceCode || ""} />;
+        return <Members workspaceName={workspaceCode || ""} darkMode={darkMode} />;
       case "calendar":
         return <Calendar  darkMode={darkMode} workspaceName={workspaceCode || ""} />;
       case "roadmap":
         return <Roadmap  darkMode={darkMode} workspaceName={workspaceCode || ""} />;
       case "inbox":
-        return <Inbox />;
+        return <Inbox  darkMode={darkMode} />;
       case "messages":
         return (
           <div className="h-full w-full flex">
@@ -94,6 +94,7 @@ function DashBoard() {
                 roomCode={workspaceCode || "general"}
                 userId={email || "anonymous"}
                 onClose={handleCloseChatRoom}
+                darkMode={darkMode}
               />
             </div>
             <div className="flex-1 flex items-center justify-center">

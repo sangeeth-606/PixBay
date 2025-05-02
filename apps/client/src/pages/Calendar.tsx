@@ -196,9 +196,6 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
       }`}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
-        {/* <div className="flex items-center space-x-3">
-         
-        </div> */}
         <CalenderTaskModal
           workspaceName={workspaceName}
           isOpen={taskState}

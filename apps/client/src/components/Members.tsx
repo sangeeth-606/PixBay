@@ -93,17 +93,17 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Shield className="h-4 w-4 text-emerald-500" />;
+        return <Shield className={`h-4 w-4 ${darkMode ? 'text-emerald-500' : 'text-emerald-600'}`} />;
       case "MANAGER":
-        return <User className="h-4 w-4 text-blue-500" />;
+        return <User className={`h-4 w-4 ${darkMode ? 'text-blue-500' : 'text-blue-600'}`} />;
       default:
-        return <UserCircle className="h-4 w-4 text-gray-400" />;
+        return <UserCircle className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />;
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[#171717]">
+      <div className={`flex h-full w-full items-center justify-center ${darkMode ? 'bg-[#171717]' : 'bg-white'}`}>
         <LoadingSpinner size={30} />
       </div>
     );
@@ -111,19 +111,23 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
 
   if (error) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-4 text-center">
+      <div className={`flex h-full flex-col items-center justify-center p-4 text-center ${darkMode ? 'bg-[#171717]' : 'bg-white'}`}>
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="rounded-full bg-red-500/20 p-3 mb-3"
+          className={`rounded-full p-3 mb-3 ${darkMode ? 'bg-red-500/20' : 'bg-red-100'}`}
         >
-          <Users className="h-6 w-6 text-red-500" />
+          <Users className={`h-6 w-6 ${darkMode ? 'text-red-500' : 'text-red-600'}`} />
         </motion.div>
-        <h3 className="text-lg font-medium text-red-500">Error</h3>
-        <p className="mt-1 text-sm text-gray-400">{error}</p>
+        <h3 className={`text-lg font-medium ${darkMode ? 'text-red-500' : 'text-red-600'}`}>Error</h3>
+        <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{error}</p>
         <button
           onClick={fetchWorkspaceMembers}
-          className="mt-4 rounded-md bg-[#2C2C2C] px-4 py-2 text-sm text-white hover:bg-[#3C3C3C] transition-colors"
+          className={`mt-4 rounded-md px-4 py-2 text-sm transition-colors ${
+            darkMode
+              ? 'bg-[#2C2C2C] text-white hover:bg-[#3C3C3C]'
+              : 'bg-gray-200 text-black hover:bg-gray-300'
+          }`}
         >
           Try Again
         </button>
@@ -132,14 +136,14 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
   }
 
   return (
-    <div className="flex h-full flex-col bg-[#171717] text-white">
-      <div className="border-b border-[#2C2C2C] p-4">
+    <div className={`flex h-full flex-col ${darkMode ? 'bg-[#171717] text-white' : 'bg-white text-black'}`}>
+      <div className={`border-b p-4 ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-300'}`}>
         <div className="flex items-center">
-          <Users className="mr-2 h-5 w-5 text-emerald-500" />
+          <Users className={`mr-2 h-5 w-5 ${darkMode ? 'text-emerald-500' : 'text-emerald-600'}`} />
           <h2 className="text-lg font-medium">Workspace Members</h2>
         </div>
         {workspaceDetails && (
-          <p className="mt-1 text-sm text-gray-400">
+          <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             {workspaceDetails.memberCount}{" "}
             {workspaceDetails.memberCount === 1 ? "member" : "members"}
           </p>
@@ -148,7 +152,7 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
 
       <div className="flex-1 overflow-y-auto p-4">
         {!workspaceDetails ? (
-          <p className="text-gray-500 text-center py-8">
+          <p className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
             No workspace data available
           </p>
         ) : (
@@ -158,51 +162,70 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
             initial="hidden"
             animate="visible"
           >
-            {workspaceDetails.members.map((member) => (
-              <motion.div
-                key={member.id}
-                className="flex items-center justify-between rounded-md bg-[#1F1F1F] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
-                variants={itemVariants}
-                whileHover={{
-                  scale: 1.02,
-                  backgroundColor: "rgba(44, 44, 44, 1)",
-                }}
-              >
-                <div className="flex items-center">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2C2C2C] text-emerald-500">
-                    {member.name ? member.name[0].toUpperCase() : "?"}
+            {workspaceDetails.members.map((member) => {
+              // Define all styles outside the JSX for clarity
+              const cardBgClass = darkMode ? 'bg-[#1F1F1F]' : 'bg-gray-100';
+              const cardShadowClass = darkMode ? 'shadow-[0_0_0_1px_rgba(255,255,255,0.08)]' : 'shadow-md';
+              const avatarBgClass = darkMode ? 'bg-[#2C2C2C]' : 'bg-gray-200';
+              const avatarTextClass = darkMode ? 'text-emerald-500' : 'text-emerald-600';
+              const nameTextClass = darkMode ? 'text-white' : 'text-gray-800';
+              const emailTextClass = darkMode ? 'text-gray-400' : 'text-gray-600';
+              
+              let roleBgClass = '';
+              let roleTextClass = '';
+              
+              if (member.role === "ADMIN") {
+                roleBgClass = darkMode ? 'bg-emerald-500/20' : 'bg-emerald-100';
+                roleTextClass = darkMode ? 'text-emerald-500' : 'text-emerald-600';
+              } else if (member.role === "MANAGER") {
+                roleBgClass = darkMode ? 'bg-blue-500/20' : 'bg-blue-100';
+                roleTextClass = darkMode ? 'text-blue-500' : 'text-blue-600';
+              } else {
+                roleBgClass = darkMode ? 'bg-gray-500/20' : 'bg-gray-200';
+                roleTextClass = darkMode ? 'text-gray-400' : 'text-gray-600';
+              }
+
+              return (
+                <motion.div
+                  key={member.id}
+                  className={`flex items-center justify-between rounded-md p-3 ${cardBgClass} ${cardShadowClass}`}
+                  variants={itemVariants}
+                  whileHover={{
+                    scale: 1.02,
+                    backgroundColor: darkMode ? "rgba(44, 44, 44, 1)" : "rgba(229, 231, 235, 1)",
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${avatarBgClass} ${avatarTextClass}`}>
+                      {member.name ? member.name[0].toUpperCase() : "?"}
+                    </div>
+                    <div className="ml-3">
+                      <p className={`font-medium ${nameTextClass}`}>
+                        {member.name || "Unknown User"}
+                      </p>
+                      <p className={`text-xs ${emailTextClass}`}>{member.email}</p>
+                    </div>
                   </div>
-                  <div className="ml-3">
-                    <p className="font-medium">
-                      {member.name || "Unknown User"}
-                    </p>
-                    <p className="text-xs text-gray-400">{member.email}</p>
+                  <div className="flex items-center">
+                    <span className={`flex items-center rounded-full px-2 py-1 text-xs ${roleBgClass} ${roleTextClass}`}>
+                      {getRoleIcon(member.role)}
+                      <span className="ml-1">{member.role}</span>
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center">
-                  <span
-                    className={classNames(
-                      "flex items-center rounded-full px-2 py-1 text-xs",
-                      member.role === "ADMIN"
-                        ? "bg-emerald-500/20 text-emerald-500"
-                        : member.role === "MANAGER"
-                          ? "bg-blue-500/20 text-blue-500"
-                          : "bg-gray-500/20 text-gray-400"
-                    )}
-                  >
-                    {getRoleIcon(member.role)}
-                    <span className="ml-1">{member.role}</span>
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>
 
-      <div className="border-t border-[#2C2C2C] p-4 flex justify-center">
+      <div className={`border-t p-4 flex justify-center ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-300'}`}>
         <motion.button
-          className="flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+          className={`flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            darkMode
+              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+              : 'bg-emerald-500 text-white hover:bg-emerald-600'
+          }`}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

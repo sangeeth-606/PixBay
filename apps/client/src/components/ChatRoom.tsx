@@ -7,9 +7,10 @@ interface ChatRoomProps {
   roomCode: string;
   userId: string;
   onClose: () => void;
+  darkMode?: boolean;
 }
 
-const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose }) => {
+const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose, darkMode}) => {
   const [messages, setMessages] = useState<
     { sender: string; text: string; timestamp: Date }[]
   >([]);
@@ -62,34 +63,53 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose }) => {
 
   return (
     <motion.div
-      className="h-full flex flex-col bg-[#171717] rounded-md shadow-lg border-l border-[#3C3C3C]"
-      style={{ boxShadow: "-1px 0 0 0 rgba(255,255,255,0.05)" }}
+      className={classNames(
+        "h-full flex flex-col rounded-md shadow-lg border-l",
+        darkMode ? "bg-[#171717] border-[#3C3C3C]" : "bg-white border-gray-300"
+      )}
+      style={{
+        boxShadow: darkMode ? "-1px 0 0 0 rgba(255,255,255,0.05)" : "0 0 0 1px rgba(0,0,0,0.05)",
+      }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex justify-between items-center p-4 border-b border-[#2C2C2C]">
+      <div className={classNames(
+        "flex justify-between items-center p-4 border-b",
+        darkMode ? "border-[#2C2C2C]" : "border-gray-300"
+      )}>
         <motion.h2
-          className="font-medium text-white flex items-center"
+          className={classNames(
+            "font-medium flex items-center",
+            darkMode ? "text-white" : "text-gray-900"
+          )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <span className="text-emerald-500 mr-2">Chat</span>
-          {/* <span className="text-gray-400 text-sm">{roomCode}</span> */}
+          <span className={darkMode ? "text-emerald-500" : "text-emerald-600"}>Chat</span>
+          {/* <span className={classNames("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>{roomCode}</span> */}
         </motion.h2>
         <motion.button
           onClick={onClose}
-          className="p-1 hover:bg-[#2C2C2C] rounded-md transition-colors"
+          className={classNames(
+            "p-1 rounded-md transition-colors",
+            darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-200"
+          )}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
-          <X size={18} className="text-gray-400 hover:text-white" />
+          <X size={18} className={classNames(
+            darkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700"
+          )} />
         </motion.button>
       </div>
 
-      <div className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-[#2C2C2C] scrollbar-track-transparent">
+      <div className={classNames(
+        "flex-1 p-4 overflow-y-auto scrollbar-thin",
+        darkMode ? "scrollbar-thumb-[#2C2C2C] scrollbar-track-transparent" : "scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+      )}>
         <AnimatePresence>
           {messages.map((msg, index) => (
             <div
@@ -102,15 +122,32 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose }) => {
               )}
             >
               <motion.div
-                className={classNames("mb-1 p-1 rounded-md max-w-[80%]")}
+                className={classNames(
+                  "mb-1 p-1 rounded-md max-w-[80%]",
+                  msg.sender === userId
+                    ? darkMode
+                      ? "bg-emerald-600"
+                      : "bg-emerald-100"
+                    : darkMode
+                      ? "bg-[#2C2C2C]"
+                      : "bg-gray-100"
+                )}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.1 }}
               >
-                <div className="text-emerald-500 text-xs mb-0.5 font-medium">
+                <div className={classNames(
+                  "text-xs mb-0.5 font-medium",
+                  darkMode ? "text-emerald-500" : "text-emerald-600"
+                )}>
                   {msg.sender}
                 </div>
-                <div className="text-white text-sm">{msg.text}</div>
+                <div className={classNames(
+                  "text-sm",
+                  darkMode ? "text-white" : "text-gray-900"
+                )}>
+                  {msg.text}
+                </div>
               </motion.div>
             </div>
           ))}
@@ -118,23 +155,33 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t border-[#2C2C2C]">
+      <div className={classNames(
+        "p-4 border-t",
+        darkMode ? "border-[#2C2C2C]" : "border-gray-300"
+      )}>
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            className="flex-1 p-2 bg-[#2C2C2C] text-white rounded-md border border-[#3C3C3C] focus:outline-none focus:border-emerald-500 text-sm"
+            className={classNames(
+              "flex-1 p-2 rounded-md border focus:outline-none focus:border-emerald-500 text-sm",
+              darkMode
+                ? "bg-[#2C2C2C] text-white border-[#3C3C3C]"
+                : "bg-white text-black border-gray-300"
+            )}
             placeholder="Type a message..."
           />
           <motion.button
             onClick={sendMessage}
             className={classNames(
-              "p-2 rounded-md text-white flex items-center justify-center",
+              "p-2 rounded-md flex items-center justify-center",
               input.trim()
-                ? "bg-emerald-500 hover:bg-emerald-600"
-                : "bg-[#2C2C2C] text-gray-500 cursor-not-allowed"
+                ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                : darkMode
+                  ? "bg-[#2C2C2C] text-gray-500 cursor-not-allowed"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
             )}
             disabled={!input.trim()}
             whileHover={input.trim() ? { scale: 1.05 } : {}}

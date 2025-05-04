@@ -303,11 +303,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${
-                    darkMode
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-blue-500 text-white hover:bg-blue-600"
-                  } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+                  className={`rounded-md px-4 py-2 text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 ${
+                    isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
                 >
                   {isLoading ? "Creating..." : "Create Task"}
                 </button>

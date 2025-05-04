@@ -23,6 +23,7 @@ function DashBoard() {
     const savedMode = localStorage.getItem("darkMode");
     return savedMode !== null ? savedMode === "true" : true;
   });
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const { user } = useUser();
 
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
@@ -68,11 +69,9 @@ function DashBoard() {
     });
   };
 
-
   const handleItemSelect = (itemKey: string) => {
     console.log("Selecting item:", itemKey);
     setSelectedItem(itemKey);
-
   };
 
   const handleProjectSelect = (projectId: string) => {
@@ -97,17 +96,33 @@ function DashBoard() {
     setSelectedItem("");
   };
 
-
+  const handleSidebarToggle = (minimized: boolean) => {
+    setIsSidebarMinimized(minimized);
+  };
 
   const renderMainContent = () => {
     switch (selectedItem) {
       case "projects":
-        return (
+        return selectedProjectId ? (
           <KanbanBoard
             projectId={selectedProjectId}
             workspaceName={workspaceCode}
             darkMode={darkMode}
           />
+        ) : (
+          <div
+            className={`flex h-full items-center justify-center ${darkMode ? "bg-[#121212]" : "bg-gray-50"
+              }`}
+          >
+            <p
+              className={`text-lg ${darkMode
+                ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
+                : "text-emerald-600 border-emerald-300 bg-white"
+                } border rounded-md p-4 shadow-md`}
+            >
+              Select a project from the sidebar or create a new one
+            </p>
+          </div>
         );
       case "members":
         return <Members workspaceName={workspaceCode || ""} darkMode={darkMode} />;
@@ -183,15 +198,33 @@ function DashBoard() {
 
   return (
     <div className={`flex h-screen ${darkMode ? "bg-[#121212]" : "bg-gray-50"}`}>
-      {/* Sidebar */}
-      <div className="w-64 h-screen">
+      {/* Sidebar with proper transition styling */}
+      <div 
+        className={`h-screen ${isSidebarMinimized ? "w-[60px]" : "w-64"} transition-all duration-500 ease-in-out shrink-0`}
+        style={{ transition: "width 0.5s ease" }} // Adding explicit style for better transition
+      >
         <SideBar
           selectedItem={selectedItem}
           darkMode={darkMode}
           workspaceCode={workspaceCode || ""}
-          onProjectSelect={handleProjectSelect} onSprintSelect={handleSprintSelect} onItemSelect={handleItemSelect} />      </div>      {/* Main content area */}      <div className="flex-1 flex flex-col overflow-hidden">        {/* Top navigation bar */}        <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />        {/* Main content */}        <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}        >          {renderMainContent()}          <div className="absolute bottom-4 right-4 z-50">            <JoinCallButton roomCode={workspaceCode || "general"} userId={email || "anonymous"} />
+          onProjectSelect={handleProjectSelect} 
+          onSprintSelect={handleSprintSelect} 
+          onItemSelect={handleItemSelect}
+          onSidebarToggle={handleSidebarToggle}
+        />      
+      </div>      
+      
+      {/* Main content area with flex-1 to take up remaining space */}      
+      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out">        
+        {/* Top navigation bar */}        
+        <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />        
+        {/* Main content */}        
+        <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}>          
+          {renderMainContent()}          
+          <div className="absolute bottom-4 right-4 z-50">            
+            <JoinCallButton roomCode={workspaceCode || "general"} userId={email || "anonymous"} />
           </div>
-          </main>
+        </main>
       </div>
     </div>
   );

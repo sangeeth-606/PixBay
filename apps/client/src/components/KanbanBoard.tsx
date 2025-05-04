@@ -31,12 +31,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { getToken } = useAuth();
 
-  const extractProjectIdFromUrl = () => {
-    const searchParams = new URLSearchParams(window.location.search);
-    return searchParams.get("projectId") || null;
-  };
-
-  const effectiveProjectId = projectId || extractProjectIdFromUrl();
+  // Use projectId directly without fallback to URL
+  const effectiveProjectId = projectId;
 
   useEffect(() => {
     if (propWorkspaceName) {
@@ -188,7 +184,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     >
       <div className="max-w-[1800px] mx-auto px-4">
         <div className="py-6">
-          <Projectinfo darkMode={darkMode} />
+          <Projectinfo darkMode={darkMode} projectId={effectiveProjectId} />
         </div>
         <div
           className={`mb-6 rounded-lg shadow-md h-[calc(100vh-240px)] ${

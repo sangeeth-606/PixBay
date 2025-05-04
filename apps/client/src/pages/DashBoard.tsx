@@ -11,6 +11,7 @@ import Inbox from "../components/Inbox";
 import ChatRoom from "../components/ChatRoom";
 import { JoinCallButton } from "../components/VideoButton";
 import { useUser } from "@clerk/clerk-react";
+import Settings from "../components/Settings";
 
 function DashBoard() {
   const { workspaceCode } = useParams();
@@ -177,6 +178,8 @@ function DashBoard() {
             </p>
           </div>
         );
+      case "settings":
+        return <Settings workspaceName={workspaceCode || ""} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />;
       default:
         return (
           <div
@@ -199,7 +202,7 @@ function DashBoard() {
   return (
     <div className={`flex h-screen ${darkMode ? "bg-[#121212]" : "bg-gray-50"}`}>
       {/* Sidebar with proper transition styling */}
-      <div 
+      <div
         className={`h-screen ${isSidebarMinimized ? "w-[60px]" : "w-64"} transition-all duration-500 ease-in-out shrink-0`}
         style={{ transition: "width 0.5s ease" }} // Adding explicit style for better transition
       >
@@ -207,21 +210,21 @@ function DashBoard() {
           selectedItem={selectedItem}
           darkMode={darkMode}
           workspaceCode={workspaceCode || ""}
-          onProjectSelect={handleProjectSelect} 
-          onSprintSelect={handleSprintSelect} 
+          onProjectSelect={handleProjectSelect}
+          onSprintSelect={handleSprintSelect}
           onItemSelect={handleItemSelect}
           onSidebarToggle={handleSidebarToggle}
-        />      
-      </div>      
-      
-      {/* Main content area with flex-1 to take up remaining space */}      
-      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out">        
-        {/* Top navigation bar */}        
-        <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />        
-        {/* Main content */}        
-        <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}>          
-          {renderMainContent()}          
-          <div className="absolute bottom-4 right-4 z-50">            
+        />
+      </div>
+
+      {/* Main content area with flex-1 to take up remaining space */}
+      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out">
+        {/* Top navigation bar */}
+        <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        {/* Main content */}
+        <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}>
+          {renderMainContent()}
+          <div className="absolute bottom-4 right-4 z-50">
             <JoinCallButton roomCode={workspaceCode || "general"} userId={email || "anonymous"} />
           </div>
         </main>

@@ -187,3 +187,28 @@ export const workSpaceMembers = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch workspace members" });
   }
 };
+
+// Get workspace by name
+export const getWorkspaceByName = async (req, res) => {
+  try {
+    const { name } = req.params;
+    
+    if (!name) {
+      return res.status(400).json({ error: "Workspace name is required" });
+    }
+
+    // Find the workspace by name
+    const workspace = await prisma.workspace.findFirst({
+      where: { name },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found" });
+    }
+
+    res.status(200).json(workspace);
+  } catch (error) {
+    console.error("Error fetching workspace:", error);
+    res.status(500).json({ error: "Failed to fetch workspace" });
+  }
+};

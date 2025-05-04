@@ -12,7 +12,9 @@ import {
   BarChart2,
   Plus,
   MessageCircle,
-  ChevronLeft,
+  LayoutSplit,
+  Columns,
+  Search,
 } from "lucide-react";
 import { FormModal } from "./FormModal";
 import { SprintFormModal } from "./SprintFormModal";
@@ -82,6 +84,10 @@ export function Sidebar({
     if (onSidebarToggle) {
       onSidebarToggle(newMinimizedState);
     }
+  };
+
+  const handleSearchClick = () => {
+    alert("Search functionality coming soon!");
   };
 
   // Helper function to conditionally join classnames
@@ -223,23 +229,35 @@ export function Sidebar({
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="flex-1 overflow-y-auto">
-          {/* Added toggle button at the top */}
-          <div className={`px-3 py-4 flex ${isMinimized ? 'justify-center' : 'justify-end'}`}>
+          {/* Header with toggle button on left and search on right */}
+          <div className={`px-3 py-4 flex justify-between items-center`}>
             <motion.button
-              className={`flex h-8 w-8 items-center justify-center rounded-md ${
-                darkMode ? 'bg-[#2C2C2C] hover:bg-[#3C3C3C] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-              } shadow-sm`}
+              className={`flex h-8 w-8 items-center justify-center ${
+                darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}
               onClick={toggleSidebar}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               title={isMinimized ? "Expand sidebar" : "Collapse sidebar"}
             >
-              {isMinimized ? (
-                <ChevronRight className="h-5 w-5" />
-              ) : (
-                <ChevronLeft className="h-5 w-5" />
-              )}
+              <Columns className="h-5 w-5" />
             </motion.button>
+            
+            {!isMinimized && (
+              <motion.button
+                className={`flex h-8 w-8 items-center justify-center ${
+                  darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleSearchClick}
+                title="Search"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <Search className="h-5 w-5" />
+              </motion.button>
+            )}
           </div>
 
           <nav className="p-3 space-y-2">

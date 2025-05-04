@@ -11,11 +11,13 @@ import {
   X, 
   Check, 
   Moon, 
-  Sun 
+  Sun,
+  ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { LoadingSpinner } from './LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 
 interface SettingsProps {
   workspaceName: string;
@@ -35,6 +37,21 @@ interface WorkspaceMember {
   };
 }
 
+interface Workspace {
+  id: string;
+  name: string;
+}
+
+// Add this new interface to represent the API response format
+interface WorkspaceMemberResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  joinedAt: string;
+  userId?: string;
+}
+
 export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsProps) {
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +61,7 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberRole, setNewMemberRole] = useState('MEMBER');
   const [workspace, setWorkspace] = useState({ name: workspaceName, id: '' });
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     taskAssignments: true,
@@ -55,7 +73,29 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
   // User profile states
   const { user } = useUser();
   const { getToken } = useAuth();
+  const navigate = useNavigate();
   const [profileName, setProfileName] = useState(user?.fullName || '');
+  
+  // Load user's workspaces
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const token = await getToken();
+        const response = await axios.get(
+          "http://localhost:5000/api/workspaces/user",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setWorkspaces(response.data);
+      } catch (error) {
+        console.error("Error fetching workspaces:", error);
+      }
+    };
+    
+    fetchWorkspaces();
+  }, [getToken]);
   
   // Load workspace details and members
   useEffect(() => {
@@ -66,23 +106,32 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
       try {
         const token = await getToken();
         
-        // Get workspace details
+        // Get workspace details and members using the correct endpoint
         const workspaceRes = await axios.get(
-          `http://localhost:5000/api/workspaces/by-name/${workspaceName}`,
+          `http://localhost:5000/api/workspaces/${workspaceName}/members`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
-        setWorkspace(workspaceRes.data);
+        // Extract workspace details from response
+        setWorkspace({
+          id: workspaceRes.data.id,
+          name: workspaceRes.data.name
+        });
         
-        // Get workspace members
-        if (workspaceRes.data.id) {
-          const membersRes = await axios.get(
-            `http://localhost:5000/api/workspaces/${workspaceRes.data.id}/members`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          
-          setMembers(membersRes.data);
-        }
+        // Extract members from response with proper typing
+        const formattedMembers = workspaceRes.data.members.map((member: WorkspaceMemberResponse) => ({
+          id: member.id,
+          userId: member.userId || member.id, // Fallback to id if userId not present
+          role: member.role,
+          joinedAt: member.joinedAt,
+          user: {
+            id: member.id,
+            name: member.name,
+            email: member.email
+          }
+        }));
+        
+        setMembers(formattedMembers);
       } catch (error) {
         console.error('Error loading workspace details:', error);
         setMessage({ type: 'error', text: 'Failed to load workspace details' });
@@ -93,6 +142,11 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     
     loadWorkspaceDetails();
   }, [workspaceName, getToken]);
+  
+  // Handle workspace switch
+  const handleWorkspaceSwitch = (workspaceName: string) => {
+    navigate(`/workspace/${workspaceName}`);
+  };
   
   // Update profile
   const handleProfileUpdate = async () => {
@@ -237,7 +291,37 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h1 className="mb-6 text-3xl font-bold">Settings</h1>
+          <div className="flex flex-col mb-6 md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-bold mb-4 md:mb-0">Settings</h1>
+            
+            {/* Workspace Selector */}
+            {workspaces.length > 0 && (
+              <div className="relative">
+                <select
+                  value={workspaceName}
+                  onChange={(e) => handleWorkspaceSwitch(e.target.value)}
+                  className={`py-2 px-4 pr-10 appearance-none rounded-md font-medium w-full md:w-auto ${
+                    darkMode
+                      ? "bg-[#1E1E1E] hover:bg-[#333] text-white border border-[#333]"
+                      : "bg-white hover:bg-gray-100 text-[#212121] border border-gray-300"
+                  }`}
+                >
+                  {workspaces.map((ws) => (
+                    <option
+                      key={ws.id}
+                      value={ws.name}
+                      className={darkMode ? "bg-[#1C1C1C]" : "bg-white"}
+                    >
+                      {ws.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                  <ChevronDown size={16} className={darkMode ? "text-gray-400" : "text-gray-600"} />
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Status message */}
           {message.text && (

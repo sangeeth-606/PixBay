@@ -217,8 +217,8 @@ function DashBoard() {
         />
       </div>
 
-      {/* Main content area with flex-1 to take up remaining space */}
-      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out">
+      {/* Main content area with adjusted position to reduce gap */}
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${isSidebarMinimized ? "-ml-2" : ""}`}>
         {/* Top navigation bar */}
         <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         {/* Main content */}

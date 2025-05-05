@@ -88,21 +88,26 @@ export const deleteUser = async (req, res) => {
     }
   };
 
-export const checkUserExists = async (req, res) => {
-  try {
-    const { email } = req.query;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email parameter is required' });
+  export const checkUserExists = async (req, res) => {
+    try {
+      const { email } = req.query;
+  
+      if (!email) {
+        return res.status(400).json({ error: 'Email parameter is required' });
+      }
+  
+      const user = await prisma.user.findFirst({
+        where: { email },
+        select: { id: true, name: true }, 
+      });
+  
+      if (user) {
+        res.status(200).json({ exists: true, name: user.name });
+      } else {
+        res.status(200).json({ exists: false });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to check user existence' });
     }
-
-    const user = await prisma.user.findFirst({
-      where: { email },
-    });
-
-    res.status(200).json({ exists: !!user });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to check user existence' });
-  }
-};
+  };

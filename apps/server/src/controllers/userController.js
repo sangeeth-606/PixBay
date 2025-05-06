@@ -1,27 +1,66 @@
 import prisma from '../db.js'
 
-export const createUser = async (req, res) => {
-    try {
-      const { email, name, role } = req.body;
-  
-      if (!email) {
-        return res.status(400).json({ error: 'Email is required' });
-      }
-  
-      const user = await prisma.user.create({
-        data: {
-          email,
-          name,
-          role: role || 'MEMBER', 
-        },
-      });
-  
-      res.status(201).json({ message: 'User created successfully', user });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to create user' });
+export const checkUserExists = async (req, res) => {
+  try {
+    const { email } = req.query;
+    console.log('Checking user with email:', email);
+
+    if (!email) {
+      console.log('Email missing in query parameters');
+      return res.status(400).json({ error: 'Email parameter is required' });
     }
-  };
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { 
+        id: true, 
+        name: true,
+        email: true
+      },
+    });
+
+    if (user) {
+      res.status(200).json({ 
+        exists: true, 
+        name: user.name,
+        hasName: !!user.name // Add this to explicitly check if name exists
+      });
+    } else {
+      res.status(200).json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error in checkUserExists:', error);
+    res.status(500).json({ 
+      error: 'Failed to check user existence',
+      details: error.message 
+    });
+  }
+};
+
+export const createUser = async (req, res) => {
+  try {
+    const { email, name, role } = req.body;
+    console.log('Creating user with:', { email, name, role });
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        role: role || 'MEMBER',
+      },
+    });
+    console.log('User created:', user);
+
+    res.status(201).json({ message: 'User created successfully', user });
+  } catch (error) {
+    console.error('Error in createUser:', error.message, error.stack);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+};
 
 export const getUser = async (req, res) => {
     try {
@@ -30,7 +69,7 @@ export const getUser = async (req, res) => {
       const user = await prisma.user.findUnique({
         where: { id },
         include: {
-          projects: true, 
+          // projects: true, 
           workspaces: true, 
         },
       });
@@ -88,26 +127,3 @@ export const deleteUser = async (req, res) => {
     }
   };
 
-  export const checkUserExists = async (req, res) => {
-    try {
-      const { email } = req.query;
-  
-      if (!email) {
-        return res.status(400).json({ error: 'Email parameter is required' });
-      }
-  
-      const user = await prisma.user.findFirst({
-        where: { email },
-        select: { id: true, name: true }, 
-      });
-  
-      if (user) {
-        res.status(200).json({ exists: true, name: user.name });
-      } else {
-        res.status(200).json({ exists: false });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to check user existence' });
-    }
-  };

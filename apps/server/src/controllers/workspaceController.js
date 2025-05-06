@@ -101,26 +101,48 @@ export const getUserWorkspaces = async (req, res) => {
   try {
     const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
+    
+    console.log("Getting workspaces for email:", email);
 
+    if (!email) {
+      console.log("No email found in auth data");
+      return res.status(400).json({ error: "Email not found in authentication data" });
+    }
+
+    // First check if user exists
     const user = await prisma.user.findFirst({
       where: { email: email },
-      include: { workspaces: { include: { workspace: true } } },
     });
 
     if (!user) {
+      console.log("User not found with email:", email);
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(
-      user.workspaces.map((wm) => ({
-        id: wm.workspace.id,
-        name: wm.workspace.name,
-        role: wm.role,
-      }))
-    );
+    console.log("Found user with ID:", user.id);
+
+    // Use a simpler query that's less likely to fail
+    const workspaceMembers = await prisma.workspaceMember.findMany({
+      where: { userId: user.id },
+      include: { workspace: true },
+    });
+
+    console.log(`Found ${workspaceMembers.length} workspaces for user`);
+
+    // Map to the expected format
+    const workspaces = workspaceMembers.map(member => ({
+      id: member.workspace.id,
+      name: member.workspace.name,
+      role: member.role,
+    }));
+
+    res.status(200).json(workspaces);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch workspaces" });
+    console.error("Error in getUserWorkspaces:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch workspaces",
+      details: error.message 
+    });
   }
 };
 export const workSpaceMembers = async (req, res) => {

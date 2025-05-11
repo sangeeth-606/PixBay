@@ -39,6 +39,9 @@ const LandingPage = () => {
   const [workspaceNameInput, setWorkspaceNameInput] = useState("pixbay");
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState("");
+  const [isNameSubmitLoading, setIsNameSubmitLoading] = useState(false);
+  const [isCreateWorkspaceLoading, setIsCreateWorkspaceLoading] = useState(false);
+  const [isJoinWorkspaceLoading, setIsJoinWorkspaceLoading] = useState(false);
 
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -95,6 +98,7 @@ const LandingPage = () => {
 
   const handleNameSubmit = async () => {
     if (userName.trim() && email) {
+      setIsNameSubmitLoading(true);
       try {
         const token = await getToken();
         await axios.post(
@@ -123,6 +127,8 @@ const LandingPage = () => {
       } catch (error) {
         console.error("Error creating user:", error);
         alert("Failed to create user. Please try again.");
+      } finally {
+        setIsNameSubmitLoading(false);
       }
     } else {
       alert("Please enter a valid name");
@@ -134,16 +140,17 @@ const LandingPage = () => {
   };
 
   const handleCreateWorkspace = async () => {
-    const token = await getToken();
     if (!isSignedIn) {
       alert('Please sign in to create a room.');
       return;
     }
-
-    const randomCode = WorkSpaceNameCode();
-    const finalWorkspaceName = `${workspaceNameInput}-${randomCode}`;
-
+    
+    setIsCreateWorkspaceLoading(true);
     try {
+      const token = await getToken();
+      const randomCode = WorkSpaceNameCode();
+      const finalWorkspaceName = `${workspaceNameInput}-${randomCode}`;
+
       await axios.post(
         "http://localhost:5000/api/workspaces/create",
         {
@@ -161,19 +168,24 @@ const LandingPage = () => {
       navigate(`/workspace/${finalWorkspaceName}`);
     } catch (error) {
       console.error("Error creating workspace:", error);
+    } finally {
+      setIsCreateWorkspaceLoading(false);
     }
   };
 
   const handleJoinWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = await getToken();
-    const workspaceName = roomCode;
-
+    
     if (!isSignedIn) {
-      alert('Please sign in to create a room.');
+      alert('Please sign in to join a room.');
       return;
     }
+    
+    setIsJoinWorkspaceLoading(true);
     try {
+      const token = await getToken();
+      const workspaceName = roomCode;
+      
       await axios.post(
         "http://localhost:5000/api/workspaces/join",
         { workspaceName: workspaceName },
@@ -185,13 +197,15 @@ const LandingPage = () => {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 400) {
           alert("You are already a member of this workspace!");
-          navigate(`/workspace/${workspaceName}`);
+          navigate(`/workspace/${roomCode}`);
         } else {
           console.error("Error joining workspace:", error);
         }
       } else {
         console.error("Error joining workspace:", error);
       }
+    } finally {
+      setIsJoinWorkspaceLoading(false);
     }
   };
 
@@ -314,19 +328,49 @@ const LandingPage = () => {
               <button
                 type="button"
                 onClick={() => setShowWorkspaceModal(false)}
+                disabled={isCreateWorkspaceLoading}
                 className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out ${
                   darkMode
                     ? "text-white bg-[#2C2C2C] hover:bg-[#333] border-[#333]"
                     : "text-gray-700 bg-white hover:bg-gray-100 border-gray-300"
-                } border`}
+                } border ${isCreateWorkspaceLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateWorkspace}
-                className="px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out"
+                disabled={isCreateWorkspaceLoading}
+                className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${
+                  isCreateWorkspaceLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
-                Create Workspace
+                {isCreateWorkspaceLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Creating...
+                  </>
+                ) : (
+                  "Create Workspace"
+                )}
               </button>
             </div>
           </div>
@@ -376,9 +420,40 @@ const LandingPage = () => {
             <div className="mt-6">
               <button
                 onClick={handleNameSubmit}
-                className="w-full px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out"
+                disabled={isNameSubmitLoading}
+                className={`w-full px-4 py-2 text-sm font-medium text-white bg-emerald-500 
+                border border-transparent rounded-md shadow-sm hover:bg-emerald-600 
+                focus:outline-none focus:ring-2 focus:ring-emerald-500 
+                transition duration-150 ease-in-out flex items-center justify-center
+                ${isNameSubmitLoading ? "opacity-75 cursor-not-allowed" : ""}`}
               >
-                Submit
+                {isNameSubmitLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
               </button>
             </div>
           </div>
@@ -428,6 +503,7 @@ const LandingPage = () => {
                 placeholder="Enter Room Code"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value)}
+                disabled={isJoinWorkspaceLoading}
                 className={`py-3 px-4 rounded-l-md border-2 w-36 md:w-48 
                 transition-all duration-200 ease-in-out
                 ${
@@ -436,13 +512,44 @@ const LandingPage = () => {
                     : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
                 }
                 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
-                hover:border-emerald-500/50`}
+                hover:border-emerald-500/50
+                ${isJoinWorkspaceLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               />
               <button
                 type="submit"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-r-md font-medium shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                disabled={isJoinWorkspaceLoading}
+                className={`bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 
+                rounded-r-md font-medium shadow-sm transition duration-150 ease-in-out 
+                focus:outline-none focus:ring-2 focus:ring-emerald-500 flex items-center
+                ${isJoinWorkspaceLoading ? "opacity-75 cursor-not-allowed" : ""}`}
               >
-                Join Room
+                {isJoinWorkspaceLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Joining...
+                  </>
+                ) : (
+                  "Join Room"
+                )}
               </button>
             </form>
 

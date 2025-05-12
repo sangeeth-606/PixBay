@@ -42,7 +42,6 @@ interface Workspace {
   name: string;
 }
 
-// Add this new interface to represent the API response format
 interface WorkspaceMemberResponse {
   id: string;
   name: string;
@@ -70,13 +69,47 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     dailyDigest: false,
   });
 
-  // User profile states
   const { user } = useUser();
   const { getToken } = useAuth();
   const navigate = useNavigate();
-  const [profileName, setProfileName] = useState(user?.fullName || '');
-  
-  // Load user's workspaces
+
+  const [profileName, setProfileName] = useState('');
+  const [userId, setUserId] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user?.emailAddresses?.[0]?.emailAddress) return;
+
+      try {
+        const token = await getToken();
+        const email = user.emailAddresses[0].emailAddress;
+
+        const response = await axios.get(
+          `http://localhost:5000/api/users/check?email=${encodeURIComponent(email)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        console.log("User check response:", response.data);
+
+        if (response.data.exists) {
+          // Set name from our database
+          setProfileName(response.data.name || '');
+          // Make sure we get the ID from the response
+          if (response.data.id) {
+            setUserId(response.data.id);
+            console.log("User ID set to:", response.data.id);
+          } else {
+            console.warn("User exists but ID not found in response");
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [user, getToken]);
+
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
@@ -97,7 +130,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     fetchWorkspaces();
   }, [getToken]);
   
-  // Load workspace details and members
   useEffect(() => {
     const loadWorkspaceDetails = async () => {
       if (!workspaceName) return;
@@ -106,22 +138,19 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
       try {
         const token = await getToken();
         
-        // Get workspace details and members using the correct endpoint
         const workspaceRes = await axios.get(
           `http://localhost:5000/api/workspaces/${workspaceName}/members`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
-        // Extract workspace details from response
         setWorkspace({
           id: workspaceRes.data.id,
           name: workspaceRes.data.name
         });
         
-        // Extract members from response with proper typing
         const formattedMembers = workspaceRes.data.members.map((member: WorkspaceMemberResponse) => ({
           id: member.id,
-          userId: member.userId || member.id, // Fallback to id if userId not present
+          userId: member.userId || member.id,
           role: member.role,
           joinedAt: member.joinedAt,
           user: {
@@ -143,30 +172,51 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     loadWorkspaceDetails();
   }, [workspaceName, getToken]);
   
-  // Handle workspace switch
   const handleWorkspaceSwitch = (workspaceName: string) => {
     navigate(`/workspace/${workspaceName}`);
   };
   
-  // Update profile
   const handleProfileUpdate = async () => {
+    if (!profileName.trim()) {
+      setMessage({ type: 'error', text: 'Please enter a name' });
+      return;
+    }
+    
     setIsSaving(true);
     try {
-      // This would connect to your user update API
-      // For now, we'll just simulate a successful update
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const token = await getToken();
+      const email = user?.emailAddresses?.[0]?.emailAddress;
+      
+      if (!email) {
+        throw new Error("User email not found");
+      }
+      
+      console.log("Updating user by email:", email);
+      
+      // Use the more reliable email-based endpoint
+      const response = await axios.put(
+        `http://localhost:5000/api/users/email/${encodeURIComponent(email)}`,
+        { name: profileName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      console.log("Update response:", response.data);
+      
+      // If the server returns a user, update the userId
+      if (response.data.user && response.data.user.id) {
+        setUserId(response.data.user.id);
+      }
       
       setMessage({ type: 'success', text: 'Profile updated successfully' });
-      // Clear message after 3 seconds
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
+      console.error('Error updating profile:', error);
       setMessage({ type: 'error', text: 'Failed to update profile' });
     } finally {
       setIsSaving(false);
     }
   };
   
-  // Invite new member
   const handleInviteMember = async () => {
     if (!newMemberEmail) {
       setMessage({ type: 'error', text: 'Please enter an email address' });
@@ -183,7 +233,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Refresh members list
       const membersRes = await axios.get(
         `http://localhost:5000/api/workspaces/${workspace.id}/members`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -193,7 +242,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
       setNewMemberEmail('');
       setMessage({ type: 'success', text: 'Member invited successfully' });
       
-      // Clear message after 3 seconds
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
       console.error('Error inviting member:', error);
@@ -203,7 +251,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     }
   };
   
-  // Update member role
   const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
     setIsSaving(true);
     try {
@@ -215,7 +262,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Update local state
       setMembers(prevMembers => 
         prevMembers.map(member => 
           member.id === memberId ? { ...member, role: newRole } : member
@@ -232,7 +278,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     }
   };
   
-  // Remove member
   const handleRemoveMember = async (memberId: string) => {
     if (!confirm('Are you sure you want to remove this member?')) return;
     
@@ -245,7 +290,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Update local state
       setMembers(prevMembers => prevMembers.filter(member => member.id !== memberId));
       
       setMessage({ type: 'success', text: 'Member removed successfully' });
@@ -258,12 +302,9 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     }
   };
   
-  // Update notification settings
   const handleNotificationUpdate = async () => {
     setIsSaving(true);
     try {
-      // This would connect to your notification settings API
-      // For now, we'll just simulate a successful update
       await new Promise(resolve => setTimeout(resolve, 800));
       
       setMessage({ type: 'success', text: 'Notification settings updated' });
@@ -294,7 +335,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
           <div className="flex flex-col mb-6 md:flex-row md:items-center md:justify-between">
             <h1 className="text-3xl font-bold mb-4 md:mb-0">Settings</h1>
             
-            {/* Workspace Selector */}
             {workspaces.length > 0 && (
               <div className="relative">
                 <select
@@ -323,7 +363,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
             )}
           </div>
           
-          {/* Status message */}
           {message.text && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -343,7 +382,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
             </motion.div>
           )}
           
-          {/* Tabs */}
           <div className="mb-6 flex space-x-2 overflow-x-auto border-b border-gray-200 pb-2 dark:border-gray-700">
             {[
               { id: 'profile', label: 'Profile', icon: <User className="mr-2 h-4 w-4" /> },
@@ -370,9 +408,7 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
             ))}
           </div>
           
-          {/* Tab Content */}
           <div className={`rounded-lg ${darkMode ? "bg-[#1E1E1E]" : "bg-white"} p-6 shadow-sm`}>
-            {/* Profile Settings */}
             {activeTab === 'profile' && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -440,7 +476,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
               </motion.div>
             )}
             
-            {/* Workspace Settings */}
             {activeTab === 'workspace' && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -600,7 +635,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
               </motion.div>
             )}
             
-            {/* Appearance Settings */}
             {activeTab === 'appearance' && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -680,7 +714,6 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
               </motion.div>
             )}
             
-            {/* Notifications Settings */}
             {activeTab === 'notifications' && (
               <motion.div
                 initial={{ opacity: 0 }}

@@ -55,7 +55,7 @@ const LandingPage = () => {
       try {
         const token = await getToken();
         console.log("Checking user with email:", email);
-        
+
         // First ensure user exists
         const userResponse = await axios.get(
           `http://localhost:5000/api/users/check?email=${encodeURIComponent(email)}`,
@@ -65,13 +65,13 @@ const LandingPage = () => {
         );
 
         console.log("User data response:", userResponse.data);
-  
+
         if (userResponse.data.exists) {
           setUserName(userResponse.data.name || '');
           const shouldShowNameModal = !userResponse.data.hasName || !userResponse.data.name;
           console.log("Should show name modal:", shouldShowNameModal);
           setShowNameModal(shouldShowNameModal);
-          
+
           // Only fetch workspaces after confirming user exists
           const workspacesResponse = await axios.get(
             "http://localhost:5000/api/workspaces/user",
@@ -112,10 +112,10 @@ const LandingPage = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        
+
         setUserName(userName);
         setShowNameModal(false);
-        
+
         // After creating user, fetch workspaces
         const workspacesResponse = await axios.get(
           "http://localhost:5000/api/workspaces/user",
@@ -144,7 +144,7 @@ const LandingPage = () => {
       alert('Please sign in to create a room.');
       return;
     }
-    
+
     setIsCreateWorkspaceLoading(true);
     try {
       const token = await getToken();
@@ -175,17 +175,17 @@ const LandingPage = () => {
 
   const handleJoinWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isSignedIn) {
       alert('Please sign in to join a room.');
       return;
     }
-    
+
     setIsJoinWorkspaceLoading(true);
     try {
       const token = await getToken();
       const workspaceName = roomCode;
-      
+
       await axios.post(
         "http://localhost:5000/api/workspaces/join",
         { workspaceName: workspaceName },
@@ -232,11 +232,10 @@ const LandingPage = () => {
     >
       {/* Navigation */}
       <nav
-        className={` sticky top-0 px-6 py-4 flex justify-between items-center border-b ${
-          darkMode
-            ? "bg-[#171717] border-[#2C2C2C]"
-            : "bg-white border-gray-200"
-        }`}
+        className={` sticky top-0 px-6 py-4 flex justify-between items-center border-b ${darkMode
+          ? "bg-[#171717] border-[#2C2C2C]"
+          : "bg-white border-gray-200"
+          }`}
       >
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-emerald-500 rounded-md"></div>
@@ -268,11 +267,10 @@ const LandingPage = () => {
           </div>
           <button
             onClick={toggleTheme}
-            className={`p-2 rounded-full ${
-              darkMode
-                ? "bg-[#2C2C2C] hover:bg-[#333]"
-                : "bg-gray-200 hover:bg-gray-300"
-            } transition-colors`}
+            className={`p-2 rounded-full ${darkMode
+              ? "bg-[#2C2C2C] hover:bg-[#333]"
+              : "bg-gray-200 hover:bg-gray-300"
+              } transition-colors`}
           >
             {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
@@ -285,12 +283,10 @@ const LandingPage = () => {
           className="fixed inset-0 flex items-center justify-center z-50"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
         >
-          <div className={`px-6 py-4 rounded-lg shadow-xl ${
-            darkMode ? "bg-[#1C1C1C] text-white border-[#333]" : "bg-white text-[#212121] border-gray-300"
-          } border`}>
-            <h3 className={`text-lg font-medium leading-6 mb-4 ${
-              darkMode ? "text-white" : "text-[#212121]"
-            }`}>
+          <div className={`px-6 py-4 rounded-lg shadow-xl ${darkMode ? "bg-[#1C1C1C] text-white border-[#333]" : "bg-white text-[#212121] border-gray-300"
+            } border`}>
+            <h3 className={`text-lg font-medium leading-6 mb-4 ${darkMode ? "text-white" : "text-[#212121]"
+              }`}>
               Create a Name for Your Space
             </h3>
             <p className={`mb-4 text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
@@ -300,9 +296,8 @@ const LandingPage = () => {
               <div>
                 <label
                   htmlFor="workspace-name"
-                  className={`block text-sm font-medium mb-1.5 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
+                  className={`block text-sm font-medium mb-1.5 ${darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                 >
                   Workspace Name
                 </label>
@@ -314,11 +309,10 @@ const LandingPage = () => {
                   placeholder="Enter workspace name"
                   className={`block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm 
                   transition-all duration-200 ease-in-out
-                  ${
-                    darkMode
+                  ${darkMode
                       ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
                       : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
-                  }
+                    }
                   focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
                   hover:border-emerald-500/50`}
                 />
@@ -329,20 +323,18 @@ const LandingPage = () => {
                 type="button"
                 onClick={() => setShowWorkspaceModal(false)}
                 disabled={isCreateWorkspaceLoading}
-                className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out ${
-                  darkMode
-                    ? "text-white bg-[#2C2C2C] hover:bg-[#333] border-[#333]"
-                    : "text-gray-700 bg-white hover:bg-gray-100 border-gray-300"
-                } border ${isCreateWorkspaceLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out ${darkMode
+                  ? "text-white bg-[#2C2C2C] hover:bg-[#333] border-[#333]"
+                  : "text-gray-700 bg-white hover:bg-gray-100 border-gray-300"
+                  } border ${isCreateWorkspaceLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateWorkspace}
                 disabled={isCreateWorkspaceLoading}
-                className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${
-                  isCreateWorkspaceLoading ? "opacity-75 cursor-not-allowed" : ""
-                }`}
+                className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${isCreateWorkspaceLoading ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
               >
                 {isCreateWorkspaceLoading ? (
                   <>
@@ -381,21 +373,18 @@ const LandingPage = () => {
           className="fixed inset-0 flex items-center justify-center z-50"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
         >
-          <div className={`w-full max-w-md transform overflow-hidden rounded-lg p-6 shadow-xl ${
-            darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-[#212121]"
-          }`}>
-            <h3 className={`text-lg font-medium leading-6 mb-4 ${
-              darkMode ? "text-white" : "text-[#212121]"
+          <div className={`w-full max-w-md transform overflow-hidden rounded-lg p-6 shadow-xl ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-[#212121]"
             }`}>
+            <h3 className={`text-lg font-medium leading-6 mb-4 ${darkMode ? "text-white" : "text-[#212121]"
+              }`}>
               Enter Your Name
             </h3>
             <div className="space-y-4">
               <div>
                 <label
                   htmlFor="user-name"
-                  className={`block text-sm font-medium mb-1.5 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
+                  className={`block text-sm font-medium mb-1.5 ${darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                 >
                   Your Name
                 </label>
@@ -407,11 +396,10 @@ const LandingPage = () => {
                   placeholder="Enter your name"
                   className={`block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm 
                   transition-all duration-200 ease-in-out
-                  ${
-                    darkMode
+                  ${darkMode
                       ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
                       : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
-                  }
+                    }
                   focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
                   hover:border-emerald-500/50`}
                 />
@@ -506,11 +494,10 @@ const LandingPage = () => {
                 disabled={isJoinWorkspaceLoading}
                 className={`py-3 px-4 rounded-l-md border-2 w-36 md:w-48 
                 transition-all duration-200 ease-in-out
-                ${
-                  darkMode
+                ${darkMode
                     ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
                     : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
-                }
+                  }
                 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
                 hover:border-emerald-500/50
                 ${isJoinWorkspaceLoading ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -556,11 +543,10 @@ const LandingPage = () => {
             <select
               className={`py-3 px-6 rounded-md font-medium shadow-sm 
               transition-all duration-200 ease-in-out border-2
-              ${
-                darkMode
+              ${darkMode
                   ? "bg-[#2C2C2C] border-[#333] text-white hover:border-emerald-500/50"
                   : "bg-white border-gray-200 text-[#212121] hover:border-emerald-500/50"
-              }
+                }
               focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500`}
               onChange={handleWorkspaceSelect}
               value={selectedWorkspace}
@@ -590,12 +576,10 @@ const LandingPage = () => {
               className={`fixed inset-0 flex items-center justify-center z-50`}
               style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
             >
-              <div className={`w-full max-w-md transform overflow-hidden rounded-lg p-6 shadow-xl ${
-                darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-[#212121]"
-              }`}>
-                <p className={`text-center text-lg font-medium mb-4 ${
-                  darkMode ? "text-white" : "text-[#212121]"
-                }`}>Join the room first</p>
+              <div className={`w-full max-w-md transform overflow-hidden rounded-lg p-6 shadow-xl ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-[#212121]"
+                }`}>
+                <p className={`text-center text-lg font-medium mb-4 ${darkMode ? "text-white" : "text-[#212121]"
+                  }`}>Join the room first</p>
                 <button
                   onClick={() => setShowAlert(false)}
                   className="w-full px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out"
@@ -606,11 +590,10 @@ const LandingPage = () => {
             </div>
           )}
           <div
-            className={`relative mx-auto w-full max-w-4xl rounded-xl overflow-hidden border ${
-              darkMode
-                ? "border-[#2C2C2C] bg-[#171717]"
-                : "border-gray-200 bg-white"
-            }`}
+            className={`relative mx-auto w-full max-w-4xl rounded-xl overflow-hidden border ${darkMode
+              ? "border-[#2C2C2C] bg-[#171717]"
+              : "border-gray-200 bg-white"
+              }`}
           >
             <div className="h-[300px] md:h-[400px] flex items-center justify-center">
               {/* Platform Interface mockup */}

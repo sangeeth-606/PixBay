@@ -11,9 +11,13 @@ interface TaskInfoProps {
   onClose?: () => void;
   onDescriptionUpdated?: (newDescription: string) => void;
   darkMode?: boolean;
+  type?:string
+  priority?:string
+  dueDate?: string | Date
+  assigneeId?: string | null; 
 }
 
-function TaskInfo({ taskId, title, description, onTaskDeleted, onClose, onDescriptionUpdated, darkMode = false }: TaskInfoProps) {
+function TaskInfo({ taskId, title, description, type, priority, dueDate, assigneeId, onTaskDeleted, onClose, onDescriptionUpdated, darkMode = false }: TaskInfoProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editedDescription, setEditedDescription] = useState(description || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +92,20 @@ function TaskInfo({ taskId, title, description, onTaskDeleted, onClose, onDescri
       }
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // Helper function to get priority color
+  const getPriorityColor = (priority: string | undefined) => {
+    switch(priority?.toUpperCase()) {
+      case 'HIGH':
+        return darkMode ? 'text-red-400' : 'text-red-500';
+      case 'MEDIUM':
+        return darkMode ? 'text-amber-400' : 'text-amber-500';
+      case 'LOW':
+        return darkMode ? 'text-blue-400' : 'text-blue-500';
+      default:
+        return darkMode ? 'text-gray-400' : 'text-gray-500';
     }
   };
 
@@ -185,8 +203,73 @@ function TaskInfo({ taskId, title, description, onTaskDeleted, onClose, onDescri
         />
       </motion.div>
       
-      <div className="min-h-[400px]">
-      </div>
+      {/* Task Details Grid - Modernized */}
+      <motion.div 
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="grid grid-cols-2 gap-4 mb-8"
+      >
+        {/* Priority */}
+        <motion.div 
+          className={`p-3 rounded-lg ${darkMode ? 'bg-[#1C1C1C] border border-[#2C2C2C]' : 'bg-white border border-gray-200'} transition-all duration-200 hover:shadow-md`}
+          whileHover={{ scale: 1.02 }}
+        >
+          <div className="flex items-center">
+            <div className={`p-2 rounded-md ${darkMode ? 'bg-[#232323]' : 'bg-emerald-50'}`}>
+              <svg className={`w-4 h-4 ${getPriorityColor(priority)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Priority</p>
+              <p className={`text-sm font-medium ${getPriorityColor(priority)}`}>
+                {priority || 'N/A'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Due Date */}
+        <motion.div 
+          className={`p-3 rounded-lg ${darkMode ? 'bg-[#1C1C1C] border border-[#2C2C2C]' : 'bg-white border border-gray-200'} transition-all duration-200 hover:shadow-md`}
+          whileHover={{ scale: 1.02 }}
+        >
+          <div className="flex items-center">
+            <div className={`p-2 rounded-md ${darkMode ? 'bg-[#232323]' : 'bg-emerald-50'}`}>
+              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Due Date</p>
+              <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Assignee */}
+        <motion.div 
+          className={`p-3 rounded-lg ${darkMode ? 'bg-[#1C1C1C] border border-[#2C2C2C]' : 'bg-white border border-gray-200'} transition-all duration-200 hover:shadow-md`}
+          whileHover={{ scale: 1.02 }}
+        >
+          <div className="flex items-center">
+            <div className={`p-2 rounded-md ${darkMode ? 'bg-[#232323]' : 'bg-emerald-50'}`}>
+              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Assignee</p>
+              <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {assigneeId || 'Unassigned'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
       
       <div className="absolute bottom-6 right-6">
         <motion.button

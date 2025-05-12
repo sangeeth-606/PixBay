@@ -27,6 +27,8 @@ export enum TaskStatus {
     priority: Priority;
     dueDate?: string;
     creator: User;
-    assignee?: User;
+    assignee?: User | null; // Update type to User | null
     projectId: string;
+    type?:string
+    name?:string
   }

@@ -178,18 +178,16 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   return (
     <div
-      className={`min-h-screen ${
-        darkMode ? "bg-[#1C1C1C] text-white" : "bg-[#F5F5F5] text-[#212121]"
-      }`}
+      className={`min-h-screen ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-[#F5F5F5] text-[#212121]"
+        }`}
     >
       <div className="max-w-[1800px] mx-auto px-4">
         <div className="py-6">
           <Projectinfo darkMode={darkMode} projectId={effectiveProjectId} />
         </div>
         <div
-          className={`mb-6 rounded-lg shadow-md h-[calc(100vh-240px)] ${
-            darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
-          }`}
+          className={`mb-6 rounded-lg shadow-md h-[calc(100vh-240px)] ${darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
+            }`}
         >
           <AnimatePresence mode="wait">
             {isLoading ? (
@@ -268,6 +266,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 taskId={selectedTask.id}
                 title={selectedTask.title}
                 description={selectedTask.description}
+                type={selectedTask.type}
+                priority={selectedTask.priority}
+                dueDate={selectedTask.dueDate}
+                assigneeId={selectedTask.assignee?.name ?? '—'}
                 darkMode={darkMode}
                 onClose={() => setIsTaskInfoModalOpen(false)}
                 onTaskDeleted={() => {
@@ -305,12 +307,11 @@ const TaskColumnSkeleton: React.FC<SkeletonProps> = ({ darkMode, title }) => {
         {[1, 2, 3].map((i) => (
           <div key={i} className="mb-2">
             <div className={`h-2 my-2 ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
-            <div 
-              className={`rounded p-3 ${
-                darkMode 
-                  ? 'border-neutral-700 bg-neutral-800/50' 
+            <div
+              className={`rounded p-3 ${darkMode
+                  ? 'border-neutral-700 bg-neutral-800/50'
                   : 'border-gray-300 bg-gray-200/70'
-              }`}
+                }`}
             >
               <div className={`h-4 w-3/4 rounded ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
               <div className={`h-3 w-1/2 mt-2 rounded ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>

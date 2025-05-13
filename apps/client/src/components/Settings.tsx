@@ -315,6 +315,49 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
       setIsSaving(false);
     }
   };
+
+  const handleDeleteWorkspace = async () => {
+    // Confirmation dialog
+    if (!confirm(`Are you sure you want to delete the workspace "${workspaceName}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const token = await getToken();
+      
+      await axios.delete(
+        `http://localhost:5000/api/workspaces/${workspaceName}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setMessage({ type: 'success', text: 'Workspace deleted successfully' });
+      
+      // Navigate to another workspace or homepage after short delay
+      setTimeout(() => {
+        if (workspaces.length > 1) {
+          // Find another workspace to navigate to
+          const nextWorkspace = workspaces.find(ws => ws.name !== workspaceName);
+          if (nextWorkspace) {
+            navigate(`/workspace/${nextWorkspace.name}`);
+          } else {
+            navigate('/');
+          }
+        } else {
+          // No other workspaces, go to homepage
+          navigate('/');
+        }
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error deleting workspace:', error);
+      setMessage({ 
+        type: 'error', 
+        text: error.response?.data?.error || 'Failed to delete workspace' 
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -491,13 +534,14 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
                   <input
                     type="text"
                     value={workspace.name}
-                    onChange={(e) => setWorkspace({...workspace, name: e.target.value})}
+                    disabled
                     className={`w-full rounded-md border ${
                       darkMode 
-                        ? "border-gray-700 bg-gray-800 text-white focus:border-emerald-500" 
-                        : "border-gray-300 bg-white text-gray-900 focus:border-emerald-600"
-                    } px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/50`}
+                        ? "border-gray-700 bg-gray-800/60 text-gray-400" 
+                        : "border-gray-300 bg-gray-100 text-gray-600"
+                    } px-3 py-2 focus:ring-0 focus:outline-none`}
                   />
+                  <p className="mt-1 text-xs text-gray-500">Workspace name cannot be changed</p>
                 </div>
                 
                 <div className="mb-6">
@@ -623,13 +667,25 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
                 <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
                   <h3 className="mb-4 text-lg font-medium text-red-600 dark:text-red-400">Danger Zone</h3>
                   <button 
+                    onClick={handleDeleteWorkspace}
+                    disabled={isSaving}
                     className={`rounded-md border ${
                       darkMode
                         ? "border-red-900 bg-red-900/20 text-red-400 hover:bg-red-900/30"
                         : "border-red-200 bg-red-100 text-red-600 hover:bg-red-200"
-                    } px-4 py-2 text-sm font-medium transition-colors`}
+                    } px-4 py-2 text-sm font-medium transition-colors flex items-center`}
                   >
-                    Delete Workspace
+                    {isSaving ? (
+                      <>
+                        <LoadingSpinner size={16} className="mr-2" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Workspace
+                      </>
+                    )}
                   </button>
                 </div>
               </motion.div>

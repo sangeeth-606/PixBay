@@ -209,7 +209,6 @@ export const workSpaceMembers = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch workspace members" });
   }
 };
-
 // Get workspace by name
 export const getWorkspaceByName = async (req, res) => {
   try {
@@ -232,5 +231,60 @@ export const getWorkspaceByName = async (req, res) => {
   } catch (error) {
     console.error("Error fetching workspace:", error);
     res.status(500).json({ error: "Failed to fetch workspace" });
+  }
+};
+
+// Delete workspace
+export const deleteWorkspace = async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { emailAddresses } = req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
+
+    if (!name) {
+      return res.status(400).json({ error: "Workspace name is required" });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Find the workspace
+    const workspace = await prisma.workspace.findFirst({
+      where: { name },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found" });
+    }
+
+    // Check if user is an admin of the workspace
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: { workspaceId: workspace.id, userId: user.id },
+      },
+    });
+
+    if (!member) {
+      return res.status(403).json({ error: "User is not a member of the workspace" });
+    }
+
+    if (member.role !== "ADMIN") {
+      return res.status(403).json({ error: "Only admins can delete a workspace" });
+    }
+
+    // Delete the workspace
+    await prisma.workspace.delete({
+      where: { id: workspace.id },
+    });
+
+    res.status(200).json({ message: "Workspace deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting workspace:", error);
+    res.status(500).json({ error: "Failed to delete workspace" });
   }
 };

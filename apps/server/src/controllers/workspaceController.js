@@ -185,14 +185,15 @@ export const workSpaceMembers = async (req, res) => {
       return res.status(404).json({ error: "Workspace not found" });
     }
 
-    // Format the response
+    // Format the response - IMPORTANT: Use the member.id, not the user id
     const workspaceDetails = {
       id: workspace.id,
       name: workspace.name,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
       members: workspace.members.map((member) => ({
-        id: member.user.id,
+        id: member.id, // This is the workspace member ID needed for deletion
+        userId: member.user.id, // Keep the user ID separately
         name: member.user.name,
         email: member.user.email,
         role: member.role,
@@ -202,6 +203,9 @@ export const workSpaceMembers = async (req, res) => {
       memberCount: workspace.members.length,
       projectCount: workspace.projects.length,
     };
+
+    console.log("Returning workspace members with IDs:", 
+      workspaceDetails.members.map(m => ({ memberId: m.id, userId: m.userId })));
 
     res.status(200).json(workspaceDetails);
   } catch (error) {
@@ -286,5 +290,74 @@ export const deleteWorkspace = async (req, res) => {
   } catch (error) {
     console.error("Error deleting workspace:", error);
     res.status(500).json({ error: "Failed to delete workspace" });
+  }
+};
+
+// Remove member from workspace
+export const removeWorkspaceMember = async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const { emailAddresses } = req.auth;
+    const email = emailAddresses?.[0]?.emailAddress;
+
+    console.log("Removing member with ID:", memberId);
+
+    if (!memberId) {
+      return res.status(400).json({ error: "Member ID is required" });
+    }
+
+    // Get the current user
+    const user = await prisma.user.findFirst({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log("Current user:", user.id);
+
+    // Get the member to be removed
+    const memberToRemove = await prisma.workspaceMember.findUnique({
+      where: { id: memberId },
+      include: { workspace: true }
+    });
+
+    console.log("Member to remove:", memberToRemove);
+
+    if (!memberToRemove) {
+      return res.status(404).json({ error: `Member not found with ID: ${memberId}` });
+    }
+
+    // Check if the current user is an admin of the workspace
+    const currentUserMember = await prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId: memberToRemove.workspaceId,
+        userId: user.id,
+        role: "ADMIN"
+      }
+    });
+
+    if (!currentUserMember) {
+      return res.status(403).json({ error: "You don't have permission to remove members from this workspace" });
+    }
+
+    // Don't allow removing yourself (the admin)
+    if (memberToRemove.userId === user.id) {
+      return res.status(400).json({ error: "You cannot remove yourself from the workspace" });
+    }
+
+    // Remove the member
+    await prisma.workspaceMember.delete({
+      where: { id: memberId }
+    });
+
+    res.status(200).json({ message: "Member removed successfully" });
+  } catch (error) {
+    console.error("Error removing workspace member:", error);
+    res.status(500).json({ 
+      error: "Failed to remove member from workspace",
+      details: error.message
+    });
   }
 };

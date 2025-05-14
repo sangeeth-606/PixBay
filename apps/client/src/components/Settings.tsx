@@ -143,23 +143,27 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
+        console.log("Workspace details:", workspaceRes.data);
+        
         setWorkspace({
           id: workspaceRes.data.id,
           name: workspaceRes.data.name
         });
         
+        // Make sure we're using the correct ID format from the server
         const formattedMembers = workspaceRes.data.members.map((member: WorkspaceMemberResponse) => ({
-          id: member.id,
-          userId: member.userId || member.id,
+          id: member.id, // This should be the workspace member ID
+          userId: member.userId,
           role: member.role,
           joinedAt: member.joinedAt,
           user: {
-            id: member.id,
+            id: member.userId,
             name: member.name,
             email: member.email
           }
         }));
         
+        console.log("Formatted members:", formattedMembers);
         setMembers(formattedMembers);
       } catch (error) {
         console.error('Error loading workspace details:', error);
@@ -251,52 +255,34 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
     }
   };
   
-  const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
-    setIsSaving(true);
-    try {
-      const token = await getToken();
-      
-      await axios.put(
-        `http://localhost:5000/api/workspaces/members/${memberId}`,
-        { role: newRole },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setMembers(prevMembers => 
-        prevMembers.map(member => 
-          member.id === memberId ? { ...member, role: newRole } : member
-        )
-      );
-      
-      setMessage({ type: 'success', text: 'Member role updated' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-    } catch (error) {
-      console.error('Error updating member role:', error);
-      setMessage({ type: 'error', text: 'Failed to update member role' });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-  
   const handleRemoveMember = async (memberId: string) => {
     if (!confirm('Are you sure you want to remove this member?')) return;
     
     setIsSaving(true);
     try {
+      console.log("Attempting to remove member with ID:", memberId);
       const token = await getToken();
       
-      await axios.delete(
+      const response = await axios.delete(
         `http://localhost:5000/api/workspaces/members/${memberId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
+      console.log("Member removal response:", response.data);
+      
+      // Update the member list by filtering out the removed member
       setMembers(prevMembers => prevMembers.filter(member => member.id !== memberId));
       
       setMessage({ type: 'success', text: 'Member removed successfully' });
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error removing member:', error);
-      setMessage({ type: 'error', text: 'Failed to remove member' });
+      console.error('Error details:', error.response?.data || 'No detailed error information');
+      
+      setMessage({ 
+        type: 'error', 
+        text: error.response?.data?.error || 'Failed to remove member' 
+      });
     } finally {
       setIsSaving(false);
     }
@@ -575,20 +561,14 @@ export function Settings({ workspaceName, darkMode, toggleDarkMode }: SettingsPr
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <select
-                                value={member.role}
-                                onChange={(e) => handleUpdateMemberRole(member.id, e.target.value)}
-                                className={`rounded-md border ${
-                                  darkMode 
-                                    ? "border-gray-700 bg-gray-800 text-white" 
-                                    : "border-gray-300 bg-white text-gray-900"
-                                } px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500`}
-                              >
-                                <option value="ADMIN">Admin</option>
-                                <option value="MANAGER">Manager</option>
-                                <option value="MEMBER">Member</option>
-                                <option value="GUEST">Guest</option>
-                              </select>
+                              {/* Replace dropdown with static text */}
+                              <span className={`inline-block rounded-md px-2 py-1 text-sm ${
+                                darkMode 
+                                  ? "bg-gray-800 text-gray-200" 
+                                  : "bg-gray-100 text-gray-800"
+                              }`}>
+                                {member.role}
+                              </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-500">
                               {new Date(member.joinedAt).toLocaleDateString()}

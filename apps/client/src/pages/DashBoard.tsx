@@ -25,13 +25,15 @@ function DashBoard() {
     return savedMode !== null ? savedMode === "true" : true;
   });
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useUser();
 
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
 
-  // Load saved selections only once when component mounts and workspaceCode is available
+  // Separate the initialization phase to ensure correct order
   useEffect(() => {
     if (workspaceCode) {
+      // First, load the selected item so it takes precedence
       const storageKey = `workspace-${workspaceCode}-selectedItem`;
       const savedItem = localStorage.getItem(storageKey);
       console.log("Loading from localStorage:", storageKey, savedItem);
@@ -40,7 +42,7 @@ function DashBoard() {
         setSelectedItem(savedItem);
       }
 
-      // Load project and sprint IDs if needed
+      // Then load related IDs but don't change the selected item
       const savedProjectId = localStorage.getItem(
         `workspace-${workspaceCode}-projectId`
       );
@@ -50,6 +52,9 @@ function DashBoard() {
 
       if (savedProjectId) setSelectedProjectId(savedProjectId);
       if (savedSprintId) setSelectedSprintId(savedSprintId);
+
+      // Mark initialization as complete
+      setIsInitialized(true);
     }
   }, [workspaceCode]);
 
@@ -75,18 +80,28 @@ function DashBoard() {
     setSelectedItem(itemKey);
   };
 
+  // Handle project select without forcibly changing the selected item type
   const handleProjectSelect = (projectId: string) => {
     setSelectedProjectId(projectId);
-    setSelectedItem("projects");
+
+    // Only change to projects view if not already in a different view
+    if (!selectedItem || selectedItem === "projects") {
+      setSelectedItem("projects");
+    }
 
     if (workspaceCode) {
       localStorage.setItem(`workspace-${workspaceCode}-projectId`, projectId);
     }
   };
 
+  // Handle sprint select without forcibly changing the selected item type
   const handleSprintSelect = (sprintId: string) => {
     setSelectedSprintId(sprintId);
-    setSelectedItem("sprints");
+
+    // Only change to sprints view if not already in a different view
+    if (!selectedItem || selectedItem === "sprints") {
+      setSelectedItem("sprints");
+    }
 
     if (workspaceCode) {
       localStorage.setItem(`workspace-${workspaceCode}-sprintId`, sprintId);
@@ -214,6 +229,7 @@ function DashBoard() {
           onSprintSelect={handleSprintSelect}
           onItemSelect={handleItemSelect}
           onSidebarToggle={handleSidebarToggle}
+          isInitialized={isInitialized} // Pass the initialization state
         />
       </div>
 

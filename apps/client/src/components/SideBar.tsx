@@ -12,7 +12,6 @@ import {
   BarChart2,
   Plus,
   MessageCircle,
-  LayoutSplit,
   Columns,
   Search,
 } from "lucide-react";
@@ -32,6 +31,7 @@ interface SidebarProps {
   onSprintSelect: (sprintId: string) => void;
   onItemSelect: (item: string) => void;
   onSidebarToggle?: (minimized: boolean) => void;
+  isInitialized?: boolean; // Add this prop
 }
 interface Project {
   id: string;
@@ -55,6 +55,7 @@ export function Sidebar({
   onSprintSelect,
   onItemSelect,
   onSidebarToggle,
+  isInitialized = false, // Default to false
 }: SidebarProps) {
   const [projectsExpanded, setProjectsExpanded] = useState(true);
   const [sprintsExpanded, setSprintsExpanded] = useState(false);
@@ -66,6 +67,7 @@ export function Sidebar({
   const [isSprintsLoading, setIsSprintsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const { getToken } = useAuth();
 
@@ -96,6 +98,11 @@ export function Sidebar({
   };
 
   const getProjects = async () => {
+    // Don't load projects if we're still initializing from localStorage
+    if (!isInitialized && !initialLoadDone) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const token = await getToken();
@@ -109,7 +116,17 @@ export function Sidebar({
       const projects = response.data;
       setProject(projects);
 
-      if (projects.length > 0) {
+      // Only auto-select a project if:
+      // 1. We have projects
+      // 2. No item is currently selected OR
+      // 3. Projects is selected but no specific project is selected
+      // 4. AND we've completed initial load
+      if (
+        projects.length > 0 &&
+        initialLoadDone &&
+        (!selectedItem || selectedItem === "projects") &&
+        !projects.some((p: Project) => selectedItem === p.id)
+      ) {
         handleProjectSelect(projects[0].id);
       }
     } catch (error) {
@@ -161,13 +178,20 @@ export function Sidebar({
     onProjectSelect(projectId);
   };
 
+  // Load projects only when isInitialized changes to true
   useEffect(() => {
-    getProjects();
-  }, []);
+    if (isInitialized && !initialLoadDone) {
+      setInitialLoadDone(true);
+      getProjects();
+    }
+  }, [isInitialized]);
 
+  // Also load projects when workspace changes
   useEffect(() => {
-    getSprints();
-  }, [workspaceCode]);
+    if (initialLoadDone) {
+      getProjects();
+    }
+  }, [workspaceCode, initialLoadDone]);
 
   // Refresh sprints when a new sprint is created
   useEffect(() => {
@@ -175,6 +199,28 @@ export function Sidebar({
       getSprints();
     }
   }, [isSprintModalOpen]);
+
+  // We need to set the expanded state based on the selectedItem
+  useEffect(() => {
+    // If a non-project item is selected, ensure projects are not auto-expanded
+    if (
+      ["calendar", "members", "messages", "inbox", "roadmap", "settings"].includes(
+        selectedItem
+      )
+    ) {
+      setProjectsExpanded(false);
+    }
+
+    // If sprints are selected, expand that section
+    if (selectedItem === "sprints") {
+      setSprintsExpanded(true);
+    }
+
+    // If projects are selected, expand that section
+    if (selectedItem === "projects") {
+      setProjectsExpanded(true);
+    }
+  }, [selectedItem]);
 
   // Animation variants
   const itemVariants = {

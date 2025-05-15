@@ -14,6 +14,13 @@ import ProjectsSection from "../components/ProjectsSection";
 import FeaturesSection from "../components/FeaturesSection";
 import TrustedBySection from "../components/TrustedBySection";
 import PlatFormMockup from "../icons/PlatFormMockup";
+import { 
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue
+} from "@/components/ui/select";
 
 interface Workspace {
   id: string | number;
@@ -209,11 +216,10 @@ const LandingPage = () => {
     }
   };
 
-  const handleWorkspaceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedWorkspaceName = e.target.value;
-    setSelectedWorkspace(selectedWorkspaceName);
-    if (selectedWorkspaceName) {
-      navigate(`/workspace/${selectedWorkspaceName}`);
+  const handleWorkspaceSelect = (value: string) => {
+    setSelectedWorkspace(value);
+    if (value) {
+      navigate(`/workspace/${value}`);
     }
   };
 
@@ -261,6 +267,7 @@ const LandingPage = () => {
             >
               Pricing
             </a>
+            
             <div className="text-gray-600 hover:text-indigo-600 font-semibold">
               <SignIn />
             </div>
@@ -540,35 +547,52 @@ const LandingPage = () => {
               </button>
             </form>
 
-            <select
-              className={`py-3 px-6 rounded-md font-medium shadow-sm 
-              transition-all duration-200 ease-in-out border-2
-              ${darkMode
+            <Select value={selectedWorkspace} onValueChange={handleWorkspaceSelect}>
+              <SelectTrigger 
+                className={`border-2 !h-[56px] min-h-[56px] py-4 px-6 w-[200px] font-medium shadow-sm 
+                focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 rounded-md
+                flex items-center justify-between text-base
+                ${darkMode
                   ? "bg-[#2C2C2C] border-[#333] text-white hover:border-emerald-500/50"
                   : "bg-white border-gray-200 text-[#212121] hover:border-emerald-500/50"
-                }
-              focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500`}
-              onChange={handleWorkspaceSelect}
-              value={selectedWorkspace}
-            >
-              <option
-                value=""
-                disabled
-                className={darkMode ? "bg-[#1C1C1C]" : "bg-white"}
+                }`}
+                style={{ height: '56px' }}
               >
-                All your spaces
-              </option>
-              {workspaces.map((workspace) => (
-                <option
-                  key={workspace.id}
-                  value={workspace.name}
-                  className={darkMode ? "bg-[#1C1C1C]" : "bg-white"}
-                >
-                  {workspace.name}
-                </option>
-              ))}
-            </select>
+                <SelectValue 
+                  placeholder="All your spaces" 
+                  className={`text-left truncate ${darkMode 
+                    ? "text-white placeholder:text-white" 
+                    : "text-[#212121] placeholder:text-[#212121]"}`}
+                />
+              </SelectTrigger>
+              <SelectContent 
+                className={`w-[200px] rounded-md border-2 
+                ${darkMode 
+                  ? "bg-[#2C2C2C] border-[#333] text-white" 
+                  : "bg-white border-gray-200 text-[#212121]"
+                }`}
+                position="popper"
+                sideOffset={5}
+                align="start"
+              >
+                {workspaces.length === 0 ? (
+                  <div className="py-2 px-4 text-sm opacity-50">No workspaces found</div>
+                ) : (
+                  workspaces.map((workspace) => (
+                    <SelectItem 
+                      key={workspace.id} 
+                      value={workspace.name}
+                      className={`cursor-pointer py-2 px-4 hover:bg-emerald-500/10 rounded-none
+                      ${darkMode ? "focus:bg-emerald-500/20 focus:text-white" : "focus:bg-emerald-500/10"}`}
+                    >
+                      {workspace.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
+          
 
           {/* Hero Image */}
           {showAlert && (

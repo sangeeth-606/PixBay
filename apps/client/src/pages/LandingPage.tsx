@@ -14,6 +14,7 @@ import ProjectsSection from "../components/ProjectsSection";
 import FeaturesSection from "../components/FeaturesSection";
 import TrustedBySection from "../components/TrustedBySection";
 import PlatFormMockup from "../icons/PlatFormMockup";
+import { ShiftingDropDown } from "../components/ui/shiftingDropDown";
 import { 
   Select,
   SelectTrigger,
@@ -249,24 +250,7 @@ const LandingPage = () => {
         </div>
         <div className="flex items-center space-x-6">
           <div className="hidden md:flex space-x-6">
-            <a
-              href="#features"
-              className="hover:text-emerald-500 transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="#projects"
-              className="hover:text-emerald-500 transition-colors"
-            >
-              Projects
-            </a>
-            <a
-              href="#pricing"
-              className="hover:text-emerald-500 transition-colors"
-            >
-              Pricing
-            </a>
+            <ShiftingDropDown />
             
             <div className="text-gray-600 hover:text-indigo-600 font-semibold">
               <SignIn />

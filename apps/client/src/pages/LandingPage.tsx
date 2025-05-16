@@ -250,7 +250,7 @@ const LandingPage = () => {
         </div>
         <div className="flex items-center space-x-6">
           <div className="hidden md:flex space-x-6">
-            <ShiftingDropDown />
+            <ShiftingDropDown darkMode={darkMode} />
             
             <div className="text-gray-600 hover:text-indigo-600 font-semibold">
               <SignIn />

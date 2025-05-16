@@ -49,9 +49,10 @@ interface JoinCallButtonProps {
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left" | "none";
   roomCode: string;
   userId: string;
+  darkMode: boolean;
 }
 
-export function JoinCallButton({ position = "bottom-right", roomCode, userId }: JoinCallButtonProps) {
+export function JoinCallButton({ position = "bottom-right", roomCode, userId,darkMode }: JoinCallButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -70,7 +71,7 @@ export function JoinCallButton({ position = "bottom-right", roomCode, userId }: 
 
   // Handle join call button click
   const handleJoinCall = () => {
-    navigate('/Call', { state: { roomCode, userId, isMuted, isVideoOff } });
+    navigate('/Call', { state: { roomCode, userId, isMuted, isVideoOff,darkMode } });
   };
 
   // Close the expanded menu when clicking outside

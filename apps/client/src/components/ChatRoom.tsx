@@ -61,6 +61,53 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose, darkMode
     return classes.filter(Boolean).join(" ");
   };
 
+  // Fixed function to convert URLs in text to clickable links
+  const formatMessageWithLinks = (text: string) => {
+    // URL regex pattern
+    const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
+    
+    // Create segments array - alternating between text and links
+    const segments: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    
+    // Find all matches and process them
+    while ((match = urlRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        segments.push(text.substring(lastIndex, match.index));
+      }
+      
+      // Process the link
+      let url = match[0];
+      if (url.startsWith('www.')) {
+        url = 'https://' + url;
+      }
+      
+      // Add the link element
+      segments.push(
+        <a 
+          key={`link-${match.index}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={darkMode ? "text-blue-400 hover:underline" : "text-blue-600 hover:underline"}
+        >
+          {match[0]}
+        </a>
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add any remaining text after the last link
+    if (lastIndex < text.length) {
+      segments.push(text.substring(lastIndex));
+    }
+    
+    return segments;
+  };
+
   return (
     <motion.div
       className={classNames(
@@ -146,7 +193,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomCode, userId, onClose, darkMode
                   "text-sm",
                   darkMode ? "text-white" : "text-gray-900"
                 )}>
-                  {msg.text}
+                  {formatMessageWithLinks(msg.text)}
                 </div>
               </motion.div>
             </div>

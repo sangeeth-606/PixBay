@@ -21,6 +21,7 @@ const SMOOTHING_FACTOR = 0.5; // Adjust between 0 and 1 for smoothness vs respon
 
 const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState("#D3D3D3");
   const [brushSize, setBrushSize] = useState(5);
@@ -28,6 +29,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const [tool, setTool] = useState("pen");
   const [prevActions, setPrevActions] = useState<DrawingAction[]>([]);
   const prevSmoothedPoint = useRef<{ x: number, y: number } | null>(null);
+  const actionsRef = useRef<DrawingAction[]>([]);
 
   // Initialize canvas and socket
   useEffect(() => {
@@ -63,13 +65,16 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     newSocket.on("whiteboard-history", (history) => {
       console.log("Received whiteboard history:", history);
       setPrevActions(history);
+      actionsRef.current = history;
       redrawCanvas(history);
     });
 
     newSocket.on("whiteboard-action", (action: DrawingAction) => {
       console.log("Received whiteboard action:", action);
       handleRemoteAction(action);
-      setPrevActions(prev => [...prev, action]);
+      const newActions = [...actionsRef.current, action];
+      setPrevActions(newActions);
+      actionsRef.current = newActions;
     });
 
     return () => {
@@ -78,6 +83,41 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     };
   }, [roomCode]);
 
+  // Add a layout change detector
+  useEffect(() => {
+    const handleLayoutChange = () => {
+      if (canvasRef.current) {
+        const container = canvasRef.current.parentElement;
+        if (container) {
+          const prevWidth = canvasRef.current.width;
+          const prevHeight = canvasRef.current.height;
+
+          canvasRef.current.width = container.clientWidth;
+          canvasRef.current.height = container.clientHeight;
+
+          console.log(
+            `Canvas resized from ${prevWidth}x${prevHeight} to ${canvasRef.current.width}x${canvasRef.current.height}`
+          );
+          console.log(`Redrawing ${actionsRef.current.length} actions`);
+
+          redrawCanvas(actionsRef.current);
+        }
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      handleLayoutChange();
+    });
+
+    if (canvasContainerRef.current) {
+      resizeObserver.observe(canvasContainerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   const redrawCanvas = (actions = prevActions) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -85,41 +125,52 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    console.log(`Redrawing canvas with ${actions.length} actions`);
+
     ctx.fillStyle = "#121212";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let currentX = 0;
-    let currentY = 0;
+    let currentPath: { x: number, y: number }[] = [];
     let currentColor = "#000000";
     let currentSize = 5;
     let currentTool = "pen";
 
-    actions.forEach(action => {
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+
       if (action.type === 'clear') {
+        currentPath = [];
         ctx.fillStyle = "#121212";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else if (action.type === 'start') {
-        currentX = action.x || 0;
-        currentY = action.y || 0;
+        currentPath = [{ x: action.x || 0, y: action.y || 0 }];
         currentColor = action.color || currentColor;
         currentSize = action.brushSize || currentSize;
         currentTool = action.tool || currentTool;
 
         ctx.beginPath();
-        ctx.moveTo(currentX, currentY);
+        ctx.moveTo(action.x || 0, action.y || 0);
         ctx.strokeStyle = currentColor;
         ctx.lineWidth = currentSize;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
       } else if (action.type === 'draw') {
         if (currentTool === 'pen' || currentTool === 'eraser') {
-          ctx.lineTo(action.x || 0, action.y || 0);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(action.x || 0, action.y || 0);
+          currentPath.push({ x: action.x || 0, y: action.y || 0 });
+
+          if (currentPath.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(currentPath[0].x, currentPath[0].y);
+
+            for (let j = 1; j < currentPath.length; j++) {
+              ctx.lineTo(currentPath[j].x, currentPath[j].y);
+            }
+
+            ctx.stroke();
+          }
         }
       }
-    });
+    }
   };
 
   const handleRemoteAction = (action: DrawingAction) => {
@@ -147,6 +198,17 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     }
   };
 
+  const getMouseCoordinates = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    return { x, y };
+  };
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas || !socket) return;
@@ -154,10 +216,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
+    const { x, y } = getMouseCoordinates(e);
     prevSmoothedPoint.current = { x, y };
 
     const action: DrawingAction = {
@@ -169,7 +228,10 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       tool
     };
     socket.emit("whiteboard-action", { roomCode, action });
-    setPrevActions(prev => [...prev, action]);
+
+    const newActions = [...actionsRef.current, action];
+    setPrevActions(newActions);
+    actionsRef.current = newActions;
 
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -188,9 +250,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const rawX = e.clientX - rect.left;
-    const rawY = e.clientY - rect.top;
+    const { x: rawX, y: rawY } = getMouseCoordinates(e);
 
     if (prevSmoothedPoint.current) {
       const prevX = prevSmoothedPoint.current.x;
@@ -204,7 +264,10 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
         y: smoothedY
       };
       socket.emit("whiteboard-action", { roomCode, action });
-      setPrevActions(prev => [...prev, action]);
+
+      const newActions = [...actionsRef.current, action];
+      setPrevActions(newActions);
+      actionsRef.current = newActions;
 
       ctx.lineTo(smoothedX, smoothedY);
       ctx.stroke();
@@ -229,18 +292,22 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
 
     const action: DrawingAction = { type: 'clear' };
     socket.emit("whiteboard-action", { roomCode, action });
-    setPrevActions(prev => [...prev, action]);
+
+    const newActions = [...actionsRef.current, action];
+    setPrevActions(newActions);
+    actionsRef.current = newActions;
 
     ctx.fillStyle = "#121212";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
   const undoLastAction = () => {
-    if (prevActions.length === 0) return;
+    if (actionsRef.current.length === 0) return;
 
-    const newActions = [...prevActions];
+    const newActions = [...actionsRef.current];
     newActions.pop();
     setPrevActions(newActions);
+    actionsRef.current = newActions;
     redrawCanvas(newActions);
 
     if (socket) {
@@ -319,7 +386,10 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
         </div>
       </div>
 
-      <div className="flex-1 relative bg-gray-800 overflow-hidden">
+      <div 
+        ref={canvasContainerRef}
+        className="flex-1 relative bg-gray-800 overflow-hidden"
+      >
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}

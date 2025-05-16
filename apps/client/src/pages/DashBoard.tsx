@@ -241,7 +241,11 @@ function DashBoard() {
         <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}>
           {renderMainContent()}
           <div className="absolute bottom-4 right-4 z-50">
-            <JoinCallButton roomCode={workspaceCode || "general"} userId={email || "anonymous"} />
+            <JoinCallButton 
+              darkMode={darkMode} 
+              roomCode={workspaceCode || "general"} 
+              userId={email || "anonymous"} 
+            />
           </div>
         </main>
       </div>

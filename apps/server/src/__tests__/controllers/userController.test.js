@@ -1,25 +1,25 @@
-import { 
-  checkUserExists, 
-  createUser, 
-  deleteUser 
-} from '../../controllers/userController.js';
-import prismaMock from '../mocks/prisma.js';
-
-// Mock Express request and response objects
-const mockResponse = () => {
-  const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
-  return res;
-};
+const userController = require('../../controllers/userController.cjs');
+const mockDB = require('../mocks/db.js');
 
 describe('User Controller', () => {
+  // Mock Express request and response objects
+  const mockResponse = () => {
+    const res = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn().mockReturnValue(res);
+    return res;
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   // Test 1: checkUserExists returns 400 if email not provided
   test('checkUserExists returns 400 if email not provided', async () => {
     const req = { query: {} };
     const res = mockResponse();
     
-    await checkUserExists(req, res);
+    await userController.checkUserExists(req, res);
     
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Email parameter is required' });
@@ -30,9 +30,9 @@ describe('User Controller', () => {
     const req = { query: { email: 'nonexistent@example.com' } };
     const res = mockResponse();
     
-    prismaMock.user.findUnique.mockResolvedValue(null);
+    mockDB.user.findUnique.mockResolvedValue(null);
     
-    await checkUserExists(req, res);
+    await userController.checkUserExists(req, res);
     
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ exists: false });
@@ -43,7 +43,7 @@ describe('User Controller', () => {
     const req = { body: { name: 'Test User' } };
     const res = mockResponse();
     
-    await createUser(req, res);
+    await userController.createUser(req, res);
     
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Email is required' });
@@ -61,11 +61,11 @@ describe('User Controller', () => {
     const res = mockResponse();
     
     const createdUser = { id: '1', ...userData };
-    prismaMock.user.create.mockResolvedValue(createdUser);
+    mockDB.user.create.mockResolvedValue(createdUser);
     
-    await createUser(req, res);
+    await userController.createUser(req, res);
     
-    expect(prismaMock.user.create).toHaveBeenCalledWith({
+    expect(mockDB.user.create).toHaveBeenCalledWith({
       data: userData
     });
     expect(res.status).toHaveBeenCalledWith(201);
@@ -82,9 +82,9 @@ describe('User Controller', () => {
     
     const prismaError = new Error('User not found');
     prismaError.code = 'P2025';
-    prismaMock.user.delete.mockRejectedValue(prismaError);
+    mockDB.user.delete.mockRejectedValue(prismaError);
     
-    await deleteUser(req, res);
+    await userController.deleteUser(req, res);
     
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ error: 'User not found' });

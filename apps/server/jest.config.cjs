@@ -1,9 +1,12 @@
 module.exports = {
   testEnvironment: 'node',
-  transform: {},
-  // Remove extensionsToTreatAsEsm since .js is automatically treated as ESM
+  transform: {
+    '^.+\\.js$': 'babel-jest'
+  },
+  moduleFileExtensions: ['js', 'cjs', 'json', 'node'],
+  // Use more specific patterns for your module mappings
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^(\\.{1,2})/controllers/(.+)\\.js$': '$1/controllers/$2.cjs'
   },
   testMatch: ['**/__tests__/**/*.test.js'],
   collectCoverage: true,
@@ -14,4 +17,6 @@ module.exports = {
   ],
   clearMocks: true,
   restoreMocks: true,
+  setupFiles: ['<rootDir>/jest.setup.js']
 };
+

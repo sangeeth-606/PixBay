@@ -1,14 +1,18 @@
-import { mockDeep, mockReset } from 'jest-mock-extended';
+const { mockDeep, mockReset } = require('jest-mock-extended');
 
-const prismaMock = mockDeep();
+// Create the mock with a prefix that Jest allows
+const mockPrisma = mockDeep();
 
-jest.mock('../../db.js', () => ({
-  __esModule: true,
-  default: prismaMock,
-}));
-
-beforeEach(() => {
-  mockReset(prismaMock);
+jest.mock('../../db.js', () => {
+  return {
+    __esModule: true,
+    default: mockPrisma,
+    verifyDatabaseConnection: jest.fn().mockResolvedValue(true)
+  };
 });
 
-export default prismaMock;
+beforeEach(() => {
+  mockReset(mockPrisma);
+});
+
+module.exports = mockPrisma;

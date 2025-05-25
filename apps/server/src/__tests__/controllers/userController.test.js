@@ -1,7 +1,10 @@
 const userController = require('../../controllers/userController.cjs');
-const mockDB = require('../mocks/db.js');
+import mockDB from '../../__tests__/mocks/db.js';
 
-describe('User Controller', () => {
+// Fix: Use mockDB directly without .default
+jest.mock('../../db.js', () => mockDB);
+
+describe('User Controller Tests', () => {
   // Mock Express request and response objects
   const mockResponse = () => {
     const res = {};
@@ -30,6 +33,7 @@ describe('User Controller', () => {
     const req = { query: { email: 'nonexistent@example.com' } };
     const res = mockResponse();
     
+    // Fix: Remove .default
     mockDB.user.findUnique.mockResolvedValue(null);
     
     await userController.checkUserExists(req, res);
@@ -61,6 +65,7 @@ describe('User Controller', () => {
     const res = mockResponse();
     
     const createdUser = { id: '1', ...userData };
+    // Fix: Remove .default
     mockDB.user.create.mockResolvedValue(createdUser);
     
     await userController.createUser(req, res);
@@ -82,6 +87,7 @@ describe('User Controller', () => {
     
     const prismaError = new Error('User not found');
     prismaError.code = 'P2025';
+    // Fix: Remove .default
     mockDB.user.delete.mockRejectedValue(prismaError);
     
     await userController.deleteUser(req, res);

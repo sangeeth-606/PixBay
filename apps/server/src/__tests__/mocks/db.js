@@ -1,17 +1,11 @@
-// Create a mock DB module for tests
-const mockDB = {
-  user: {
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn()
-  }
-};
+import { mockDeep, mockReset } from 'jest-mock-extended';
 
-jest.mock('../../db.js', () => ({
-  __esModule: true,
-  default: mockDB,
-  verifyDatabaseConnection: jest.fn().mockResolvedValue(true)
-}));
+// Create a mock PrismaClient with all nested objects
+const mockDB = mockDeep();
 
-module.exports = mockDB;
+// Reset mock between tests
+beforeEach(() => {
+  mockReset(mockDB);
+});
+
+export default mockDB;

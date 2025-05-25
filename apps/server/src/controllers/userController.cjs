@@ -1,7 +1,8 @@
 // CommonJS version of userController.js for Jest testing
 // Only includes functions needed for tests
 
-const prisma = require('../db.js');
+// Import the mock directly
+const db = require('../__tests__/mocks/db');
 
 const checkUserExists = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ const checkUserExists = async (req, res) => {
       return res.status(400).json({ error: 'Email parameter is required' });
     }
 
-    const user = await prisma.default.user.findUnique({
+    const user = await db.default.user.findUnique({
       where: { email },
       select: { 
         id: true, 
@@ -46,7 +47,7 @@ const createUser = async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    const user = await prisma.default.user.create({
+    const user = await db.default.user.create({
       data: {
         email,
         name,
@@ -64,7 +65,7 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.default.user.delete({
+    await db.default.user.delete({
       where: { id },
     });
 

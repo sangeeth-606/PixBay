@@ -1,12 +1,23 @@
-
 import prisma from "../db.js";
 
 export const roomSockets = (io) => {
-  io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
+  // Use Map for better memory management
+  const whiteboardHistory = new Map();
+  // Track connected users per room
+  const connectedUsers = new Map();
 
-    // Store whiteboard history per room
-    const whiteboardHistory = {};
+  io.on("connection", (socket) => {
+    const { roomCode, userId } = socket.handshake.query;
+    console.log("User connected:", socket.id, "Room:", roomCode, "User:", userId);
+
+    // Handle reconnection
+    if (roomCode) {
+      socket.join(roomCode);
+      if (!connectedUsers.has(roomCode)) {
+        connectedUsers.set(roomCode, new Set());
+      }
+      connectedUsers.get(roomCode).add(socket.id);
+    }
 
     socket.on("join-room", async (roomName, peerId) => {
       console.log("Join-room received:", roomName, peerId);
@@ -69,46 +80,117 @@ export const roomSockets = (io) => {
 
     // Whiteboard handling
     socket.on("join-whiteboard", (roomCode) => {
-      console.log(`User joined whiteboard for room: ${roomCode}`);
+      console.log(`User ${socket.id} joined whiteboard for room: ${roomCode}`);
       socket.join(roomCode);
       
-      // Initialize room history if it doesn't exist
-      if (!whiteboardHistory[roomCode]) {
-        whiteboardHistory[roomCode] = [];
+      // Initialize room history if needed
+      if (!whiteboardHistory.has(roomCode)) {
+        whiteboardHistory.set(roomCode, []);
       }
       
-      // Send existing history to the new user
-      socket.emit("whiteboard-history", whiteboardHistory[roomCode]);
+      // Send existing history
+      socket.emit("whiteboard-history", whiteboardHistory.get(roomCode));
+    });
+
+    socket.on("get-whiteboard-history", (roomCode) => {
+      if (whiteboardHistory.has(roomCode)) {
+        socket.emit("whiteboard-history", whiteboardHistory.get(roomCode));
+      }
     });
 
     socket.on("whiteboard-action", ({ roomCode, action }) => {
-      console.log(`Whiteboard action received for room ${roomCode}:`, action);
+      if (!whiteboardHistory.has(roomCode)) {
+        whiteboardHistory.set(roomCode, []);
+      }
       
-      // Add action to history
-      if (whiteboardHistory[roomCode]) {
-        whiteboardHistory[roomCode].push(action);
-        
-        // Broadcast to other users in the room
-        socket.to(roomCode).emit("whiteboard-action", action);
-      } else {
-        console.error(`No whiteboard history found for room ${roomCode}`);
+      const history = whiteboardHistory.get(roomCode);
+      history.push(action);
+      
+      // Limit history size to prevent memory issues
+      if (history.length > 10000) {
+        history.splice(0, 1000); // Remove old actions when limit is reached
+      }
+      
+      // Broadcast to all users in room
+      io.to(roomCode).emit("whiteboard-action", action);
+    });
+
+    socket.on("whiteboard-batch", ({ roomCode, actions }) => {
+      if (!whiteboardHistory.has(roomCode)) {
+        whiteboardHistory.set(roomCode, []);
+      }
+      
+      const history = whiteboardHistory.get(roomCode);
+      
+      // Process actions in smaller chunks for better performance
+      for (let i = 0; i < actions.length; i++) {
+        history.push(actions[i]);
+        // Broadcast each action immediately for better real-time experience
+        socket.to(roomCode).emit("whiteboard-action", actions[i]);
+      }
+      
+      // Keep history size manageable
+      if (history.length > 10000) {
+        const keepLast = 5000; // Keep last 5000 actions
+        history.splice(0, history.length - keepLast);
+        console.log(`Trimmed history for room ${roomCode} to ${keepLast} actions`);
+      }
+    });
+
+    socket.on("whiteboard-clear", (roomCode) => {
+      if (whiteboardHistory.has(roomCode)) {
+        whiteboardHistory.set(roomCode, []);
+        io.to(roomCode).emit("whiteboard-history", []);
       }
     });
 
     socket.on("whiteboard-undo", ({ roomCode }) => {
-      console.log(`Undo request received for room ${roomCode}`);
-      
-      if (whiteboardHistory[roomCode] && whiteboardHistory[roomCode].length > 0) {
-        // Remove last action from history
-        whiteboardHistory[roomCode].pop();
-        
-        // Broadcast updated history to all users in the room
-        io.to(roomCode).emit("whiteboard-history", whiteboardHistory[roomCode]);
+      if (whiteboardHistory.has(roomCode)) {
+        const history = whiteboardHistory.get(roomCode);
+        if (history.length > 0) {
+          history.pop();
+          io.to(roomCode).emit("whiteboard-history", history);
+        }
       }
     });
 
+    // Enhanced cleanup on disconnect
     socket.on("disconnect", () => {
-      console.log("Socket disconnected:", socket.id);
+      console.log("User disconnected:", socket.id);
+      
+      if (roomCode) {
+        // Handle connected users cleanup
+        if (connectedUsers.has(roomCode)) {
+          connectedUsers.get(roomCode).delete(socket.id);
+          if (connectedUsers.get(roomCode).size === 0) {
+            connectedUsers.delete(roomCode);
+            console.log(`Room ${roomCode} is now empty`);
+          }
+        }
+
+        // Check if room is completely empty
+        const room = io.sockets.adapter.rooms.get(roomCode);
+        if (!room || room.size === 0) {
+          // Optional: Save history to persistent storage before clearing
+          // await saveHistoryToDB(roomCode, whiteboardHistory.get(roomCode));
+          
+          whiteboardHistory.delete(roomCode);
+          console.log(`Cleaned up whiteboard history for room: ${roomCode}`);
+        }
+      }
     });
+
+    // Handle errors
+    socket.on("error", (error) => {
+      console.error("Socket error:", error);
+      // Attempt to clean up if error occurs
+      if (roomCode) {
+        connectedUsers.get(roomCode)?.delete(socket.id);
+      }
+    });
+
+    // End of socket connection handling
   });
+
+  // End of roomSockets export
 };

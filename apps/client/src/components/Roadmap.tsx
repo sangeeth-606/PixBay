@@ -10,7 +10,6 @@ import {
   Ban,
   Calendar,
   Plus,
-  XIcon,
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";

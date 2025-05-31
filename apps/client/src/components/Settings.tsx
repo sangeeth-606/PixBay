@@ -62,7 +62,6 @@ export function Settings({
   const [message, setMessage] = useState({ type: "", text: "" });
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [newMemberEmail, setNewMemberEmail] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState("MEMBER");
   const [workspace, setWorkspace] = useState({ name: workspaceName, id: "" });
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
 
@@ -71,7 +70,6 @@ export function Settings({
   const navigate = useNavigate();
 
   const [profileName, setProfileName] = useState("");
-  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -91,7 +89,6 @@ export function Settings({
         if (response.data.exists) {
           setProfileName(response.data.name || "");
           if (response.data.id) {
-            setUserId(response.data.id);
             console.log("User ID set to:", response.data.id);
           } else {
             console.warn("User exists but ID not found in response");
@@ -202,7 +199,7 @@ export function Settings({
       console.log("Update response:", response.data);
 
       if (response.data.user && response.data.user.id) {
-        setUserId(response.data.user.id);
+        console.log("User ID set to:", response.data.user.id);
       }
 
       setMessage({ type: "success", text: "Profile updated successfully" });
@@ -227,7 +224,7 @@ export function Settings({
 
       await axios.post(
         api.getApiEndpoint(`/api/workspaces/${workspace.id}/members`),
-        { email: newMemberEmail, role: newMemberRole },
+        { email: newMemberEmail },
         { headers: { Authorization: `Bearer ${token}` } },
       );
 

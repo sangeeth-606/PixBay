@@ -57,12 +57,16 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
   <div className="fixed inset-0 z-50 overflow-y-auto">
     <div className="fixed inset-0 bg-black/50"></div>
     <div className="flex min-h-full items-center justify-center p-4 text-center">
-      <div className={`w-full max-w-md transform overflow-hidden rounded-lg p-6 shadow-xl transition-all relative ${
-        darkMode ? 'bg-[#1C1C1C] text-white' : 'bg-white text-gray-900'
-      }`}>
-        <h3 className={`text-lg font-medium leading-6 ${
-          darkMode ? 'text-white' : 'text-gray-900'
-        }`}>
+      <div
+        className={`w-full max-w-md transform overflow-hidden rounded-lg p-6 shadow-xl transition-all relative ${
+          darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-gray-900"
+        }`}
+      >
+        <h3
+          className={`text-lg font-medium leading-6 ${
+            darkMode ? "text-white" : "text-gray-900"
+          }`}
+        >
           Create New Milestone
         </h3>
 
@@ -70,7 +74,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
         <button
           type="button"
           className={`absolute top-3 right-3 ${
-            darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+            darkMode
+              ? "text-gray-400 hover:text-gray-300"
+              : "text-gray-500 hover:text-gray-700"
           }`}
           onClick={onClose}
         >
@@ -78,11 +84,13 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
         </button>
 
         {error && (
-          <div className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${
-            darkMode 
-              ? 'bg-red-500/10 border border-red-500/20 text-red-500' 
-              : 'bg-red-100 border border-red-200 text-red-600'
-          }`}>
+          <div
+            className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${
+              darkMode
+                ? "bg-red-500/10 border border-red-500/20 text-red-500"
+                : "bg-red-100 border border-red-200 text-red-600"
+            }`}
+          >
             <AlertCircle className="w-5 h-5" />
             <span>{error}</span>
           </div>
@@ -101,7 +109,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
               <label
                 htmlFor="title"
                 className={`block text-sm font-medium mb-1.5 ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                  darkMode ? "text-gray-300" : "text-gray-700"
                 }`}
               >
                 Title
@@ -112,9 +120,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                  darkMode 
-                    ? 'bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white'
+                  darkMode
+                    ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
                 } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
                 placeholder="Enter milestone title"
                 required
@@ -128,7 +136,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 <label
                   htmlFor="startDate"
                   className={`block text-sm font-medium mb-1.5 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                    darkMode ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Start Date
@@ -139,9 +147,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                    darkMode 
-                      ? 'bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white'
+                    darkMode
+                      ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
                   } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
                   required
                 />
@@ -152,7 +160,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 <label
                   htmlFor="endDate"
                   className={`block text-sm font-medium mb-1.5 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                    darkMode ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   End Date
@@ -163,9 +171,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                    darkMode 
-                      ? 'bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white'
+                    darkMode
+                      ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
                   } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
                   required
                 />
@@ -179,7 +187,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 <label
                   htmlFor="status"
                   className={`block text-sm font-medium mb-1.5 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                    darkMode ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Status
@@ -189,9 +197,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                   value={status}
                   onChange={(e) => setStatus(e.target.value as MilestoneStatus)}
                   className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                    darkMode 
-                      ? 'bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white'
+                    darkMode
+                      ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
                   } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
                   required
                 >
@@ -208,7 +216,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 <label
                   htmlFor="progress"
                   className={`block text-sm font-medium mb-1.5 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                    darkMode ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Progress (%)
@@ -223,9 +231,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                     setProgress(parseInt(e.target.value, 10) || 0)
                   }
                   className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                    darkMode 
-                      ? 'bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white'
+                    darkMode
+                      ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
                   } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
                   required
                 />
@@ -237,7 +245,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
               <label
                 htmlFor="project"
                 className={`block text-sm font-medium mb-1.5 ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                  darkMode ? "text-gray-300" : "text-gray-700"
                 }`}
               >
                 Project
@@ -247,9 +255,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 value={selectedProjectId || ""}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
                 className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                  darkMode 
-                    ? 'bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white'
+                  darkMode
+                    ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
                 } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
                 required
               >
@@ -269,9 +277,9 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
               type="button"
               onClick={onClose}
               className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out ${
-                darkMode 
-                  ? 'text-white bg-[#2C2C2C] hover:bg-[#333] border-[#333] border' 
-                  : 'text-gray-700 bg-gray-200 hover:bg-gray-300 border-gray-300 border'
+                darkMode
+                  ? "text-white bg-[#2C2C2C] hover:bg-[#333] border-[#333] border"
+                  : "text-gray-700 bg-gray-200 hover:bg-gray-300 border-gray-300 border"
               } ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
               disabled={isLoading}
             >

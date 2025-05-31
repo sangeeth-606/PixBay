@@ -8,6 +8,7 @@ import "../styles/calendar-styles.css";
 import CalenderTaskModal from "../components/CalenderTaskModal";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
+import api from "../utils/api";
 
 interface CalendarEvent {
   id: string;
@@ -98,19 +99,19 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
         throw new Error("Authentication token or workspace name not available");
       }
       const response = await axios.get(
-        `http://localhost:5000/api/tasks/workspace/${workspaceName}`,
+        api.getApiEndpoint(`/tasks/workspace/${workspaceName}`),
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       setTasks(response.data);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error(
           "Error fetching tasks:",
-          error.response?.data?.error || error.message
+          error.response?.data?.error || error.message,
         );
       } else if (error instanceof Error) {
         console.error("Error fetching tasks:", error.message);
@@ -142,7 +143,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
   };
 
   const fullCalendarEvents = convertEventsToFullCalendarFormat(
-    mapTasksToEvents(tasks)
+    mapTasksToEvents(tasks),
   );
 
   const handleDateClick = (arg: any) => {
@@ -191,9 +192,8 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full rounded-lg flex flex-col p-6 ${
-        darkMode ? 'bg-[#1C1C1C] text-white' : 'bg-white text-black'
-      }`}
+      className={`w-full h-full rounded-lg flex flex-col p-6 ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-black"
+        }`}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
         <CalenderTaskModal
@@ -207,16 +207,16 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
           getToken={getToken}
         />
 
-        <div className={`flex space-x-2 rounded-md p-1 ${
-          darkMode ? 'bg-[#171717]' : 'bg-gray-200'
-        }`}>
+        <div
+          className={`flex space-x-2 rounded-md p-1 ${darkMode ? "bg-[#171717]" : "bg-gray-200"
+            }`}
+        >
           {viewOptions.map((option) => (
             <button
               key={option.view}
               onClick={() => changeView(option.view)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors hover:${
-                darkMode ? 'bg-[#333]' : 'bg-gray-300'
-              } focus:outline-none`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors hover:${darkMode ? "bg-[#333]" : "bg-gray-300"
+                } focus:outline-none`}
             >
               {option.name}
             </button>
@@ -224,7 +224,9 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
         </div>
       </div>
 
-      <div className={`fullcalendar-${darkMode ? 'dark' : 'light'} flex-grow overflow-hidden`}>
+      <div
+        className={`fullcalendar-${darkMode ? "dark" : "light"} flex-grow overflow-hidden`}
+      >
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -243,10 +245,16 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
           eventClick={handleEventClick}
           height={containerHeight || "auto"}
           themeSystem="standard"
-          dayCellClassNames={darkMode ? "bg-[#171717] hover:bg-[#333] border-[#2C2C2C]" : "bg-white hover:bg-gray-100 border-gray-200"}
+          dayCellClassNames={
+            darkMode
+              ? "bg-[#171717] hover:bg-[#333] border-[#2C2C2C]"
+              : "bg-white hover:bg-gray-100 border-gray-200"
+          }
           eventClassNames="rounded-md"
           slotLabelClassNames={darkMode ? "text-gray-400" : "text-gray-600"}
-          dayHeaderClassNames={darkMode ? "text-gray-400 font-medium" : "text-gray-700 font-medium"}
+          dayHeaderClassNames={
+            darkMode ? "text-gray-400 font-medium" : "text-gray-700 font-medium"
+          }
           titleFormat={{ year: "numeric", month: "long" }}
           buttonText={{
             today: "Today",
@@ -255,7 +263,9 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
             day: "Day",
           }}
           viewClassNames={darkMode ? "bg-[#1C1C1C]" : "bg-white"}
-          allDayClassNames={darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-black"}
+          allDayClassNames={
+            darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-black"
+          }
           nowIndicatorClassNames="bg-emerald-500"
         />
       </div>

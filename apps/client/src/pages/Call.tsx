@@ -1,6 +1,6 @@
-import React from 'react';
-import { useLocation, Navigate } from 'react-router-dom';
-import VideoRoom from './VideoRoom';
+import React from "react";
+import { useLocation, Navigate } from "react-router-dom";
+import VideoRoom from "./VideoRoom";
 
 interface CallState {
   roomCode: string;

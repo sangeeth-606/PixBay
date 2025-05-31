@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Circle } from "lucide-react";
+import api from "../utils/api"; // Changed to import the default export
 
 // Define a type for the notification
 type Notification = {
@@ -29,7 +30,7 @@ function Inbox({ darkMode = true }: InboxProps) {
         const token = await getToken();
         setAuthToken(token);
 
-        const res = await axios.get("http://localhost:5000/api/notifications", {
+        const res = await axios.get(api.getApiEndpoint("/api/notifications"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         setNotifications(res.data);
@@ -49,12 +50,12 @@ function Inbox({ darkMode = true }: InboxProps) {
     try {
       if (!authToken) return;
       await axios.put(
-        `http://localhost:5000/api/notifications/${id}/read`,
+        api.getApiEndpoint(`/api/notifications/${id}/read`),
         {},
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { headers: { Authorization: `Bearer ${authToken}` } },
       );
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -72,7 +73,9 @@ function Inbox({ darkMode = true }: InboxProps) {
   };
 
   const getBgColor = darkMode ? "#1F1F1F" : "#F3F4F6";
-  const getHoverBgColor = darkMode ? "rgba(44, 44, 44, 1)" : "rgba(229, 231, 235, 1)";
+  const getHoverBgColor = darkMode
+    ? "rgba(44, 44, 44, 1)"
+    : "rgba(229, 231, 235, 1)";
   const getTextColor = darkMode ? "#FFFFFF" : "#1F2937";
   const getContentTextColor = darkMode ? "#9CA3AF" : "#4B5563";
   const getHeaderBorderColor = darkMode ? "#2C2C2C" : "#E5E7EB";

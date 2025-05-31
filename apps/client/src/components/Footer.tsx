@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface FooterProps {
   darkMode: boolean;
@@ -58,7 +58,7 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
                 >
                   <Icon />
                 </a>
-              )
+              ),
             )}
           </div>
         </div>

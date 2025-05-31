@@ -4,6 +4,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
+import { getApiEndpoint } from "../utils/api"; // Import the API utility function
 
 interface FormModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ export function FormModal({
     try {
       const token = await getToken();
       const response = await axios.post(
-        "http://localhost:5000/api/projects", // Remove any trailing slash here
+        getApiEndpoint("api/projects"), // Use API utility instead of hardcoded URL
         {
           name,
           description,
@@ -41,7 +42,7 @@ export function FormModal({
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       console.log("Project created:", response.data);

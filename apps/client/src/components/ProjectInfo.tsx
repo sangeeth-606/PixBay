@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
+import { getApiEndpoint } from "../utils/api"; // Import the API utility function
 
 interface ProjectInfo {
   name: string;
@@ -33,7 +34,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode, projectId }) => {
 
     try {
       const token = await getToken();
-      const projectUrl = `http://localhost:5000/api/projects/${projectId}`;
+      const projectUrl = getApiEndpoint(`api/projects/${projectId}`);
 
       const response = await axios.get(projectUrl, {
         headers: { Authorization: `Bearer ${token}` },
@@ -76,7 +77,9 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode, projectId }) => {
           darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
         }`}
       >
-        <p className={`text-center ${darkMode ? "text-white" : "text-[#212121]"}`}>
+        <p
+          className={`text-center ${darkMode ? "text-white" : "text-[#212121]"}`}
+        >
           Loading project information...
         </p>
       </div>
@@ -90,7 +93,9 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode, projectId }) => {
           darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
         }`}
       >
-        <p className={`text-center text-red-500`}>{error || "Project not found"}</p>
+        <p className={`text-center text-red-500`}>
+          {error || "Project not found"}
+        </p>
       </div>
     );
   }
@@ -111,7 +116,9 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode, projectId }) => {
         </h1>
 
         {project.description && (
-          <div className={`mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+          <div
+            className={`mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}
+          >
             <p className="text-sm">{project.description}</p>
           </div>
         )}

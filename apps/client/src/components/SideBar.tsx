@@ -21,6 +21,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api"; // Import the API utility
 
 interface SidebarProps {
   selectedItem: string;
@@ -107,10 +108,10 @@ export function Sidebar({
     try {
       const token = await getToken();
       const response = await axios.get(
-        `http://localhost:5000/api/projects/workspace/${workspaceCode}`,
+        api.getApiEndpoint(`/api/projects/workspace/${workspaceCode}`), // Use the API utility
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const projects = response.data;
@@ -145,17 +146,12 @@ export function Sidebar({
 
       // Ensure the workspace ID is properly encoded for the URL
       const encodedWorkspaceId = encodeURIComponent(workspaceCode);
-      // console.log(`Fetching sprints for workspace: ${encodedWorkspaceId}`);
-
-      // Make sure any + signs are properly handled (+ represents a space in URL encoding)
-      const url = `http://localhost:5000/api/sprints/workspace/${encodedWorkspaceId}`;
-      // console.log(`Making API request to: ${url}`);
+      const url = api.getApiEndpoint(`/api/sprints/workspace/${encodedWorkspaceId}`); // Use the API utility
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // console.log(`Successfully fetched ${response.data.length} sprints`);
       setSprints(response.data);
     } catch (error) {
       console.error("Error fetching sprints:", error);
@@ -166,7 +162,7 @@ export function Sidebar({
       if (axios.isAxiosError(error) && error.response) {
         console.error(
           `Server responded with status ${error.response.status}:`,
-          error.response.data
+          error.response.data,
         );
       }
     } finally {
@@ -204,9 +200,14 @@ export function Sidebar({
   useEffect(() => {
     // If a non-project item is selected, ensure projects are not auto-expanded
     if (
-      ["calendar", "members", "messages", "inbox", "roadmap", "settings"].includes(
-        selectedItem
-      )
+      [
+        "calendar",
+        "members",
+        "messages",
+        "inbox",
+        "roadmap",
+        "settings",
+      ].includes(selectedItem)
     ) {
       setProjectsExpanded(false);
     }
@@ -265,12 +266,12 @@ export function Sidebar({
       />
 
       <motion.div
-        className={`flex h-full flex-col ${darkMode ? 'bg-[#171717] text-white' : 'bg-white text-gray-800'} relative`}
+        className={`flex h-full flex-col ${darkMode ? "bg-[#171717] text-white" : "bg-white text-gray-800"} relative`}
         initial={{ x: -100, opacity: 0 }}
-        animate={{ 
-          x: 0, 
+        animate={{
+          x: 0,
           opacity: 1,
-          width: isMinimized ? "60px" : "16rem" // 16rem = w-64
+          width: isMinimized ? "60px" : "16rem", // 16rem = w-64
         }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
@@ -278,9 +279,10 @@ export function Sidebar({
           {/* Header with toggle button on left and search on right */}
           <div className={`px-3 py-4 flex justify-between items-center`}>
             <motion.button
-              className={`flex h-8 w-8 items-center justify-center ${
-                darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex h-8 w-8 items-center justify-center ${darkMode
+                ? "text-gray-300 hover:text-white"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
               onClick={toggleSidebar}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -288,12 +290,13 @@ export function Sidebar({
             >
               <Columns className="h-5 w-5" />
             </motion.button>
-            
+
             {!isMinimized && (
               <motion.button
-                className={`flex h-8 w-8 items-center justify-center ${
-                  darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className={`flex h-8 w-8 items-center justify-center ${darkMode
+                  ? "text-gray-300 hover:text-white"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleSearchClick}
@@ -314,9 +317,9 @@ export function Sidebar({
                   "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   selectedItem === "projects"
                     ? "bg-[#00875A] text-white hover:bg-[#006644] shadow-[0_0_0_1px_rgba(255,255,255,0.15),0_0_2px_0_rgba(255,255,255,0.1)]"
-                    : darkMode 
-                      ? "hover:bg-[#2C2C2C] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]" 
-                      : "hover:bg-gray-100 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_0_1px_0_rgba(0,0,0,0.03)]"
+                    : darkMode
+                      ? "hover:bg-[#2C2C2C] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_1px_0_rgba(255,255,255,0.05)]"
+                      : "hover:bg-gray-100 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_0_1px_0_rgba(0,0,0,0.03)]",
                 )}
                 onClick={() => {
                   if (!isMinimized) {
@@ -387,7 +390,9 @@ export function Sidebar({
                               "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                               selectedItem === proj.id
                                 ? "bg-emerald-500/20 text-emerald-500"
-                                : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
+                                : darkMode
+                                  ? "hover:bg-[#2C2C2C]"
+                                  : "hover:bg-gray-100",
                             )}
                             variants={subItemVariants}
                             whileTap={{ scale: 0.98 }}
@@ -397,7 +402,7 @@ export function Sidebar({
                         ))}
                         {!isProjectModalOpen && (
                           <motion.div
-                            className={`w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 ${darkMode ? 'hover:bg-[#2C2C2C]' : 'hover:bg-gray-100'}`}
+                            className={`w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 ${darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"}`}
                             variants={subItemVariants}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -421,7 +426,9 @@ export function Sidebar({
                   "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   selectedItem === "sprints"
                     ? "bg-emerald-500 text-white"
-                    : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
+                    : darkMode
+                      ? "hover:bg-[#2C2C2C]"
+                      : "hover:bg-gray-100",
                 )}
                 onClick={() => {
                   if (!isMinimized) {
@@ -487,7 +494,9 @@ export function Sidebar({
                                 "w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
                                 selectedItem === sprint.id
                                   ? "bg-emerald-500/20 text-emerald-500"
-                                  : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
+                                  : darkMode
+                                    ? "hover:bg-[#2C2C2C]"
+                                    : "hover:bg-gray-100",
                               )}
                               variants={subItemVariants}
                               whileTap={{ scale: 0.98 }}
@@ -512,12 +521,14 @@ export function Sidebar({
                             </motion.button>
                           ))
                         ) : (
-                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} px-3 py-2`}>
+                          <div
+                            className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"} px-3 py-2`}
+                          >
                             No sprints found
                           </div>
                         )}
                         <motion.button
-                          className={`w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 ${darkMode ? 'hover:bg-[#2C2C2C]' : 'hover:bg-gray-100'}`}
+                          className={`w-full rounded-md px-3 py-2 text-left text-sm text-emerald-500 flex items-center gap-2 ${darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"}`}
                           variants={subItemVariants}
                           whileTap={{ scale: 0.95 }}
                           onClick={openSprintModal}
@@ -533,56 +544,66 @@ export function Sidebar({
             </div>
 
             {/* The remaining menu items following the same pattern */}
-            {["roadmap", "calendar", "members", "messages", "inbox"].map((item) => (
-              <motion.button
-                key={item}
-                className={classNames(
-                  "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  selectedItem === item
-                    ? "bg-emerald-500 text-white"
-                    : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
-                )}
-                onClick={() => onItemSelect(item)}
-                onMouseEnter={() => setHoveredItem(item)}
-                onMouseLeave={() => setHoveredItem(null)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                variants={itemVariants}
-                initial="initial"
-                animate="animate"
-              >
-                <motion.div
-                  className="mr-2"
-                  whileHover={{ rotate: selectedItem === item ? 0 : 15 }}
-                  transition={{ duration: 0.2 }}
+            {["roadmap", "calendar", "members", "messages", "inbox"].map(
+              (item) => (
+                <motion.button
+                  key={item}
+                  className={classNames(
+                    "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    selectedItem === item
+                      ? "bg-emerald-500 text-white"
+                      : darkMode
+                        ? "hover:bg-[#2C2C2C]"
+                        : "hover:bg-gray-100",
+                  )}
+                  onClick={() => onItemSelect(item)}
+                  onMouseEnter={() => setHoveredItem(item)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  variants={itemVariants}
+                  initial="initial"
+                  animate="animate"
                 >
-                  {item === "roadmap" && <BarChart2 className="h-4 w-4" />}
-                  {item === "calendar" && <Calendar className="h-4 w-4" />}
-                  {item === "members" && <Users className="h-4 w-4" />}
-                  {item === "messages" && <MessageCircle className="h-4 w-4" />}
-                  {item === "inbox" && <Inbox className="h-4 w-4" />}
-                </motion.div>
-                {!isMinimized && <span className="capitalize">{item}</span>}
-                
-                {/* Tooltip for minimized view */}
-                {isMinimized && hoveredItem === item && (
-                  <div className="absolute left-14 z-50 rounded-md bg-black px-2 py-1 text-xs text-white shadow-lg capitalize">
-                    {item}
-                  </div>
-                )}
-              </motion.button>
-            ))}
+                  <motion.div
+                    className="mr-2"
+                    whileHover={{ rotate: selectedItem === item ? 0 : 15 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {item === "roadmap" && <BarChart2 className="h-4 w-4" />}
+                    {item === "calendar" && <Calendar className="h-4 w-4" />}
+                    {item === "members" && <Users className="h-4 w-4" />}
+                    {item === "messages" && (
+                      <MessageCircle className="h-4 w-4" />
+                    )}
+                    {item === "inbox" && <Inbox className="h-4 w-4" />}
+                  </motion.div>
+                  {!isMinimized && <span className="capitalize">{item}</span>}
+
+                  {/* Tooltip for minimized view */}
+                  {isMinimized && hoveredItem === item && (
+                    <div className="absolute left-14 z-50 rounded-md bg-black px-2 py-1 text-xs text-white shadow-lg capitalize">
+                      {item}
+                    </div>
+                  )}
+                </motion.button>
+              ),
+            )}
           </nav>
         </div>
 
         {/* Settings button at bottom */}
-        <div className={`p-4 border-t ${darkMode ? 'border-[#2C2C2C]' : 'border-gray-200'}`}>
+        <div
+          className={`p-4 border-t ${darkMode ? "border-[#2C2C2C]" : "border-gray-200"}`}
+        >
           <motion.button
             className={classNames(
               "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
               selectedItem === "settings"
                 ? "bg-emerald-500 text-white"
-                : darkMode ? "hover:bg-[#2C2C2C]" : "hover:bg-gray-100"
+                : darkMode
+                  ? "hover:bg-[#2C2C2C]"
+                  : "hover:bg-gray-100",
             )}
             onClick={() => onItemSelect("settings")}
             onMouseEnter={() => setHoveredItem("settings")}
@@ -600,7 +621,7 @@ export function Sidebar({
               <Settings className="mr-2 h-4 w-4" />
             </motion.div>
             {!isMinimized && <span>Settings</span>}
-            
+
             {/* Tooltip for minimized view */}
             {isMinimized && hoveredItem === "settings" && (
               <div className="absolute left-14 z-50 rounded-md bg-black px-2 py-1 text-xs text-white shadow-lg">

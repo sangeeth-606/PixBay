@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const LinkedInIcon: React.FC = () => (
   <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">

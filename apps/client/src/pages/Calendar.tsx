@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Plus } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";

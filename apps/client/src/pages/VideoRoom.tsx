@@ -7,9 +7,6 @@ import {
   MicOff,
   Video,
   VideoOff,
-  X,
-  Users,
-  Share2,
   PhoneOff,
 } from "lucide-react";
 import ChatRoom from "../components/ChatRoom";
@@ -49,7 +46,6 @@ const VideoRoom: React.FC<RoomProps> = ({
   const localStreamRef = useRef<MediaStream | null>(null);
   const myPeerIdRef = useRef<string>("");
   const addedPeerIdsRef = useRef<Set<string>>(new Set());
-  const peerConnectionsRef = useRef<Record<string, boolean>>({});
   const peerCallsRef = useRef<Record<string, MediaConnection>>({});
   const [myPeerId, setMyPeerId] = useState<string>("");
   const [showChatModal, setShowChatModal] = useState(false);

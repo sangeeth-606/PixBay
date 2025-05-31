@@ -24,6 +24,7 @@ const Call: React.FC = () => {
       userId={state.userId}
       initialMuted={state.isMuted}
       initialVideoOff={state.isVideoOff}
+      darkMode={false} // Add this line
     />
   );
 };

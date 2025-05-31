@@ -225,11 +225,6 @@ const LandingPage = () => {
     }
   };
 
-  const handleVideoMeetingClick = () => {
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-  };
-
   const toggleTheme = () => {
     setDarkMode(!darkMode);
   };

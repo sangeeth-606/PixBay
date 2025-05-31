@@ -31,22 +31,43 @@ console.log('Environment:', {
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
+// Enable CORS for Express
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
 
 app.use(express.json()); 
 
 const io = new Server(server, {
   cors: {
-    origin:  'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     methods: ['GET', 'POST'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
   },
   path: '/socket.io',
-  // transports: ['websocket', 'polling'], // Polling works, WebSocket supported
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  upgradeTimeout: 10000,
+  maxHttpBufferSize: 1e8,
+  connectTimeout: 45000,
+  allowUpgrades: true,
+  perMessageDeflate: {
+    threshold: 1024
+  }
 });
 
 console.log('Socket.IO server initialized');
 io.on('connection', (socket) => {
   console.log('Socket.IO connection:', socket.id, 'Transport:', socket.conn.transport.name);
+});
+
+// Add WebSocket upgrade handler
+server.on('upgrade', (request, socket, head) => {
+  console.log('Upgrade request received for:', request.url);
 });
 
 roomSockets(io);

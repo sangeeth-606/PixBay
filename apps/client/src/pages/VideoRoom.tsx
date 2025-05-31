@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import Peer from "peerjs";
+import Peer, { MediaConnection } from "peerjs";
 import io from "socket.io-client";
 import {
   MessageCircle,
@@ -16,7 +16,15 @@ import ChatRoom from "../components/ChatRoom";
 import WhiteBoard from "../components/WhiteBoard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getApiEndpoint } from "../utils/api";
+import { getApiUrl } from "../utils/api";
+
+// Update generateSafePeerId to include timestamp
+const generateSafePeerId = (roomCode: string, userId: string): string => {
+  const safeUserId = userId.replace(/[^a-zA-Z0-9]/g, '');
+  const safeRoomCode = roomCode.replace(/[^a-zA-Z0-9]/g, '');
+  const timestamp = Date.now().toString(36);
+  return `${safeRoomCode}-${safeUserId}-${timestamp}`;
+};
 
 interface RoomProps {
   roomCode: string;
@@ -42,6 +50,7 @@ const VideoRoom: React.FC<RoomProps> = ({
   const myPeerIdRef = useRef<string>("");
   const addedPeerIdsRef = useRef<Set<string>>(new Set());
   const peerConnectionsRef = useRef<Record<string, boolean>>({});
+  const peerCallsRef = useRef<Record<string, MediaConnection>>({});
   const [myPeerId, setMyPeerId] = useState<string>("");
   const [showChatModal, setShowChatModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,163 +58,220 @@ const VideoRoom: React.FC<RoomProps> = ({
   const [isVideoOff, setIsVideoOff] = useState(initialVideoOff);
 
   useEffect(() => {
-    console.log("useEffect started");
-    if (!roomCode) {
-      console.error("No room code provided");
-      setError("No room code provided. Please join a valid room.");
+    if (!roomCode || !userId) {
+      setError("Missing room code or user ID");
       return;
     }
 
-    addedPeerIdsRef.current = new Set();
-    peerConnectionsRef.current = {};
-
-    const socket = io(getApiEndpoint("/socket"), {
-      reconnection: false,
+    const socket = io(getApiUrl(), {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      rememberUpgrade: true,
+      timeout: 20000,
+      query: { roomCode, userId },
       forceNew: true,
     });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      // Try to fallback to polling if WebSocket fails
+      if (error.message?.includes('websocket')) {
+        socket.io.opts.transports = ['polling'];
+      }
+    });
+
+    socket.io.on("error", (error) => {
+      console.error('Socket.IO error:', error);
+    });
+
+    socket.io.on("reconnect_attempt", (attempt) => {
+      console.log(`Reconnection attempt ${attempt}`);
+    });
+
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      console.log(
-        "Socket.IO connected:",
-        socket.id,
-        "Transport:",
-        socket.io.engine.transport.name,
-      );
-    });
-    socket.on("connect_error", (error) => {
-      console.error("Socket.IO connect error:", error.message);
-    });
-    socket.on("disconnect", (reason) => {
-      console.log("Socket.IO disconnected:", reason);
+    // Generate a safe peer ID with timestamp to ensure uniqueness
+    const safePeerId = generateSafePeerId(roomCode, userId);
+    console.log("Generated safe peer ID:", safePeerId);
+
+    // Create peer with enhanced configuration
+    const peer = new Peer(safePeerId, {
+      host: new URL(getApiUrl()).hostname,
+      port: import.meta.env.VITE_PRODUCTION === "true" ? 443 : 5000,
+      path: "/peerjs",
+      secure: import.meta.env.VITE_PRODUCTION === "true",
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" },
+        ],
+        sdpSemantics: "unified-plan",
+        iceTransportPolicy: "all",
+      },
+      debug: 3,
+      pingInterval: 5000,
     });
 
-    const peer = new Peer(undefined as unknown as string, {
-      host: "localhost",
-      port: 5000,
-      path: "/peerjs",
-    });
-    peerRef.current = peer;
+    // Improved peer error handling
+    let peerConnectionAttempts = 0;
+    const maxPeerConnectionAttempts = 3;
+
+    const handlePeerError = (err: Error) => {
+      console.error("PeerJS error:", err);
+      if (peerConnectionAttempts < maxPeerConnectionAttempts && !peer.destroyed) {
+        peerConnectionAttempts++;
+        console.log(`Retrying peer connection, attempt ${peerConnectionAttempts}`);
+        setTimeout(() => {
+          if (peer.disconnected && !peer.destroyed) {
+            peer.reconnect();
+          }
+        }, 2000);
+      } else {
+        console.error("Max peer connection attempts reached");
+        setError("Failed to establish peer connection. Please refresh the page.");
+      }
+    };
+
+    peer.on("error", handlePeerError);
 
     peer.on("open", (id) => {
-      console.log("My peer ID is:", id);
+      console.log("PeerJS connected with ID:", id);
       myPeerIdRef.current = id;
       setMyPeerId(id);
+      peerConnectionAttempts = 0; // Reset attempts on successful connection
       socket.emit("join-room", roomCode, id);
-      console.log("Emitted join-room:", roomCode, id);
     });
-    peer.on("error", (err) => console.error("PeerJS error:", err));
 
-    navigator.mediaDevices
-      .getUserMedia({ video: !initialVideoOff, audio: !initialMuted })
-      .then((stream) => {
+    peerRef.current = peer;
+
+    const initializeMediaStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: !initialVideoOff,
+          audio: !initialMuted,
+        });
+
         localStreamRef.current = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
 
-        stream.getAudioTracks().forEach((track) => {
-          track.enabled = !initialMuted;
-        });
-        stream.getVideoTracks().forEach((track) => {
-          track.enabled = !initialVideoOff;
-        });
-
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-
-        peer.on("call", (call) => {
-          console.log("Received call from:", call.peer);
-          if (peerConnectionsRef.current[call.peer]) {
-            console.log("Already have connection to this peer, ignoring call");
-            call.answer(stream);
-          } else {
-            peerConnectionsRef.current[call.peer] = true;
-            console.log("Answering call and adding remote stream");
-            call.answer(stream);
-            call.on("stream", (remoteStream) => {
-              console.log("Got stream from call");
-              addRemoteStream(remoteStream, call.peer, true);
-            });
-          }
-        });
+        peer.on("call", handleIncomingCall);
 
         socket.on("user-connected", (peerId) => {
           console.log("User connected event:", peerId);
-          if (peerId !== "chat-only" && peerId !== myPeerIdRef.current) {
-            if (!peerConnectionsRef.current[peerId]) {
-              console.log("Initiating new connection to user:", peerId);
-              connectToNewUser(peerId, stream);
-            } else {
-              console.log("Already connected to this user:", peerId);
-            }
-          } else {
-            console.log("Skipping connection to self or chat-only");
+          if (peerId !== myPeerIdRef.current) {
+            let attempts = 0;
+            const tryConnection = () => {
+              if (attempts < 3) {
+                try {
+                  connectToNewUser(peerId, stream);
+                } catch (err) {
+                  console.error(`Connection attempt ${attempts + 1} failed:`, err);
+                  attempts++;
+                  setTimeout(tryConnection, 1000);
+                }
+              }
+            };
+            tryConnection();
           }
         });
+      } catch (error) {
+        console.error("Media access error:", error);
+        setError("Failed to access camera/microphone. Please check permissions.");
+      }
+    };
 
-        socket.on("user-disconnected", (peerId) => {
-          console.log("User disconnected event:", peerId);
-          if (peerId !== "chat-only") {
-            removeRemoteStream(peerId);
-            if (peerConnectionsRef.current[peerId]) {
-              delete peerConnectionsRef.current[peerId];
-              console.log("Removed peer connection tracking for:", peerId);
-            }
-          }
-        });
-      })
-      .catch((error) => {
-        console.error("Error accessing media devices:", error);
-        setError(
-          "Failed to access camera/microphone. Please check permissions.",
-        );
+    const handleIncomingCall = (call: MediaConnection) => {
+      console.log("Receiving call from:", call.peer);
+
+      peerCallsRef.current[call.peer] = call;
+
+      if (localStreamRef.current) {
+        call.answer(localStreamRef.current);
+      }
+
+      call.on("stream", (remoteStream: MediaStream) => {
+        console.log("Got stream from:", call.peer);
+        requestAnimationFrame(() => addRemoteStream(remoteStream, call.peer));
       });
+
+      call.on("close", () => removeRemoteStream(call.peer));
+    };
+
+    initializeMediaStream();
 
     return () => {
-      console.log("useEffect cleanup");
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (peerRef.current) peerRef.current.destroy();
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current.off();
-      }
-      addedPeerIdsRef.current.clear();
-      peerConnectionsRef.current = {};
-    };
-  }, [roomCode, initialMuted, initialVideoOff]);
+      // Improved cleanup
+      if (peerRef.current) {
+        try {
+          Object.values(peerCallsRef.current).forEach(call => {
+            try {
+              call.close();
+            } catch (err) {
+              console.error("Error closing call:", err);
+            }
+          });
+          peerCallsRef.current = {};
 
-  useEffect(() => {
-    console.log("VideoRoom darkMode:", darkMode);
-  }, [darkMode]);
+          if (!peerRef.current.destroyed) {
+            peerRef.current.destroy();
+          }
+        } catch (err) {
+          console.error("Error during peer cleanup:", err);
+        }
+      }
+
+      if (socketRef.current?.connected) {
+        socketRef.current.disconnect();
+      }
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [roomCode, userId, initialMuted, initialVideoOff]);
 
   const connectToNewUser = (peerId: string, stream: MediaStream) => {
-    if (peerId === myPeerIdRef.current) {
-      console.log("Avoiding self-connection");
-      return;
-    }
+    if (!peerRef.current || peerId === myPeerIdRef.current) return;
 
-    if (peerConnectionsRef.current[peerId]) {
-      console.log("Already connected to peer, skipping:", peerId);
-      return;
-    }
+    console.log("Calling peer:", peerId);
 
-    if (peerRef.current) {
-      console.log("Calling peer:", peerId);
-      peerConnectionsRef.current[peerId] = true;
+    try {
       const call = peerRef.current.call(peerId, stream);
-      call.on("stream", (remoteStream) => {
-        console.log("Received stream from outgoing call to:", peerId);
-        addRemoteStream(remoteStream, peerId, false);
+      peerCallsRef.current[peerId] = call;
+
+      call.on("stream", (userVideoStream) => {
+        console.log("Got stream from call to:", peerId);
+        requestAnimationFrame(() => addRemoteStream(userVideoStream, peerId));
       });
+
+      call.on("error", (err) => {
+        console.error("Call error:", err);
+        delete peerCallsRef.current[peerId];
+        removeRemoteStream(peerId);
+      });
+
+      call.on("close", () => {
+        delete peerCallsRef.current[peerId];
+        removeRemoteStream(peerId);
+      });
+    } catch (err) {
+      console.error("Error calling peer:", err);
     }
   };
 
   const addRemoteStream = (
     stream: MediaStream,
     peerId?: string,
-    isIncoming: boolean = true,
+    isIncoming: boolean = true
   ) => {
     console.log(
-      `Adding remote stream from: ${peerId} (${isIncoming ? "incoming" : "outgoing"}) My peer ID: ${myPeerIdRef.current}`,
+      `Adding remote stream from: ${peerId} (${isIncoming ? "incoming" : "outgoing"}) My peer ID: ${myPeerIdRef.current}`
     );
 
     if (peerId && peerId === myPeerIdRef.current) {
@@ -246,7 +312,7 @@ const VideoRoom: React.FC<RoomProps> = ({
       "absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black/80 to-transparent";
     label.innerHTML = `<span class="text-sm text-white font-medium">Remote User (${peerId?.substring(
       0,
-      6,
+      6
     )})</span>`;
     wrapper.appendChild(label);
 
@@ -270,7 +336,7 @@ const VideoRoom: React.FC<RoomProps> = ({
 
     if (elementsToRemove.length > 0) {
       console.log(
-        `Cleared ${elementsToRemove.length} existing elements for peer: ${peerId}`,
+        `Cleared ${elementsToRemove.length} existing elements for peer: ${peerId}`
       );
     }
   };
@@ -310,11 +376,9 @@ const VideoRoom: React.FC<RoomProps> = ({
   const toggleChatModal = () => {
     setShowChatModal(!showChatModal);
 
-    // Give the layout time to update after toggling the chat modal
     setTimeout(() => {
-      // Trigger a resize event to recalculate canvas dimensions
       window.dispatchEvent(new Event("resize"));
-    }, 300); // Match the duration of your transition (300ms)
+    }, 300);
   };
 
   const buttonClass = (isActive: boolean) => `
@@ -464,7 +528,7 @@ const VideoRoom: React.FC<RoomProps> = ({
             roomCode={roomCode}
             userId={userId}
             onClose={() => setShowChatModal(false)}
-            darkMode={true} 
+            darkMode={true}
           />
         )}
       </motion.div>

@@ -27,7 +27,11 @@ type DrawingAction = {
   tool?: string;
 };
 
-const SMOOTHING_FACTOR = 0.5; // Adjust between 0 and 1 for smoothness vs responsiveness
+// Fine-tuned constants for better real-time performance
+const SMOOTHING_FACTOR = 0.35; // Balance between smoothing and responsiveness
+const MIN_DISTANCE = 2; // Minimum pixels between points to reduce noise
+const BATCH_SIZE = 3; // Smaller batch for faster updates
+const BATCH_INTERVAL = 16; // ~60fps for smooth real-time updates
 
 const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,6 +44,13 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const [prevActions, setPrevActions] = useState<DrawingAction[]>([]);
   const prevSmoothedPoint = useRef<{ x: number; y: number } | null>(null);
   const actionsRef = useRef<DrawingAction[]>([]);
+  const batchRef = useRef<DrawingAction[]>([]);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const drawingPathRef = useRef<{ x: number; y: number }[]>([]);
+
+  // Add real-time batch processing refs
+  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingBatchRef = useRef<DrawingAction[]>([]);
 
   // Initialize canvas and socket
   useEffect(() => {
@@ -49,49 +60,95 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const resizeCanvas = () => {
+    // Initialize canvas
+    const initCanvas = () => {
       const container = canvas.parentElement;
       if (container) {
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
-        redrawCanvas();
       }
+      ctx.fillStyle = "#121212";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    initCanvas();
 
-    ctx.fillStyle = "#121212";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Initialize Socket.IO with better transport handling
+    const newSocket = io(api.getApiUrl(), {
+      path: '/socket.io',
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      query: { roomCode, userId },
+      timeout: 20000
+    });
 
-    const newSocket = io(api.getApiEndpoint("/socket"), { transports: ["polling"] });
-    setSocket(newSocket);
+    let isReconnecting = false;
 
     newSocket.on("connect", () => {
       console.log("Whiteboard connected:", newSocket.id);
       newSocket.emit("join-whiteboard", roomCode);
+
+      // Request history again after reconnection
+      if (isReconnecting) {
+        console.log("Requesting whiteboard history after reconnection");
+        newSocket.emit("get-whiteboard-history", roomCode);
+        isReconnecting = false;
+      }
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Whiteboard disconnected");
+      isReconnecting = true;
     });
 
     newSocket.on("whiteboard-history", (history) => {
       console.log("Received whiteboard history:", history);
-      setPrevActions(history);
-      actionsRef.current = history;
-      redrawCanvas(history);
+      if (Array.isArray(history) && history.length > 0) {
+        setPrevActions(history);
+        actionsRef.current = history;
+        requestAnimationFrame(() => redrawCanvas(history));
+      }
     });
+
+    // Batch processing for actions
+    const actionQueue: DrawingAction[] = [];
+    let processingQueue = false;
+
+    const processActionQueue = () => {
+      if (actionQueue.length > 0 && !processingQueue) {
+        processingQueue = true;
+        const actions = [...actionQueue];
+        actionQueue.length = 0;
+
+        actions.forEach(action => {
+          handleRemoteAction(action);
+          actionsRef.current.push(action);
+        });
+
+        setPrevActions([...actionsRef.current]);
+        processingQueue = false;
+      }
+    };
+
+    // Process queue periodically
+    const queueInterval = setInterval(processActionQueue, 16); // ~60fps
 
     newSocket.on("whiteboard-action", (action: DrawingAction) => {
-      console.log("Received whiteboard action:", action);
-      handleRemoteAction(action);
-      const newActions = [...actionsRef.current, action];
-      setPrevActions(newActions);
-      actionsRef.current = newActions;
+      actionQueue.push(action);
     });
 
+    setSocket(newSocket);
+
+    // Cleanup
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
-      newSocket.disconnect();
+      clearInterval(queueInterval);
+      if (newSocket.connected) {
+        newSocket.disconnect();
+      }
     };
-  }, [roomCode]);
+  }, [roomCode, userId]);
 
   // Add a layout change detector
   useEffect(() => {
@@ -201,6 +258,8 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
     } else if (action.type === "draw") {
+      ctx.strokeStyle = action.color || ctx.strokeStyle;
+      ctx.lineWidth = action.brushSize || ctx.lineWidth;
       ctx.lineTo(action.x || 0, action.y || 0);
       ctx.stroke();
       ctx.beginPath();
@@ -250,49 +309,105 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     setIsDrawing(true);
+
+    // Reset drawing state
+    drawingPathRef.current = [{ x, y }];
+    lastPointRef.current = { x, y };
+    batchRef.current = [];
   };
 
+  // Modified draw function for better real-time performance
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
+    if (!isDrawing || !socket) return;
+
+    const { x: rawX, y: rawY } = getMouseCoordinates(e);
+    if (!lastPointRef.current) {
+      lastPointRef.current = { x: rawX, y: rawY };
+      return;
+    }
+
+    const dx = rawX - lastPointRef.current.x;
+    const dy = rawY - lastPointRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < MIN_DISTANCE) return;
+
+    const smoothedX = SMOOTHING_FACTOR * rawX + (1 - SMOOTHING_FACTOR) * lastPointRef.current.x;
+    const smoothedY = SMOOTHING_FACTOR * rawY + (1 - SMOOTHING_FACTOR) * lastPointRef.current.y;
+
+    const action: DrawingAction = {
+      type: "draw",
+      x: smoothedX,
+      y: smoothedY,
+      color: tool === "eraser" ? "#121212" : color,
+      brushSize,
+      tool
+    };
+
+    // Immediate local drawing
+    handleLocalDraw(action);
+
+    // Add to pending batch
+    pendingBatchRef.current.push(action);
+
+    // Schedule batch send if not already scheduled
+    if (!batchTimeoutRef.current) {
+      batchTimeoutRef.current = setTimeout(() => {
+        sendPendingBatch();
+        batchTimeoutRef.current = null;
+      }, BATCH_INTERVAL);
+    }
+
+    lastPointRef.current = { x: smoothedX, y: smoothedY };
+  };
+
+  const handleLocalDraw = (action: DrawingAction) => {
     const canvas = canvasRef.current;
-    if (!canvas || !socket) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const { x: rawX, y: rawY } = getMouseCoordinates(e);
+    if (action.type === "draw") {
+      ctx.strokeStyle = action.color || ctx.strokeStyle;
+      ctx.lineWidth = action.brushSize || ctx.lineWidth;
 
-    if (prevSmoothedPoint.current) {
-      const prevX = prevSmoothedPoint.current.x;
-      const prevY = prevSmoothedPoint.current.y;
-      const smoothedX =
-        SMOOTHING_FACTOR * rawX + (1 - SMOOTHING_FACTOR) * prevX;
-      const smoothedY =
-        SMOOTHING_FACTOR * rawY + (1 - SMOOTHING_FACTOR) * prevY;
-
-      const action: DrawingAction = {
-        type: "draw",
-        x: smoothedX,
-        y: smoothedY,
-      };
-      socket.emit("whiteboard-action", { roomCode, action });
-
-      const newActions = [...actionsRef.current, action];
-      setPrevActions(newActions);
-      actionsRef.current = newActions;
-
-      ctx.lineTo(smoothedX, smoothedY);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(smoothedX, smoothedY);
-
-      prevSmoothedPoint.current = { x: smoothedX, y: smoothedY };
+      if (drawingPathRef.current.length > 0) {
+        const lastPoint = drawingPathRef.current[drawingPathRef.current.length - 1];
+        ctx.beginPath();
+        ctx.moveTo(lastPoint.x, lastPoint.y);
+        ctx.lineTo(action.x!, action.y!);
+        ctx.stroke();
+      }
     }
   };
 
+  // New function to send pending batch
+  const sendPendingBatch = () => {
+    if (pendingBatchRef.current.length === 0 || !socket) return;
+
+    socket.emit("whiteboard-batch", {
+      roomCode,
+      actions: pendingBatchRef.current
+    });
+
+    // Add to history
+    actionsRef.current = [...actionsRef.current, ...pendingBatchRef.current];
+    pendingBatchRef.current = [];
+  };
+
+  // Modified stop drawing function
   const stopDrawing = () => {
+    if (isDrawing) {
+      // Send any remaining actions
+      sendPendingBatch();
+      if (batchTimeoutRef.current) {
+        clearTimeout(batchTimeoutRef.current);
+        batchTimeoutRef.current = null;
+      }
+    }
     setIsDrawing(false);
-    prevSmoothedPoint.current = null;
+    lastPointRef.current = null;
   };
 
   const clearCanvas = () => {
@@ -326,6 +441,15 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       socket.emit("whiteboard-undo", { roomCode });
     }
   };
+
+  // Clean up batch timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (batchTimeoutRef.current) {
+        clearTimeout(batchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <motion.div

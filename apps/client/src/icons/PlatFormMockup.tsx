@@ -1,11 +1,10 @@
-import React from "react";
 import { Video as VideoIcon, Users, Clipboard } from "lucide-react"; // Adjust import path if needed
 
 interface PlatFormMockupProps {
   darkMode?: boolean;
 }
 
-function PlatFormMockup({ darkMode = false }: PlatFormMockupProps) {
+const PlatFormMockup = ({ darkMode = false }: PlatFormMockupProps) => {
   return (
     <div className="w-full max-w-3xl p-4">
       <div
@@ -92,6 +91,6 @@ function PlatFormMockup({ darkMode = false }: PlatFormMockupProps) {
       </div>
     </div>
   );
-}
+};
 
 export default PlatFormMockup;

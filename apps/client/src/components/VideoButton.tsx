@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, Video, UserPlus, MicOff, VideoOff } from "lucide-react";
+import { Mic, Video, MicOff, VideoOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface TooltipProps {

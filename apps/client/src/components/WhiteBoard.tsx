@@ -3,14 +3,10 @@ import { motion } from "framer-motion";
 import io, { Socket } from "socket.io-client";
 import api from "../utils/api"; // Import the API utility functions
 import {
-  Circle,
-  Square,
-  Type,
-  Pen,
+  Pencil,
   Eraser,
-  X,
-  Minus,
-  RotateCcw,
+  Undo,
+  Redo,
 } from "lucide-react";
 
 interface WhiteBoardProps {
@@ -30,7 +26,6 @@ type DrawingAction = {
 // Fine-tuned constants for better real-time performance
 const SMOOTHING_FACTOR = 0.35; // Balance between smoothing and responsiveness
 const MIN_DISTANCE = 2; // Minimum pixels between points to reduce noise
-const BATCH_SIZE = 3; // Smaller batch for faster updates
 const BATCH_INTERVAL = 16; // ~60fps for smooth real-time updates
 
 const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
@@ -464,7 +459,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
             className={`p-2 rounded-md ${tool === "pen" ? "bg-emerald-500/20 text-emerald-400" : "bg-[#2C2C2C] text-gray-300"} hover:bg-[#3C3C3C] transition`}
             title="Pen"
           >
-            <Pen size={18} />
+            <Pencil size={18} />
           </button>
           <button
             onClick={() => setTool("eraser")}
@@ -510,14 +505,14 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
             className="p-2 rounded-md bg-[#2C2C2C] text-white hover:bg-[#3C3C3C] transition"
             title="Undo"
           >
-            <RotateCcw size={18} />
+            <Undo size={18} />
           </button>
           <button
             onClick={clearCanvas}
             className="p-2 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
             title="Clear"
           >
-            <X size={18} />
+            <Redo size={18} />
           </button>
         </div>
       </div>

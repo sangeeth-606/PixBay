@@ -47,7 +47,6 @@ const VideoRoom: React.FC<RoomProps> = ({
   const myPeerIdRef = useRef<string>("");
   const addedPeerIdsRef = useRef<Set<string>>(new Set());
   const peerCallsRef = useRef<Record<string, MediaConnection>>({});
-  const [myPeerId, setMyPeerId] = useState<string>("");
   const [showChatModal, setShowChatModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(initialMuted);
@@ -137,7 +136,6 @@ const VideoRoom: React.FC<RoomProps> = ({
     peer.on("open", (id) => {
       console.log("PeerJS connected with ID:", id);
       myPeerIdRef.current = id;
-      setMyPeerId(id);
       peerConnectionAttempts = 0; // Reset attempts on successful connection
       socket.emit("join-room", roomCode, id);
     });

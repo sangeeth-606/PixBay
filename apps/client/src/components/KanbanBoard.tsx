@@ -7,6 +7,7 @@ import Board from "./Board";
 import Projectinfo from "./ProjectInfo";
 import { Task, User, TaskStatus } from "../utils/taskTypes";
 import { motion, AnimatePresence } from "framer-motion";
+import { getApiEndpoint } from "../utils/api"; // Import the API utility function
 
 interface KanbanBoardProps {
   projectId: string | null;
@@ -25,7 +26,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
   const [workspaceMembers, setWorkspaceMembers] = useState<User[]>([]);
   const [workspaceName, setWorkspaceName] = useState<string | null>(
-    propWorkspaceName || null
+    propWorkspaceName || null,
   );
   const [isFetchingMembers, setIsFetchingMembers] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,10 +46,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
       try {
         const token = await getToken();
         const response = await axios.get(
-          `http://localhost:5000/api/projects/${effectiveProjectId}`,
+          getApiEndpoint(`api/projects/${effectiveProjectId}`),
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         if (response.data && response.data.workspace) {
           setWorkspaceName(response.data.workspace.name);
@@ -65,10 +66,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     try {
       const token = await getToken();
       const response = await axios.get(
-        `http://localhost:5000/api/workspaces/${encodeURIComponent(
-          workspaceName
-        )}/members`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        getApiEndpoint(`api/workspaces/${encodeURIComponent(workspaceName)}/members`),
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.data && response.data.members) {
         setWorkspaceMembers(response.data.members);
@@ -86,16 +85,18 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     try {
       const token = await getToken();
       const response = await axios.get(
-        `http://localhost:5000/api/tasks/task/${effectiveProjectId}`,
+        getApiEndpoint(`api/tasks/task/${effectiveProjectId}`),
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       console.log("API response for tasks:", response.data); // Debug log
       if (response.data && Array.isArray(response.data)) {
         setTasks(response.data);
       } else {
-        console.warn("API returned invalid tasks data, defaulting to empty array");
+        console.warn(
+          "API returned invalid tasks data, defaulting to empty array",
+        );
         setTasks([]);
       }
     } catch (error) {
@@ -125,9 +126,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     try {
       const token = await getToken();
       await axios.put(
-        `http://localhost:5000/api/tasks/update/${taskId}`,
+        getApiEndpoint(`api/tasks/update/${taskId}`),
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
     } catch (error) {
       console.error("Failed to update task status:", error);
@@ -139,7 +140,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     try {
       const token = await getToken();
       // Correct the API endpoint to match the server route
-      await axios.delete(`http://localhost:5000/api/tasks/delete/${taskId}`, {
+      await axios.delete(getApiEndpoint(`api/tasks/delete/${taskId}`), {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Optionally remove the task from local state *after* successful deletion
@@ -169,8 +170,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     // Update the task in the local state
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === taskId ? { ...task, description: newDescription } : task
-      )
+        task.id === taskId ? { ...task, description: newDescription } : task,
+      ),
     );
   };
 
@@ -178,16 +179,18 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   return (
     <div
-      className={`min-h-screen ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-[#F5F5F5] text-[#212121]"
-        }`}
+      className={`min-h-screen ${
+        darkMode ? "bg-[#1C1C1C] text-white" : "bg-[#F5F5F5] text-[#212121]"
+      }`}
     >
       <div className="max-w-[1800px] mx-auto px-4">
         <div className="py-6">
           <Projectinfo darkMode={darkMode} projectId={effectiveProjectId} />
         </div>
         <div
-          className={`mb-6 rounded-lg shadow-md h-[calc(100vh-240px)] ${darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
-            }`}
+          className={`mb-6 rounded-lg shadow-md h-[calc(100vh-240px)] ${
+            darkMode ? "bg-[#171717] border border-[#2C2C2C]" : "bg-gray-100"
+          }`}
         >
           <AnimatePresence mode="wait">
             {isLoading ? (
@@ -269,7 +272,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 type={selectedTask.type}
                 priority={selectedTask.priority}
                 dueDate={selectedTask.dueDate}
-                assigneeId={selectedTask.assignee?.name ?? '—'}
+                assigneeId={selectedTask.assignee?.name ?? "—"}
                 darkMode={darkMode}
                 onClose={() => setIsTaskInfoModalOpen(false)}
                 onTaskDeleted={() => {
@@ -299,22 +302,35 @@ const TaskColumnSkeleton: React.FC<SkeletonProps> = ({ darkMode, title }) => {
   return (
     <div className="w-72 shrink-0 animate-pulse">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className={`font-medium ${darkMode ? 'text-neutral-400' : 'text-gray-400'}`}>{title}</h3>
+        <h3
+          className={`font-medium ${darkMode ? "text-neutral-400" : "text-gray-400"}`}
+        >
+          {title}
+        </h3>
         <span className="rounded text-sm text-neutral-400">-</span>
       </div>
-      <div className={`h-full w-full ${darkMode ? 'bg-neutral-800/10' : 'bg-gray-200/50'}`}>
+      <div
+        className={`h-full w-full ${darkMode ? "bg-neutral-800/10" : "bg-gray-200/50"}`}
+      >
         {/* Task card skeletons */}
         {[1, 2, 3].map((i) => (
           <div key={i} className="mb-2">
-            <div className={`h-2 my-2 ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
             <div
-              className={`rounded p-3 ${darkMode
-                  ? 'border-neutral-700 bg-neutral-800/50'
-                  : 'border-gray-300 bg-gray-200/70'
-                }`}
+              className={`h-2 my-2 ${darkMode ? "bg-neutral-700" : "bg-gray-300"}`}
+            ></div>
+            <div
+              className={`rounded p-3 ${
+                darkMode
+                  ? "border-neutral-700 bg-neutral-800/50"
+                  : "border-gray-300 bg-gray-200/70"
+              }`}
             >
-              <div className={`h-4 w-3/4 rounded ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
-              <div className={`h-3 w-1/2 mt-2 rounded ${darkMode ? 'bg-neutral-700' : 'bg-gray-300'}`}></div>
+              <div
+                className={`h-4 w-3/4 rounded ${darkMode ? "bg-neutral-700" : "bg-gray-300"}`}
+              ></div>
+              <div
+                className={`h-3 w-1/2 mt-2 rounded ${darkMode ? "bg-neutral-700" : "bg-gray-300"}`}
+              ></div>
             </div>
           </div>
         ))}

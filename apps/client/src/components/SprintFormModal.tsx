@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
+import api from "../utils/api";
 
 interface Project {
   id: string;
@@ -45,10 +46,10 @@ export function SprintFormModal({
         try {
           const token = await getToken();
           const response = await axios.get(
-            `http://localhost:5000/api/projects/workspace/${workspaceName}`,
+            api.getApiEndpoint(`/api/projects/workspace/${workspaceName}`),
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
           setProjects(response.data);
         } catch (err: any) {
@@ -92,7 +93,7 @@ export function SprintFormModal({
     try {
       const token = await getToken();
       await axios.post(
-        "http://localhost:5000/api/sprints/create",
+        api.getApiEndpoint("/api/sprints/create"),
         {
           name,
           goal,
@@ -102,7 +103,7 @@ export function SprintFormModal({
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       onClose();
@@ -126,24 +127,24 @@ export function SprintFormModal({
     hidden: {
       opacity: 0,
       y: 20,
-      scale: 0.98
+      scale: 0.98,
     },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1
+      scale: 1,
     },
     exit: {
       opacity: 0,
       y: 10,
       scale: 0.98,
-      transition: { duration: 0.15, ease: "easeOut" }
-    }
+      transition: { duration: 0.15, ease: "easeOut" },
+    },
   };
 
   const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${darkMode
-      ? "bg-[#171717] border-[#2C2C2C] text-white"
-      : "bg-white border-gray-200 text-[#212121]"
+    ? "bg-[#171717] border-[#2C2C2C] text-white"
+    : "bg-white border-gray-200 text-[#212121]"
     }`;
 
   return (
@@ -163,8 +164,8 @@ export function SprintFormModal({
           ></div>
           <motion.div
             className={`relative w-full max-w-md transform ${darkMode
-                ? "bg-[#171717]/95 border border-[#2C2C2C]"
-                : "bg-gray-100/95"
+              ? "bg-[#171717]/95 border border-[#2C2C2C]"
+              : "bg-gray-100/95"
               } rounded-lg shadow-xl backdrop-blur-sm`}
             variants={modalVariants}
             initial="hidden"
@@ -174,7 +175,7 @@ export function SprintFormModal({
               type: "spring",
               damping: 25,
               stiffness: 300,
-              delay: 0.05
+              delay: 0.05,
             }}
           >
             <div className="p-8">
@@ -188,8 +189,8 @@ export function SprintFormModal({
                 <button
                   onClick={onClose}
                   className={`p-2 rounded-full hover:bg-opacity-80 ${darkMode
-                      ? "text-gray-400 hover:bg-[#2C2C2C]"
-                      : "text-gray-600 hover:bg-gray-200"
+                    ? "text-gray-400 hover:bg-[#2C2C2C]"
+                    : "text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   <X size={20} />

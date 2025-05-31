@@ -74,7 +74,11 @@ const Board: React.FC<BoardProps> = ({
         darkMode={darkMode}
       />
       <div className="ml-auto">
-        <BurnBarrel setTasks={setTasks} onTaskDeleted={onTaskDeleted} darkMode={darkMode} />
+        <BurnBarrel
+          setTasks={setTasks}
+          onTaskDeleted={onTaskDeleted}
+          darkMode={darkMode}
+        />
       </div>
     </div>
   );
@@ -174,7 +178,10 @@ const Column: React.FC<ColumnProps> = ({
     el.element.style.opacity = "1";
   };
 
-  const getNearestIndicator = (e: React.DragEvent, indicators: HTMLElement[]) => {
+  const getNearestIndicator = (
+    e: React.DragEvent,
+    indicators: HTMLElement[],
+  ) => {
     const DISTANCE_OFFSET = 50;
     return indicators.reduce(
       (closest, child) => {
@@ -188,20 +195,22 @@ const Column: React.FC<ColumnProps> = ({
       {
         offset: Number.NEGATIVE_INFINITY,
         element: indicators[indicators.length - 1],
-      }
+      },
     );
   };
 
   const getIndicators = () => {
     return Array.from(
-      document.querySelectorAll(`[data-column="${column}"]`)
+      document.querySelectorAll(`[data-column="${column}"]`),
     ) as HTMLElement[];
   };
 
   const filteredTasks = tasks ? tasks.filter((t) => t.status === column) : [];
 
   return (
-    <div className="w-72 shrink-0"> {/* Adjusted width for better fit */}
+    <div className="w-72 shrink-0">
+      {" "}
+      {/* Adjusted width for better fit */}
       <div className="mb-3 flex items-center justify-between">
         <h3 className={`font-medium ${headingColor}`}>{title}</h3>
         <span className="rounded text-sm text-neutral-400">
@@ -218,8 +227,8 @@ const Column: React.FC<ColumnProps> = ({
               ? "bg-neutral-800/50"
               : "bg-gray-200/50"
             : darkMode
-            ? "bg-neutral-800/0"
-            : "bg-gray-100/0"
+              ? "bg-neutral-800/0"
+              : "bg-gray-100/0"
         }`}
       >
         <AnimatePresence>
@@ -261,12 +270,17 @@ interface CardProps {
 }
 
 /** Card Component */
-const Card: React.FC<CardProps> = ({ task, handleDragStart, onClick, darkMode }) => {
+const Card: React.FC<CardProps> = ({
+  task,
+  handleDragStart,
+  onClick,
+  darkMode,
+}) => {
   return (
     <>
       <DropIndicator beforeId={task.id} column={task.status} />
-      <motion.div 
-        layout 
+      <motion.div
+        layout
         layoutId={task.id}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -276,7 +290,9 @@ const Card: React.FC<CardProps> = ({ task, handleDragStart, onClick, darkMode })
       >
         <div
           draggable="true"
-          onDragStart={(e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, task)}
+          onDragStart={(e: React.DragEvent<HTMLDivElement>) =>
+            handleDragStart(e, task)
+          }
           onClick={onClick}
           className={`cursor-grab rounded border p-3 active:cursor-grabbing hover:border-opacity-80 transition-colors ${
             darkMode
@@ -316,7 +332,11 @@ interface BurnBarrelProps {
 }
 
 /** BurnBarrel Component */
-const BurnBarrel: React.FC<BurnBarrelProps> = ({ setTasks, onTaskDeleted, darkMode }) => {
+const BurnBarrel: React.FC<BurnBarrelProps> = ({
+  setTasks,
+  onTaskDeleted,
+  darkMode,
+}) => {
   const [active, setActive] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -346,20 +366,25 @@ const BurnBarrel: React.FC<BurnBarrelProps> = ({ setTasks, onTaskDeleted, darkMo
             ? "border-red-800 bg-red-800/20 text-red-500"
             : "border-red-600 bg-red-600/20 text-red-500"
           : darkMode
-          ? "border-neutral-500 bg-neutral-500/20 text-neutral-500"
-          : "border-gray-400 bg-gray-400/20 text-gray-400"
+            ? "border-neutral-500 bg-neutral-500/20 text-neutral-500"
+            : "border-gray-400 bg-gray-400/20 text-gray-400"
       }`}
     >
-      {active ? 
-        <motion.div 
-          initial={{ scale: 0.9 }} 
-          animate={{ scale: 1.1 }} 
-          transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
+      {active ? (
+        <motion.div
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1.1 }}
+          transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
         >
           <FaFire />
-        </motion.div> 
-        : <FiTrash />
-      }
+        </motion.div>
+      ) : (
+        <FiTrash />
+      )}
     </div>
   );
 };

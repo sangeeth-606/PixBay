@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { getApiEndpoint } from "../utils/api";
 
 export enum TaskStatus {
   TODO = "TODO",
@@ -85,10 +86,10 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
               throw new Error("Authentication token not available");
             }
             const response = await axios.get(
-              `http://localhost:5000/api/projects/workspace/${workspaceName}`,
+              getApiEndpoint(`/api/projects/workspace/${workspaceName}`),
               {
                 headers: { Authorization: `Bearer ${token}` },
-              }
+              },
             );
             setProjects(response.data);
           } catch (err: unknown) {
@@ -134,11 +135,11 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
       console.log("Data being sent to backend:", data);
 
       const response = await axios.post(
-        "http://localhost:5000/api/tasks/create",
+        getApiEndpoint("/api/tasks/create"),
         data,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       console.log("Task created:", response.data);

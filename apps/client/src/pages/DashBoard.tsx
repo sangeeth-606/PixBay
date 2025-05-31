@@ -17,7 +17,7 @@ function DashBoard() {
   const { workspaceCode } = useParams();
   const [selectedItem, setSelectedItem] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    null
+    null,
   );
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
@@ -44,10 +44,10 @@ function DashBoard() {
 
       // Then load related IDs but don't change the selected item
       const savedProjectId = localStorage.getItem(
-        `workspace-${workspaceCode}-projectId`
+        `workspace-${workspaceCode}-projectId`,
       );
       const savedSprintId = localStorage.getItem(
-        `workspace-${workspaceCode}-sprintId`
+        `workspace-${workspaceCode}-sprintId`,
       );
 
       if (savedProjectId) setSelectedProjectId(savedProjectId);
@@ -127,35 +127,44 @@ function DashBoard() {
           />
         ) : (
           <div
-            className={`flex h-full items-center justify-center ${darkMode ? "bg-[#121212]" : "bg-gray-50"
-              }`}
+            className={`flex h-full items-center justify-center ${
+              darkMode ? "bg-[#121212]" : "bg-gray-50"
+            }`}
           >
             <p
-              className={`text-lg ${darkMode
-                ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
-                : "text-emerald-600 border-emerald-300 bg-white"
-                } border rounded-md p-4 shadow-md`}
+              className={`text-lg ${
+                darkMode
+                  ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
+                  : "text-emerald-600 border-emerald-300 bg-white"
+              } border rounded-md p-4 shadow-md`}
             >
               Select a project from the sidebar or create a new one
             </p>
           </div>
         );
       case "members":
-        return <Members workspaceName={workspaceCode || ""} darkMode={darkMode} />;
+        return (
+          <Members workspaceName={workspaceCode || ""} darkMode={darkMode} />
+        );
       case "calendar":
-        return <Calendar darkMode={darkMode} workspaceName={workspaceCode || ""} />;
+        return (
+          <Calendar darkMode={darkMode} workspaceName={workspaceCode || ""} />
+        );
       case "roadmap":
-        return <Roadmap darkMode={darkMode} workspaceName={workspaceCode || ""} />;
+        return (
+          <Roadmap darkMode={darkMode} workspaceName={workspaceCode || ""} />
+        );
       case "inbox":
         return <Inbox darkMode={darkMode} />;
       case "messages":
         return (
           <div className="h-full w-full flex">
             <div
-              className={`w-[32rem] ${darkMode
-                ? "bg-[#1E1E1E] border-emerald-700"
-                : "bg-gray-50 border-emerald-300"
-                } border-r`}
+              className={`w-[32rem] ${
+                darkMode
+                  ? "bg-[#1E1E1E] border-emerald-700"
+                  : "bg-gray-50 border-emerald-300"
+              } border-r`}
             >
               <ChatRoom
                 roomCode={workspaceCode || "general"}
@@ -180,32 +189,42 @@ function DashBoard() {
           <Sprint sprintId={selectedSprintId} darkMode={darkMode} /> // Pass darkMode prop
         ) : (
           <div
-            className={`flex h-full items-center justify-center ${darkMode ? "bg-[#121212]" : "bg-gray-50"
-              }`}
+            className={`flex h-full items-center justify-center ${
+              darkMode ? "bg-[#121212]" : "bg-gray-50"
+            }`}
           >
             <p
-              className={`text-lg ${darkMode
-                ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
-                : "text-emerald-600 border-emerald-300 bg-white"
-                } border rounded-md p-4 shadow-md`}
+              className={`text-lg ${
+                darkMode
+                  ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
+                  : "text-emerald-600 border-emerald-300 bg-white"
+              } border rounded-md p-4 shadow-md`}
             >
               Select a sprint from the sidebar or create a new one
             </p>
           </div>
         );
       case "settings":
-        return <Settings workspaceName={workspaceCode || ""} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />;
+        return (
+          <Settings
+            workspaceName={workspaceCode || ""}
+            darkMode={darkMode}
+            toggleDarkMode={toggleDarkMode}
+          />
+        );
       default:
         return (
           <div
-            className={`flex h-full items-center justify-center ${darkMode ? "bg-[#121212]" : "bg-gray-50"
-              }`}
+            className={`flex h-full items-center justify-center ${
+              darkMode ? "bg-[#121212]" : "bg-gray-50"
+            }`}
           >
             <p
-              className={`text-lg ${darkMode
-                ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
-                : "text-emerald-600 border-emerald-300 bg-white"
-                } border rounded-md p-4 shadow-md`}
+              className={`text-lg ${
+                darkMode
+                  ? "text-emerald-400 border-emerald-700 bg-[#1E1E1E]"
+                  : "text-emerald-600 border-emerald-300 bg-white"
+              } border rounded-md p-4 shadow-md`}
             >
               Select an option from the sidebar
             </p>
@@ -215,7 +234,9 @@ function DashBoard() {
   };
 
   return (
-    <div className={`flex h-screen ${darkMode ? "bg-[#121212]" : "bg-gray-50"}`}>
+    <div
+      className={`flex h-screen ${darkMode ? "bg-[#121212]" : "bg-gray-50"}`}
+    >
       {/* Sidebar with proper transition styling */}
       <div
         className={`h-screen ${isSidebarMinimized ? "w-[60px]" : "w-64"} transition-all duration-500 ease-in-out shrink-0`}
@@ -234,17 +255,25 @@ function DashBoard() {
       </div>
 
       {/* Main content area with adjusted position to reduce gap */}
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${isSidebarMinimized ? "-ml-2" : ""}`}>
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${isSidebarMinimized ? "-ml-2" : ""}`}
+      >
         {/* Top navigation bar */}
-        <Navbar workspaceCode={workspaceCode} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <Navbar
+          workspaceCode={workspaceCode}
+          darkMode={darkMode}
+          toggleDarkMode={toggleDarkMode}
+        />
         {/* Main content */}
-        <main className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}>
+        <main
+          className={`flex-1 overflow-auto ${darkMode ? "bg-[#121212]" : "bg-gray-50"} relative`}
+        >
           {renderMainContent()}
           <div className="absolute bottom-4 right-4 z-50">
-            <JoinCallButton 
-              darkMode={darkMode} 
-              roomCode={workspaceCode || "general"} 
-              userId={email || "anonymous"} 
+            <JoinCallButton
+              darkMode={darkMode}
+              roomCode={workspaceCode || "general"}
+              userId={email || "anonymous"}
             />
           </div>
         </main>

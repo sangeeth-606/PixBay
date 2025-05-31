@@ -16,6 +16,7 @@ import ChatRoom from "../components/ChatRoom";
 import WhiteBoard from "../components/WhiteBoard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { getApiEndpoint } from "../utils/api";
 
 interface RoomProps {
   roomCode: string;
@@ -58,7 +59,7 @@ const VideoRoom: React.FC<RoomProps> = ({
     addedPeerIdsRef.current = new Set();
     peerConnectionsRef.current = {};
 
-    const socket = io("http://localhost:5000", {
+    const socket = io(getApiEndpoint("/socket"), {
       reconnection: false,
       forceNew: true,
     });
@@ -69,7 +70,7 @@ const VideoRoom: React.FC<RoomProps> = ({
         "Socket.IO connected:",
         socket.id,
         "Transport:",
-        socket.io.engine.transport.name
+        socket.io.engine.transport.name,
       );
     });
     socket.on("connect_error", (error) => {
@@ -153,7 +154,7 @@ const VideoRoom: React.FC<RoomProps> = ({
       .catch((error) => {
         console.error("Error accessing media devices:", error);
         setError(
-          "Failed to access camera/microphone. Please check permissions."
+          "Failed to access camera/microphone. Please check permissions.",
         );
       });
 
@@ -201,10 +202,10 @@ const VideoRoom: React.FC<RoomProps> = ({
   const addRemoteStream = (
     stream: MediaStream,
     peerId?: string,
-    isIncoming: boolean = true
+    isIncoming: boolean = true,
   ) => {
     console.log(
-      `Adding remote stream from: ${peerId} (${isIncoming ? "incoming" : "outgoing"}) My peer ID: ${myPeerIdRef.current}`
+      `Adding remote stream from: ${peerId} (${isIncoming ? "incoming" : "outgoing"}) My peer ID: ${myPeerIdRef.current}`,
     );
 
     if (peerId && peerId === myPeerIdRef.current) {
@@ -245,7 +246,7 @@ const VideoRoom: React.FC<RoomProps> = ({
       "absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black/80 to-transparent";
     label.innerHTML = `<span class="text-sm text-white font-medium">Remote User (${peerId?.substring(
       0,
-      6
+      6,
     )})</span>`;
     wrapper.appendChild(label);
 
@@ -269,7 +270,7 @@ const VideoRoom: React.FC<RoomProps> = ({
 
     if (elementsToRemove.length > 0) {
       console.log(
-        `Cleared ${elementsToRemove.length} existing elements for peer: ${peerId}`
+        `Cleared ${elementsToRemove.length} existing elements for peer: ${peerId}`,
       );
     }
   };
@@ -318,10 +319,9 @@ const VideoRoom: React.FC<RoomProps> = ({
 
   const buttonClass = (isActive: boolean) => `
     flex items-center justify-center rounded-md w-10 h-10 transition-all
-    ${
-      isActive
-        ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/40"
-        : "bg-[#1F1F1F] text-gray-300 border-[#2C2C2C] hover:bg-[#2C2C2C]"
+    ${isActive
+      ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/40"
+      : "bg-[#1F1F1F] text-gray-300 border-[#2C2C2C] hover:bg-[#2C2C2C]"
     }
     border shadow-sm hover:shadow-md active:scale-95 duration-150
   `;
@@ -335,9 +335,8 @@ const VideoRoom: React.FC<RoomProps> = ({
     >
       <AnimatePresence>
         <motion.main
-          className={`flex-1 p-6 flex flex-col items-center justify-center overflow-hidden bg-[#171717] transition-all duration-300 ease-in-out ${
-            showChatModal ? "mr-[320px]" : "mr-0"
-          }`}
+          className={`flex-1 p-6 flex flex-col items-center justify-center overflow-hidden bg-[#171717] transition-all duration-300 ease-in-out ${showChatModal ? "mr-[320px]" : "mr-0"
+            }`}
           layout
         >
           {error ? (
@@ -358,9 +357,8 @@ const VideoRoom: React.FC<RoomProps> = ({
       </AnimatePresence>
 
       <footer
-        className={`p-4 bg-[#171717] border-t border-gray-800 z-20 transition-all duration-300 ease-in-out ${
-          showChatModal ? "mr-[320px]" : "mr-0"
-        }`}
+        className={`p-4 bg-[#171717] border-t border-gray-800 z-20 transition-all duration-300 ease-in-out ${showChatModal ? "mr-[320px]" : "mr-0"
+          }`}
       >
         <div className="flex space-x-4 overflow-x-auto py-2">
           <motion.div
@@ -372,9 +370,8 @@ const VideoRoom: React.FC<RoomProps> = ({
               ref={localVideoRef}
               autoPlay
               muted
-              className={`w-full h-full object-cover ${
-                isVideoOff ? "hidden" : ""
-              }`}
+              className={`w-full h-full object-cover ${isVideoOff ? "hidden" : ""
+                }`}
             />
             {isVideoOff && (
               <div className="w-full h-full flex flex-col items-center justify-center bg-[#1F1F1F]">
@@ -450,9 +447,8 @@ const VideoRoom: React.FC<RoomProps> = ({
       </motion.div>
 
       <motion.div
-        className={`fixed top-0 right-0 h-full w-[320px] bg-[#1A1A1A] border-l border-gray-800 shadow-xl z-30 ${
-          darkMode ? "dark" : ""
-        }`}
+        className={`fixed top-0 right-0 h-full w-[320px] bg-[#1A1A1A] border-l border-gray-800 shadow-xl z-30 ${darkMode ? "dark" : ""
+          }`}
         initial={{ x: "100%" }}
         animate={{
           x: showChatModal ? 0 : "100%",
@@ -468,7 +464,7 @@ const VideoRoom: React.FC<RoomProps> = ({
             roomCode={roomCode}
             userId={userId}
             onClose={() => setShowChatModal(false)}
-            darkMode={true} // Force dark mode for chat in video call
+            darkMode={true} 
           />
         )}
       </motion.div>

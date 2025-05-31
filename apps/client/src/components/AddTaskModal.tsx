@@ -107,7 +107,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         data,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       console.log("Task created:", response.data);

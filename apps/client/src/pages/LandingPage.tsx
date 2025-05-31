@@ -22,6 +22,7 @@ import {
   SelectItem,
   SelectValue
 } from "@/components/ui/select";
+import api from "../utils/api";
 
 interface Workspace {
   id: string | number;
@@ -66,7 +67,7 @@ const LandingPage = () => {
 
         // First ensure user exists
         const userResponse = await axios.get(
-          `http://localhost:5000/api/users/check?email=${encodeURIComponent(email)}`,
+          api.getApiEndpoint(`/api/users/check?email=${encodeURIComponent(email)}`),
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -82,7 +83,7 @@ const LandingPage = () => {
 
           // Only fetch workspaces after confirming user exists
           const workspacesResponse = await axios.get(
-            "http://localhost:5000/api/workspaces/user",
+            api.getApiEndpoint("/api/workspaces/user"),
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -110,7 +111,7 @@ const LandingPage = () => {
       try {
         const token = await getToken();
         await axios.post(
-          "http://localhost:5000/api/users",
+          api.getApiEndpoint("/api/users"),
           {
             email,
             name: userName,
@@ -126,7 +127,7 @@ const LandingPage = () => {
 
         // After creating user, fetch workspaces
         const workspacesResponse = await axios.get(
-          "http://localhost:5000/api/workspaces/user",
+          api.getApiEndpoint("/api/workspaces/user"),
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -160,7 +161,7 @@ const LandingPage = () => {
       const finalWorkspaceName = `${workspaceNameInput}-${randomCode}`;
 
       await axios.post(
-        "http://localhost:5000/api/workspaces/create",
+        api.getApiEndpoint("/api/workspaces/create"),
         {
           name: finalWorkspaceName,
         },
@@ -195,7 +196,7 @@ const LandingPage = () => {
       const workspaceName = roomCode;
 
       await axios.post(
-        "http://localhost:5000/api/workspaces/join",
+        api.getApiEndpoint("/api/workspaces/join"),
         { workspaceName: workspaceName },
         { headers: { Authorization: `Bearer ${token}` } }
       );

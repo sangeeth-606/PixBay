@@ -12,7 +12,6 @@ interface TaskInfoProps {
   onClose?: () => void;
   onDescriptionUpdated?: (newDescription: string) => void;
   darkMode?: boolean;
-  type?: string;
   priority?: string;
   dueDate?: string | Date;
   assigneeId?: string | null;
@@ -22,7 +21,6 @@ function TaskInfo({
   taskId,
   title,
   description,
-  type,
   priority,
   dueDate,
   assigneeId,
@@ -33,7 +31,6 @@ function TaskInfo({
 }: TaskInfoProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editedDescription, setEditedDescription] = useState(description || "");
-  const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
@@ -48,7 +45,6 @@ function TaskInfo({
       if (!taskId || text === description) return;
 
       try {
-        setIsSaving(true);
         setSaveStatus("saving");
         const token = await getToken();
 
@@ -69,8 +65,6 @@ function TaskInfo({
       } catch (error) {
         console.error("Failed to update task description:", error);
         setSaveStatus("error");
-      } finally {
-        setIsSaving(false);
       }
     },
     [taskId, description, getToken, onDescriptionUpdated],

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FiPlus, FiTrash } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion"; // Import AnimatePresence
 import { FaFire } from "react-icons/fa";
-import { Task, User, TaskStatus, Priority } from "../utils/taskTypes";
+import { Task,  TaskStatus,  } from "../utils/taskTypes";
 
 /** Interface for Board component props */
 interface BoardProps {

@@ -20,7 +20,6 @@ import { SprintFormModal } from "./SprintFormModal";
 import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
 import api from "../utils/api"; // Import the API utility
 
 interface SidebarProps {

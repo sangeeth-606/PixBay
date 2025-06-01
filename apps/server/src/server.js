@@ -1,53 +1,61 @@
 // Load environment variables first, before any other imports
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 const result = dotenv.config();
 if (result.error) {
-  console.error('⚠️ Error loading .env file:', result.error);
+  console.error("⚠️ Error loading .env file:", result.error);
 }
 
-import express from 'express';
-import cors from 'cors';
-import userRoutes from './routes/userRoutes.js';
-import workspaceRoutes from './routes/workspaceRoutes.js';
-import projectRoutes from './routes/projectRoutes.js';
-import taskRoutes from './routes/taskRoutes.js';
-import sprintRoutes from './routes/sprintRoutes.js';
-import roadmapRoutes from './routes/roadmapRoutes.js';
+import express from "express";
+import cors from "cors";
+import userRoutes from "./routes/userRoutes.js";
+import workspaceRoutes from "./routes/workspaceRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
+import sprintRoutes from "./routes/sprintRoutes.js";
+import roadmapRoutes from "./routes/roadmapRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
-import { roomSockets } from './sockets/roomSockets.js';
-import { Server } from 'socket.io';
-import http from 'http';
-import { ExpressPeerServer } from 'peer';
-import { verifyDatabaseConnection } from './db.js';
+import { roomSockets } from "./sockets/roomSockets.js";
+import { Server } from "socket.io";
+import http from "http";
+import { ExpressPeerServer } from "peer";
+import { verifyDatabaseConnection } from "./db.js";
 
 // Log environment variables for debugging (only non-sensitive ones)
-console.log('Environment:', {
+console.log("Environment:", {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   FRONTEND_URL: process.env.FRONTEND_URL,
-  DATABASE_URL: process.env.DATABASE_URL ? '✓ SET' : '✗ MISSING',
+  DATABASE_URL: process.env.DATABASE_URL ? "✓ SET" : "✗ MISSING",
 });
+
+// Set FRONTEND_URL based on NODE_ENV
+const FRONTEND_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://www.pixbay.space/"
+    : "http://localhost:5173";
 
 const app = express();
 const server = http.createServer(app);
 
 // Enable CORS for Express
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  })
+);
 
-app.use(express.json()); 
+app.use(express.json());
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    origin: FRONTEND_URL,
+    methods: ["GET", "POST"],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ["Content-Type", "Authorization"],
   },
-  path: '/socket.io',
-  transports: ['websocket', 'polling'],
+  path: "/socket.io",
+  transports: ["websocket", "polling"],
   allowEIO3: true,
   pingTimeout: 60000,
   pingInterval: 25000,
@@ -56,40 +64,45 @@ const io = new Server(server, {
   connectTimeout: 45000,
   allowUpgrades: true,
   perMessageDeflate: {
-    threshold: 1024
-  }
+    threshold: 1024,
+  },
 });
 
-console.log('Socket.IO server initialized');
-io.on('connection', (socket) => {
-  console.log('Socket.IO connection:', socket.id, 'Transport:', socket.conn.transport.name);
+console.log("Socket.IO server initialized");
+io.on("connection", (socket) => {
+  console.log(
+    "Socket.IO connection:",
+    socket.id,
+    "Transport:",
+    socket.conn.transport.name
+  );
 });
 
 // Add WebSocket upgrade handler
-server.on('upgrade', (request, socket, head) => {
-  console.log('Upgrade request received for:', request.url);
+server.on("upgrade", (request, socket, head) => {
+  console.log("Upgrade request received for:", request.url);
 });
 
 roomSockets(io);
 
-app.use('/api/users', userRoutes); 
-app.use('/api/workspaces', workspaceRoutes);
-app.use('/api/projects', projectRoutes); 
-app.use('/api/tasks', taskRoutes); 
-app.use('/api/sprints', sprintRoutes);
-app.use('/api/roadmap',roadmapRoutes)
+app.use("/api/users", userRoutes);
+app.use("/api/workspaces", workspaceRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/sprints", sprintRoutes);
+app.use("/api/roadmap", roadmapRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-const peerServer = ExpressPeerServer(server, { path: '/', debug: true });
-app.use('/peerjs', peerServer);
+const peerServer = ExpressPeerServer(server, { path: "/", debug: true });
+app.use("/peerjs", peerServer);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Server is running' });
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running" });
 });
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  res.status(500).json({ error: "Something went wrong!" });
 });
 
 const PORT = process.env.PORT || 5000;
@@ -98,12 +111,12 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     await verifyDatabaseConnection();
-    
+
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   } catch (err) {
-    console.error('Failed to start server:', err);
+    console.error("Failed to start server:", err);
     process.exit(1);
   }
 }

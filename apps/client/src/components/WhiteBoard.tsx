@@ -37,9 +37,6 @@ const SMOOTHING_CONFIG: SmoothingConfig = {
   velocityWeight: 0.7,
 };
 
-// Fine-tuned constants for better real-time performance
-const BATCH_INTERVAL = 16; // ~60fps for smooth real-time updates
-
 const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -51,15 +48,9 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   const [prevActions, setPrevActions] = useState<DrawingAction[]>([]);
   const prevSmoothedPoint = useRef<{ x: number; y: number } | null>(null);
   const actionsRef = useRef<DrawingAction[]>([]);
-  const batchRef = useRef<DrawingAction[]>([]);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const drawingPathRef = useRef<{ x: number; y: number }[]>([]);
 
-  // Add real-time batch processing refs
-  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingBatchRef = useRef<DrawingAction[]>([]);
-
-  // Add new state for stroke smoothing
   const smoothedPoints = useRef<Point[]>([]);
   const lastVelocity = useRef<number>(0);
   const lastTimestamp = useRef<number>(0);
@@ -189,38 +180,16 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       }
     });
 
-    // Batch processing for actions
-    const actionQueue: DrawingAction[] = [];
-    let processingQueue = false;
-
-    const processActionQueue = () => {
-      if (actionQueue.length > 0 && !processingQueue) {
-        processingQueue = true;
-        const actions = [...actionQueue];
-        actionQueue.length = 0;
-
-        actions.forEach(action => {
-          handleRemoteAction(action);
-          actionsRef.current.push(action);
-        });
-
-        setPrevActions([...actionsRef.current]);
-        processingQueue = false;
-      }
-    };
-
-    // Process queue periodically
-    const queueInterval = setInterval(processActionQueue, 16); // ~60fps
-
     newSocket.on("whiteboard-action", (action: DrawingAction) => {
-      actionQueue.push(action);
+      handleRemoteAction(action);
+      actionsRef.current.push(action);
+      setPrevActions([...actionsRef.current]);
     });
 
     setSocket(newSocket);
 
     // Cleanup
     return () => {
-      clearInterval(queueInterval);
       if (newSocket.connected) {
         newSocket.disconnect();
       }
@@ -390,7 +359,6 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     // Reset drawing state
     drawingPathRef.current = [{ x, y }];
     lastPointRef.current = { x, y };
-    batchRef.current = [];
 
     smoothedPoints.current = [];
     lastVelocity.current = 0;
@@ -441,48 +409,24 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       }
     }
 
-    // Batch and send points to server
-    pendingBatchRef.current.push({
-      type: "draw",
-      x,
-      y,
-      pressure,
-      color: tool === "eraser" ? "#121212" : color,
-      brushSize: brushSize * (pressure || 1),
-      tool,
+    // Send points to server
+    socket.emit("whiteboard-action", {
+      roomCode,
+      action: {
+        type: "draw",
+        x,
+        y,
+        pressure,
+        color: tool === "eraser" ? "#121212" : color,
+        brushSize: brushSize * (pressure || 1),
+        tool,
+      },
     });
-
-    // Schedule batch send if not already scheduled
-    if (!batchTimeoutRef.current) {
-      batchTimeoutRef.current = setTimeout(sendPendingBatch, BATCH_INTERVAL);
-    }
 
     lastPointRef.current = { x, y };
   };
 
-  // New function to send pending batch
-  const sendPendingBatch = () => {
-    if (pendingBatchRef.current.length === 0 || !socket) return;
-
-    socket.emit("whiteboard-batch", {
-      roomCode,
-      actions: pendingBatchRef.current,
-    });
-
-    // Add to history
-    actionsRef.current = [...actionsRef.current, ...pendingBatchRef.current];
-    pendingBatchRef.current = [];
-  };
-
   const stopDrawing = () => {
-    if (isDrawing) {
-      // Send any remaining actions
-      sendPendingBatch();
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-        batchTimeoutRef.current = null;
-      }
-    }
     setIsDrawing(false);
     lastPointRef.current = null;
   };
@@ -518,15 +462,6 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       socket.emit("whiteboard-undo", { roomCode });
     }
   };
-
-  // Clean up batch timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <motion.div

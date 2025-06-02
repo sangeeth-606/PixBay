@@ -9,6 +9,14 @@ interface CallState {
   isVideoOff: boolean;
 }
 
+interface RoomProps {
+  roomCode: string;
+  userId: string;
+  initialMuted: boolean;
+  initialVideoOff: boolean;
+  darkMode: boolean; // Add this property
+}
+
 const Call: React.FC = () => {
   const location = useLocation();
   const state = location.state as CallState | undefined;
@@ -24,7 +32,7 @@ const Call: React.FC = () => {
       userId={state.userId}
       initialMuted={state.isMuted}
       initialVideoOff={state.isVideoOff}
-      darkMode={false} // Add this line
+      darkMode={true}
     />
   );
 };

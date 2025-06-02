@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Peer, { MediaConnection } from "peerjs";
 import io from "socket.io-client";
-import { Mic, MicOff, Video, VideoOff, PhoneOff, MessageSquare, X } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, PhoneOff, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 // import { useNavigate } from "react-router-dom";
 import { getApiUrl } from "../utils/api";
@@ -22,6 +22,7 @@ interface RoomProps {
   userId: string;
   initialMuted?: boolean;
   initialVideoOff?: boolean;
+  darkMode?: boolean;
 }
 
 const VideoRoom: React.FC<RoomProps> = ({
@@ -310,7 +311,7 @@ const VideoRoom: React.FC<RoomProps> = ({
         {/* Video Feeds */}
         <div className="fixed bottom-20 left-4 flex gap-4 z-10">
           {/* Local Video */}
-          <motion.div 
+          <motion.div
             className="relative group"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
@@ -331,7 +332,7 @@ const VideoRoom: React.FC<RoomProps> = ({
                   </div>
                 </div>
               )}
-              
+
               {/* Local Video Label */}
               <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                 <div className="flex items-center justify-between">
@@ -354,7 +355,7 @@ const VideoRoom: React.FC<RoomProps> = ({
         </div>
 
         {/* Control Panel */}
-        <motion.div 
+        <motion.div
           className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20"
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -364,11 +365,10 @@ const VideoRoom: React.FC<RoomProps> = ({
             {/* Mute Button */}
             <motion.button
               onClick={toggleMute}
-              className={`p-3 rounded-full transition-all duration-200 ${
-                isMuted 
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30' 
-                  : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
-              }`}
+              className={`p-3 rounded-full transition-all duration-200 ${isMuted
+                ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30'
+                : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
+                }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -378,11 +378,10 @@ const VideoRoom: React.FC<RoomProps> = ({
             {/* Video Button */}
             <motion.button
               onClick={toggleVideo}
-              className={`p-3 rounded-full transition-all duration-200 ${
-                isVideoOff 
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30' 
-                  : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
-              }`}
+              className={`p-3 rounded-full transition-all duration-200 ${isVideoOff
+                ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30'
+                : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
+                }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -392,11 +391,10 @@ const VideoRoom: React.FC<RoomProps> = ({
             {/* Chat Button */}
             <motion.button
               onClick={toggleChat}
-              className={`p-3 rounded-full transition-all duration-200 ${
-                isChatOpen 
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30' 
-                  : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
-              }`}
+              className={`p-3 rounded-full transition-all duration-200 ${isChatOpen
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
+                : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
+                }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >

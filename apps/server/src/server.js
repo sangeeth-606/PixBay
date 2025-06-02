@@ -31,7 +31,7 @@ console.log("Environment:", {
 // Set FRONTEND_URL based on NODE_ENV
 const FRONTEND_URL =
   process.env.NODE_ENV === "production"
-    ? "https://www.pixbay.space/"
+    ? "https://www.pixbay.space" // Removed trailing slash
     : "http://localhost:5173";
 
 const app = express();
@@ -40,7 +40,7 @@ const server = http.createServer(app);
 // Enable CORS for Express
 app.use(
   cors({
-    origin: FRONTEND_URL,
+    origin: [FRONTEND_URL], // Wrap in array and use the updated FRONTEND_URL
     credentials: true,
   })
 );

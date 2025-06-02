@@ -122,8 +122,8 @@ export const roomSockets = (io) => {
       io.to(roomCode).emit("whiteboard-action", action);
     });
 
-    socket.on("whiteboard-batch", ({ roomCode, actions }) => {
-      if (!whiteboardHistory.has(roomCode)) {
+    socket.on("whiteboard-clear", (roomCode) => {
+      if (whiteboardHistory.has(roomCode)) {
         whiteboardHistory.set(roomCode, []);
       }
 

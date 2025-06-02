@@ -21,6 +21,20 @@ type DrawingAction = {
   color?: string;
   brushSize?: number;
   tool?: string;
+  pressure?: number;
+};
+
+type Point = { x: number; y: number; pressure?: number };
+type SmoothingConfig = {
+  factor: number;
+  points: number;
+  velocityWeight: number;
+};
+
+const SMOOTHING_CONFIG: SmoothingConfig = {
+  factor: 0.35,
+  points: 8,
+  velocityWeight: 0.7,
 };
 
 // Fine-tuned constants for better real-time performance
@@ -46,6 +60,77 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
   // Add real-time batch processing refs
   const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingBatchRef = useRef<DrawingAction[]>([]);
+
+  // Add new state for stroke smoothing
+  const smoothedPoints = useRef<Point[]>([]);
+  const lastVelocity = useRef<number>(0);
+  const lastTimestamp = useRef<number>(0);
+
+  const smoothStroke = (points: Point[]): Point[] => {
+    if (points.length < 2) return points;
+
+    const smoothed: Point[] = [];
+    const temp: Point[] = [];
+
+    // Initialize control points
+    temp.push({ x: points[0].x, y: points[0].y });
+    for (let i = 1; i < points.length - 1; i++) {
+      const p0 = points[i - 1];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+
+      // Calculate control points for quadratic curve
+      const xc = (p0.x + p1.x) / 2;
+      const yc = (p0.y + p1.y) / 2;
+      const xc_next = (p1.x + p2.x) / 2;
+      const yc_next = (p1.y + p2.y) / 2;
+
+      temp.push({ x: xc, y: yc }, { x: p1.x, y: p1.y }, { x: xc_next, y: yc_next });
+    }
+    temp.push({ x: points[points.length - 1].x, y: points[points.length - 1].y });
+
+    // Apply smoothing factor
+    for (let i = 0; i < temp.length - 2; i += 2) {
+      const p0 = temp[i];
+      const p1 = temp[i + 1];
+      const p2 = temp[i + 2];
+
+      for (let t = 0; t <= 1; t += 0.1) {
+        const tt = t * t;
+        const ttt = tt * t;
+        const u = 1 - t;
+        const uu = u * u;
+
+        const x = uu * p0.x + 2 * u * t * p1.x + tt * p2.x;
+        const y = uu * p0.y + 2 * u * t * p1.y + tt * p2.y;
+
+        smoothed.push({ x, y });
+      }
+    }
+
+    return smoothed;
+  };
+
+  const calculatePressure = (x: number, y: number): number => {
+    const now = Date.now();
+    const timeDelta = now - lastTimestamp.current;
+    lastTimestamp.current = now;
+
+    if (!lastPointRef.current) return 1;
+
+    const dx = x - lastPointRef.current.x;
+    const dy = y - lastPointRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const velocity = distance / (timeDelta || 1);
+
+    // Smooth velocity transitions
+    lastVelocity.current = lastVelocity.current * 0.7 + velocity * 0.3;
+
+    // Convert velocity to pressure (inverse relationship)
+    const pressure = Math.max(0.2, Math.min(1, 1 - lastVelocity.current * SMOOTHING_CONFIG.velocityWeight));
+
+    return pressure;
+  };
 
   // Initialize canvas and socket
   useEffect(() => {
@@ -309,51 +394,73 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     drawingPathRef.current = [{ x, y }];
     lastPointRef.current = { x, y };
     batchRef.current = [];
+
+    smoothedPoints.current = [];
+    lastVelocity.current = 0;
+    lastTimestamp.current = Date.now();
   };
 
-  // Modified draw function for better real-time performance
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !socket) return;
 
-    const { x: rawX, y: rawY } = getMouseCoordinates(e);
-    if (!lastPointRef.current) {
-      lastPointRef.current = { x: rawX, y: rawY };
-      return;
+    const { x, y } = getMouseCoordinates(e);
+    const pressure = calculatePressure(x, y);
+
+    smoothedPoints.current.push({ x, y, pressure });
+
+    // Keep a rolling window of points for smoothing
+    if (smoothedPoints.current.length > SMOOTHING_CONFIG.points) {
+      smoothedPoints.current.shift();
     }
 
-    const dx = rawX - lastPointRef.current.x;
-    const dy = rawY - lastPointRef.current.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    const smoothed = smoothStroke(smoothedPoints.current);
 
-    if (distance < MIN_DISTANCE) return;
+    // Draw locally with immediate feedback
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const smoothedX = SMOOTHING_FACTOR * rawX + (1 - SMOOTHING_FACTOR) * lastPointRef.current.x;
-    const smoothedY = SMOOTHING_FACTOR * rawY + (1 - SMOOTHING_FACTOR) * lastPointRef.current.y;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    const action: DrawingAction = {
+    // Check if smoothed has points before drawing
+    if (smoothed.length > 0) {
+      ctx.beginPath();
+      ctx.moveTo(smoothed[0].x, smoothed[0].y);
+
+      for (let i = 1; i < smoothed.length; i++) {
+        const point = smoothed[i];
+        const prevPoint = smoothed[i - 1];
+
+        // Use quadratic curves for smoother lines
+        const xc = (prevPoint.x + point.x) / 2;
+        const yc = (prevPoint.y + point.y) / 2;
+
+        ctx.quadraticCurveTo(prevPoint.x, prevPoint.y, xc, yc);
+
+        // Adjust line width based on pressure
+        const width = brushSize * (point.pressure || 1);
+        ctx.lineWidth = width;
+        ctx.stroke();
+      }
+    }
+
+    // Batch and send points to server
+    pendingBatchRef.current.push({
       type: "draw",
-      x: smoothedX,
-      y: smoothedY,
+      x,
+      y,
+      pressure,
       color: tool === "eraser" ? "#121212" : color,
-      brushSize,
-      tool
-    };
-
-    // Immediate local drawing
-    handleLocalDraw(action);
-
-    // Add to pending batch
-    pendingBatchRef.current.push(action);
+      brushSize: brushSize * (pressure || 1),
+      tool,
+    });
 
     // Schedule batch send if not already scheduled
     if (!batchTimeoutRef.current) {
-      batchTimeoutRef.current = setTimeout(() => {
-        sendPendingBatch();
-        batchTimeoutRef.current = null;
-      }, BATCH_INTERVAL);
+      batchTimeoutRef.current = setTimeout(sendPendingBatch, BATCH_INTERVAL);
     }
 
-    lastPointRef.current = { x: smoothedX, y: smoothedY };
+    lastPointRef.current = { x, y };
   };
 
   const handleLocalDraw = (action: DrawingAction) => {
@@ -383,7 +490,7 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
 
     socket.emit("whiteboard-batch", {
       roomCode,
-      actions: pendingBatchRef.current
+      actions: pendingBatchRef.current,
     });
 
     // Add to history
@@ -391,7 +498,6 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     pendingBatchRef.current = [];
   };
 
-  // Modified stop drawing function
   const stopDrawing = () => {
     if (isDrawing) {
       // Send any remaining actions

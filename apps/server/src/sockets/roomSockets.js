@@ -8,7 +8,14 @@ export const roomSockets = (io) => {
 
   io.on("connection", (socket) => {
     const { roomCode, userId } = socket.handshake.query;
-    console.log("User connected:", socket.id, "Room:", roomCode, "User:", userId);
+    console.log(
+      "User connected:",
+      socket.id,
+      "Room:",
+      roomCode,
+      "User:",
+      userId
+    );
 
     // Handle reconnection
     if (roomCode) {
@@ -82,12 +89,12 @@ export const roomSockets = (io) => {
     socket.on("join-whiteboard", (roomCode) => {
       console.log(`User ${socket.id} joined whiteboard for room: ${roomCode}`);
       socket.join(roomCode);
-      
+
       // Initialize room history if needed
       if (!whiteboardHistory.has(roomCode)) {
         whiteboardHistory.set(roomCode, []);
       }
-      
+
       // Send existing history
       socket.emit("whiteboard-history", whiteboardHistory.get(roomCode));
     });
@@ -102,15 +109,15 @@ export const roomSockets = (io) => {
       if (!whiteboardHistory.has(roomCode)) {
         whiteboardHistory.set(roomCode, []);
       }
-      
+
       const history = whiteboardHistory.get(roomCode);
       history.push(action);
-      
+
       // Limit history size to prevent memory issues
       if (history.length > 10000) {
         history.splice(0, 1000); // Remove old actions when limit is reached
       }
-      
+
       // Broadcast to all users in room
       io.to(roomCode).emit("whiteboard-action", action);
     });
@@ -119,21 +126,32 @@ export const roomSockets = (io) => {
       if (!whiteboardHistory.has(roomCode)) {
         whiteboardHistory.set(roomCode, []);
       }
-      
+
       const history = whiteboardHistory.get(roomCode);
-      
-      // Process actions in smaller chunks for better performance
-      for (let i = 0; i < actions.length; i++) {
-        history.push(actions[i]);
-        // Broadcast each action immediately for better real-time experience
-        socket.to(roomCode).emit("whiteboard-action", actions[i]);
+
+      // Optimize batch processing
+      const processedActions = actions.map((action) => ({
+        ...action,
+        timestamp: Date.now(), // Add timestamp for synchronization
+      }));
+
+      // Process actions in chunks for better performance
+      const chunkSize = 10;
+      for (let i = 0; i < processedActions.length; i += chunkSize) {
+        const chunk = processedActions.slice(i, i + chunkSize);
+        history.push(...chunk);
+
+        // Broadcast chunk to room members
+        socket.to(roomCode).emit("whiteboard-batch", chunk);
       }
-      
+
       // Keep history size manageable
       if (history.length > 10000) {
-        const keepLast = 5000; // Keep last 5000 actions
+        const keepLast = 5000;
         history.splice(0, history.length - keepLast);
-        console.log(`Trimmed history for room ${roomCode} to ${keepLast} actions`);
+        console.log(
+          `Trimmed history for room ${roomCode} to ${keepLast} actions`
+        );
       }
     });
 
@@ -157,7 +175,7 @@ export const roomSockets = (io) => {
     // Enhanced cleanup on disconnect
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
-      
+
       if (roomCode) {
         // Handle connected users cleanup
         if (connectedUsers.has(roomCode)) {
@@ -173,7 +191,7 @@ export const roomSockets = (io) => {
         if (!room || room.size === 0) {
           // Optional: Save history to persistent storage before clearing
           // await saveHistoryToDB(roomCode, whiteboardHistory.get(roomCode));
-          
+
           whiteboardHistory.delete(roomCode);
           console.log(`Cleaned up whiteboard history for room: ${roomCode}`);
         }

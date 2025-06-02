@@ -38,8 +38,6 @@ const SMOOTHING_CONFIG: SmoothingConfig = {
 };
 
 // Fine-tuned constants for better real-time performance
-const SMOOTHING_FACTOR = 0.35; // Balance between smoothing and responsiveness
-const MIN_DISTANCE = 2; // Minimum pixels between points to reduce noise
 const BATCH_INTERVAL = 16; // ~60fps for smooth real-time updates
 
 const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
@@ -97,7 +95,6 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
 
       for (let t = 0; t <= 1; t += 0.1) {
         const tt = t * t;
-        const ttt = tt * t;
         const u = 1 - t;
         const uu = u * u;
 
@@ -461,27 +458,6 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     }
 
     lastPointRef.current = { x, y };
-  };
-
-  const handleLocalDraw = (action: DrawingAction) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    if (action.type === "draw") {
-      ctx.strokeStyle = action.color || ctx.strokeStyle;
-      ctx.lineWidth = action.brushSize || ctx.lineWidth;
-
-      if (drawingPathRef.current.length > 0) {
-        const lastPoint = drawingPathRef.current[drawingPathRef.current.length - 1];
-        ctx.beginPath();
-        ctx.moveTo(lastPoint.x, lastPoint.y);
-        ctx.lineTo(action.x!, action.y!);
-        ctx.stroke();
-      }
-    }
   };
 
   // New function to send pending batch

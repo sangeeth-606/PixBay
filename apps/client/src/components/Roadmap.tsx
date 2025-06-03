@@ -132,7 +132,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
             throw new Error("Authentication token not available");
           }
           const response = await axios.get(
-            api.getApiEndpoint(`/projects/workspace/${workspaceName}`),
+            api.getApiEndpoint(`/api/projects/workspace/${workspaceName}`),
             {
               headers: { Authorization: `Bearer ${token}` },
             },
@@ -154,7 +154,9 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
             throw new Error("Authentication token not found");
           }
           const response = await axios.get(
-            api.getApiEndpoint(`/roadmap/workspace/${workspaceName}/milestones`),
+            api.getApiEndpoint(
+              `api/roadmap/workspace/${workspaceName}/milestones`,
+            ),
             {
               headers: { Authorization: `Bearer ${token}` },
             },
@@ -194,7 +196,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
             throw new Error("Authentication token not found");
           }
           const response = await axios.get(
-            api.getApiEndpoint(`/roadmap/milestones/${milestoneId}/tasks`),
+            api.getApiEndpoint(`api/roadmap/milestones/${milestoneId}/tasks`),
             {
               headers: { Authorization: `Bearer ${authToken}` },
             },
@@ -249,7 +251,9 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
         throw new Error("Authentication token not found");
       }
       const response = await axios.post(
-        api.getApiEndpoint(`/roadmap/projects/${selectedProjectId}/milestones`),
+        api.getApiEndpoint(
+          `api/roadmap/projects/${selectedProjectId}/milestones`,
+        ),
         {
           title: formData.title,
           startDate: formData.startDate,
@@ -298,10 +302,11 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
         <div className="flex gap-2">
           <button
             onClick={() => setCurrentView("timeline")}
-            className={`flex items-center gap-1 px-3 py-1 rounded transition-colors ${darkMode
-              ? "bg-gray-700 text-white hover:bg-gray-600"
-              : "bg-gray-200 text-black hover:bg-gray-300"
-              }`}
+            className={`flex items-center gap-1 px-3 py-1 rounded transition-colors ${
+              darkMode
+                ? "bg-gray-700 text-white hover:bg-gray-600"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
           >
             <Calendar className="w-4 h-4" />
             Timeline View
@@ -322,40 +327,43 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
       >
         <button
           onClick={() => setCurrentView("list")}
-          className={`px-3 py-1 rounded transition-colors ${darkMode
-            ? currentView === "list"
-              ? "bg-[#252525] text-white"
-              : "bg-[#1C1C1C] text-gray-400"
-            : currentView === "list"
-              ? "bg-gray-200 text-black"
-              : "bg-white text-gray-700"
-            } hover:${darkMode ? "bg-[#252525]" : "bg-gray-100"}`}
+          className={`px-3 py-1 rounded transition-colors ${
+            darkMode
+              ? currentView === "list"
+                ? "bg-[#252525] text-white"
+                : "bg-[#1C1C1C] text-gray-400"
+              : currentView === "list"
+                ? "bg-gray-200 text-black"
+                : "bg-white text-gray-700"
+          } hover:${darkMode ? "bg-[#252525]" : "bg-gray-100"}`}
         >
           List View
         </button>
         <button
           onClick={() => setCurrentView("timeline")}
-          className={`px-3 py-1 rounded transition-colors ${darkMode
-            ? currentView === "timeline"
-              ? "bg-[#252525] text-white"
-              : "bg-[#1C1C1C] text-gray-400"
-            : currentView === "timeline"
-              ? "bg-gray-200 text-black"
-              : "bg-white text-gray-700"
-            } hover:${darkMode ? "bg-[#252525]" : "bg-gray-100"}`}
+          className={`px-3 py-1 rounded transition-colors ${
+            darkMode
+              ? currentView === "timeline"
+                ? "bg-[#252525] text-white"
+                : "bg-[#1C1C1C] text-gray-400"
+              : currentView === "timeline"
+                ? "bg-gray-200 text-black"
+                : "bg-white text-gray-700"
+          } hover:${darkMode ? "bg-[#252525]" : "bg-gray-100"}`}
         >
           Timeline View
         </button>
         <button
           onClick={() => setCurrentView("dependencies")}
-          className={`px-3 py-1 rounded transition-colors ${darkMode
-            ? currentView === "dependencies"
-              ? "bg-[#252525] text-white"
-              : "bg-[#1C1C1C] text-gray-400"
-            : currentView === "dependencies"
-              ? "bg-gray-200 text-black"
-              : "bg-white text-gray-700"
-            } hover:${darkMode ? "bg-[#252525]" : "bg-gray-100"}`}
+          className={`px-3 py-1 rounded transition-colors ${
+            darkMode
+              ? currentView === "dependencies"
+                ? "bg-[#252525] text-white"
+                : "bg-[#1C1C1C] text-gray-400"
+              : currentView === "dependencies"
+                ? "bg-gray-200 text-black"
+                : "bg-white text-gray-700"
+          } hover:${darkMode ? "bg-[#252525]" : "bg-gray-100"}`}
         >
           Dependencies
         </button>
@@ -369,10 +377,11 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
           </div>
         ) : error ? (
           <div
-            className={`p-4 rounded-lg flex items-start gap-2 ${darkMode
-              ? "bg-red-500/10 border border-red-500/20 text-red-500"
-              : "bg-red-100 border border-red-200 text-red-700"
-              }`}
+            className={`p-4 rounded-lg flex items-start gap-2 ${
+              darkMode
+                ? "bg-red-500/10 border border-red-500/20 text-red-500"
+                : "bg-red-100 border border-red-200 text-red-700"
+            }`}
           >
             <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
             <div>{error}</div>
@@ -403,8 +412,9 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
                 <div key={milestone.id} className="group">
                   <button
                     onClick={() => toggleMilestone(milestone.id)}
-                    className={`w-full text-left p-6 transition-colors duration-150 flex flex-col gap-3 ${darkMode ? "hover:bg-[#252525]" : "hover:bg-gray-100"
-                      }`}
+                    className={`w-full text-left p-6 transition-colors duration-150 flex flex-col gap-3 ${
+                      darkMode ? "hover:bg-[#252525]" : "hover:bg-gray-100"
+                    }`}
                     aria-expanded={isExpanded}
                     aria-controls={`milestone-${milestone.id}-tasks`}
                   >
@@ -453,10 +463,11 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
                       </span>
                     </div>
                     <div
-                      className={`w-full rounded-full h-2 transition-colors ${darkMode
-                        ? "bg-[#2C2C2C] group-hover:bg-[#353535]"
-                        : "bg-gray-200 group-hover:bg-gray-300"
-                        }`}
+                      className={`w-full rounded-full h-2 transition-colors ${
+                        darkMode
+                          ? "bg-[#2C2C2C] group-hover:bg-[#353535]"
+                          : "bg-gray-200 group-hover:bg-gray-300"
+                      }`}
                     >
                       <div
                         className={`h-full rounded-full ${status.color} transition-all duration-300`}
@@ -472,10 +483,11 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
                   </button>
                   <div
                     id={`milestone-${milestone.id}-tasks`}
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${isExpanded
-                      ? "max-h-[1000px] opacity-100"
-                      : "max-h-0 opacity-0"
-                      }`}
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      isExpanded
+                        ? "max-h-[1000px] opacity-100"
+                        : "max-h-0 opacity-0"
+                    }`}
                   >
                     <div className="px-6 pb-6 pt-2">
                       {loadingTasks[milestone.id] && isExpanded ? (
@@ -494,10 +506,11 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
                             tasksByMilestone[milestone.id].map((task) => (
                               <div
                                 key={task.id}
-                                className={`p-3 rounded-lg border transition-colors ${darkMode
-                                  ? "bg-[#252525] border-[#2C2C2C] hover:border-[#3C3C3C]"
-                                  : "bg-white border-gray-200 hover:border-gray-300"
-                                  }`}
+                                className={`p-3 rounded-lg border transition-colors ${
+                                  darkMode
+                                    ? "bg-[#252525] border-[#2C2C2C] hover:border-[#3C3C3C]"
+                                    : "bg-white border-gray-200 hover:border-gray-300"
+                                }`}
                               >
                                 <div className="flex justify-between items-center">
                                   <span className="font-medium">

@@ -49,7 +49,7 @@ function TaskInfo({
         const token = await getToken();
 
         await axios.put(
-          api.getApiEndpoint(`/tasks/update/${taskId}`),
+          api.getApiEndpoint(`api/tasks/update/${taskId}`),
           { description: text },
           { headers: { Authorization: `Bearer ${token}` } },
         );
@@ -87,7 +87,7 @@ function TaskInfo({
       setIsDeleting(true);
       const token = await getToken();
 
-      await axios.delete(api.getApiEndpoint(`/tasks/delete/${taskId}`), {
+      await axios.delete(api.getApiEndpoint(`api/tasks/delete/${taskId}`), {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -237,10 +237,11 @@ function TaskInfo({
           value={editedDescription}
           onChange={(e) => setEditedDescription(e.target.value)}
           placeholder="Add a description..."
-          className={`w-full min-h-[100px] p-2 rounded border transition-colors duration-200 text-sm ${darkMode
-            ? "bg-[#1C1C1C] border-[#2C2C2C] text-gray-200 placeholder-gray-500 focus:border-emerald-600"
-            : "bg-white border-gray-300 text-gray-700 placeholder-gray-400 focus:border-emerald-500"
-            } focus:outline-none focus:ring-1 focus:ring-emerald-500`}
+          className={`w-full min-h-[100px] p-2 rounded border transition-colors duration-200 text-sm ${
+            darkMode
+              ? "bg-[#1C1C1C] border-[#2C2C2C] text-gray-200 placeholder-gray-500 focus:border-emerald-600"
+              : "bg-white border-gray-300 text-gray-700 placeholder-gray-400 focus:border-emerald-500"
+          } focus:outline-none focus:ring-1 focus:ring-emerald-500`}
         />
       </motion.div>
 
@@ -379,9 +380,10 @@ function TaskInfo({
           onClick={handleDeleteTask}
           disabled={isDeleting}
           className={`px-2 py-1 rounded-full text-xs font-medium transition-colors duration-200
-            ${darkMode
-              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-              : "bg-emerald-500 hover:bg-emerald-600 text-white"
+            ${
+              darkMode
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : "bg-emerald-500 hover:bg-emerald-600 text-white"
             }
             ${isDeleting ? "opacity-60 cursor-not-allowed" : ""}`}
         >

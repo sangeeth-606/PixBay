@@ -2,12 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import io, { Socket } from "socket.io-client";
 import api from "../utils/api"; // Import the API utility functions
-import {
-  Pencil,
-  Eraser,
-  Undo,
-  Redo,
-} from "lucide-react";
+import { Pencil, Eraser, Undo, Redo } from "lucide-react";
 
 interface WhiteBoardProps {
   roomCode: string;
@@ -74,9 +69,16 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       const xc_next = (p1.x + p2.x) / 2;
       const yc_next = (p1.y + p2.y) / 2;
 
-      temp.push({ x: xc, y: yc }, { x: p1.x, y: p1.y }, { x: xc_next, y: yc_next });
+      temp.push(
+        { x: xc, y: yc },
+        { x: p1.x, y: p1.y },
+        { x: xc_next, y: yc_next },
+      );
     }
-    temp.push({ x: points[points.length - 1].x, y: points[points.length - 1].y });
+    temp.push({
+      x: points[points.length - 1].x,
+      y: points[points.length - 1].y,
+    });
 
     // Apply smoothing factor
     for (let i = 0; i < temp.length - 2; i += 2) {
@@ -115,7 +117,10 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
     lastVelocity.current = lastVelocity.current * 0.7 + velocity * 0.3;
 
     // Convert velocity to pressure (inverse relationship)
-    const pressure = Math.max(0.2, Math.min(1, 1 - lastVelocity.current * SMOOTHING_CONFIG.velocityWeight));
+    const pressure = Math.max(
+      0.2,
+      Math.min(1, 1 - lastVelocity.current * SMOOTHING_CONFIG.velocityWeight),
+    );
 
     return pressure;
   };
@@ -143,13 +148,13 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
 
     // Initialize Socket.IO with better transport handling
     const newSocket = io(api.getApiUrl(), {
-      path: '/socket.io',
-      transports: ['polling', 'websocket'],
+      path: "/socket.io",
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       query: { roomCode, userId },
-      timeout: 20000
+      timeout: 20000,
     });
 
     let isReconnecting = false;

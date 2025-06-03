@@ -142,10 +142,11 @@ export function SprintFormModal({
     },
   };
 
-  const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${darkMode
-    ? "bg-[#171717] border-[#2C2C2C] text-white"
-    : "bg-white border-gray-200 text-[#212121]"
-    }`;
+  const inputStyles = `w-full px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
+    darkMode
+      ? "bg-[#171717] border-[#2C2C2C] text-white"
+      : "bg-white border-gray-200 text-[#212121]"
+  }`;
 
   return (
     <AnimatePresence mode="wait">
@@ -163,10 +164,11 @@ export function SprintFormModal({
             onClick={onClose}
           ></div>
           <motion.div
-            className={`relative w-full max-w-md transform ${darkMode
-              ? "bg-[#171717]/95 border border-[#2C2C2C]"
-              : "bg-gray-100/95"
-              } rounded-lg shadow-xl backdrop-blur-sm`}
+            className={`relative w-full max-w-md transform ${
+              darkMode
+                ? "bg-[#171717]/95 border border-[#2C2C2C]"
+                : "bg-gray-100/95"
+            } rounded-lg shadow-xl backdrop-blur-sm`}
             variants={modalVariants}
             initial="hidden"
             animate="visible"
@@ -181,17 +183,19 @@ export function SprintFormModal({
             <div className="p-8">
               <div className="flex justify-between items-center mb-6">
                 <h2
-                  className={`text-2xl font-bold ${darkMode ? "text-white" : "text-[#212121]"
-                    }`}
+                  className={`text-2xl font-bold ${
+                    darkMode ? "text-white" : "text-[#212121]"
+                  }`}
                 >
                   Create New Sprint
                 </h2>
                 <button
                   onClick={onClose}
-                  className={`p-2 rounded-full hover:bg-opacity-80 ${darkMode
-                    ? "text-gray-400 hover:bg-[#2C2C2C]"
-                    : "text-gray-600 hover:bg-gray-200"
-                    }`}
+                  className={`p-2 rounded-full hover:bg-opacity-80 ${
+                    darkMode
+                      ? "text-gray-400 hover:bg-[#2C2C2C]"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
                 >
                   <X size={20} />
                 </button>
@@ -200,8 +204,9 @@ export function SprintFormModal({
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
-                    className={`block mb-2 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
+                    className={`block mb-2 font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                   >
                     Sprint Name <span className="text-emerald-400">*</span>
                   </label>
@@ -217,8 +222,9 @@ export function SprintFormModal({
 
                 <div>
                   <label
-                    className={`block mb-2 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
+                    className={`block mb-2 font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                   >
                     Project <span className="text-emerald-400">*</span>
                   </label>
@@ -239,8 +245,9 @@ export function SprintFormModal({
 
                 <div>
                   <label
-                    className={`block mb-2 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
+                    className={`block mb-2 font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
                   >
                     Sprint Goal
                   </label>
@@ -256,8 +263,9 @@ export function SprintFormModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
-                      className={`block mb-2 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
+                      className={`block mb-2 font-medium ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
                     >
                       Start Date
                     </label>
@@ -271,8 +279,9 @@ export function SprintFormModal({
 
                   <div>
                     <label
-                      className={`block mb-2 font-medium ${darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
+                      className={`block mb-2 font-medium ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
                     >
                       End Date
                     </label>

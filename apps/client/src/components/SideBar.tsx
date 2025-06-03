@@ -145,7 +145,9 @@ export function Sidebar({
 
       // Ensure the workspace ID is properly encoded for the URL
       const encodedWorkspaceId = encodeURIComponent(workspaceCode);
-      const url = api.getApiEndpoint(`/api/sprints/workspace/${encodedWorkspaceId}`); // Use the API utility
+      const url = api.getApiEndpoint(
+        `/api/sprints/workspace/${encodedWorkspaceId}`,
+      ); // Use the API utility
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -278,10 +280,11 @@ export function Sidebar({
           {/* Header with toggle button on left and search on right */}
           <div className={`px-3 py-4 flex justify-between items-center`}>
             <motion.button
-              className={`flex h-8 w-8 items-center justify-center ${darkMode
-                ? "text-gray-300 hover:text-white"
-                : "text-gray-600 hover:text-gray-900"
-                }`}
+              className={`flex h-8 w-8 items-center justify-center ${
+                darkMode
+                  ? "text-gray-300 hover:text-white"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
               onClick={toggleSidebar}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -292,10 +295,11 @@ export function Sidebar({
 
             {!isMinimized && (
               <motion.button
-                className={`flex h-8 w-8 items-center justify-center ${darkMode
-                  ? "text-gray-300 hover:text-white"
-                  : "text-gray-600 hover:text-gray-900"
-                  }`}
+                className={`flex h-8 w-8 items-center justify-center ${
+                  darkMode
+                    ? "text-gray-300 hover:text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleSearchClick}

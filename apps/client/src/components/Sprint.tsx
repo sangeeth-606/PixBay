@@ -61,7 +61,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
         const token = await getToken();
         setLoading(true);
         const response = await axios.get(
-          api.getApiEndpoint(`/sprints/${sprintId}`), // Use getApiEndpoint
+          api.getApiEndpoint(`api/sprints/${sprintId}`), // Use getApiEndpoint
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -97,7 +97,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
         dueDate: newTask.dueDate || null,
       };
       const response = await axios.post(
-        api.getApiEndpoint("/sprints/tasks"), // Use getApiEndpoint
+        api.getApiEndpoint("api/sprints/tasks"), // Use getApiEndpoint
         taskData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -117,7 +117,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
         storyPoints: "",
         dueDate: "",
       });
-    } catch (err) {
+    } catch {
       setError("Failed to create task");
     }
   };
@@ -127,14 +127,14 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
       const token = await getToken();
       const newStatus = sprint!.status === "PLANNING" ? "ACTIVE" : "COMPLETED";
       const response = await axios.put(
-        api.getApiEndpoint(`/sprints/${sprintId}`), // Use getApiEndpoint
+        api.getApiEndpoint(`api/sprints/${sprintId}`), // Use getApiEndpoint
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setSprint((prev) =>
         prev ? { ...prev, status: response.data.status } : prev,
       );
-    } catch (err) {
+    } catch {
       setError("Failed to update sprint status");
     }
   };
@@ -540,15 +540,15 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
                 </td>
               </motion.tr>
             )) || (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className={`py-3 px-4 text-center ${secondaryTextColor}`}
-                  >
-                    No tasks available
-                  </td>
-                </tr>
-              )}
+              <tr>
+                <td
+                  colSpan={8}
+                  className={`py-3 px-4 text-center ${secondaryTextColor}`}
+                >
+                  No tasks available
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </motion.div>

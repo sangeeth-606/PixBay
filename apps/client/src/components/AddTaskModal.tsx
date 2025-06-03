@@ -108,7 +108,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         data,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       console.log("Task created:", response.data);
@@ -126,10 +126,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     }
   };
 
-  const inputClasses = `block w-full rounded-md border ${darkMode
-    ? "bg-[#2C2C2C] border-gray-700 text-white"
-    : "bg-white border-gray-300 text-gray-900"
-    } shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2`;
+  const inputClasses = `block w-full rounded-md border ${
+    darkMode
+      ? "bg-[#2C2C2C] border-gray-700 text-white"
+      : "bg-white border-gray-300 text-gray-900"
+  } shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2`;
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -145,8 +146,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`w-full max-w-md rounded-xl p-6 shadow-xl ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-gray-900"
-              }`}
+            className={`w-full max-w-md rounded-xl p-6 shadow-xl ${
+              darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-gray-900"
+            }`}
           >
             <Dialog.Title className="text-xl font-semibold mb-4">
               Create New Task
@@ -290,10 +292,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${darkMode
-                    ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-                    : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                    }`}
+                  className={`rounded-md px-4 py-2 text-sm font-medium ${
+                    darkMode
+                      ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  }`}
                   disabled={isLoading}
                 >
                   Cancel
@@ -301,8 +304,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`rounded-md px-4 py-2 text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 ${isLoading ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
+                  className={`rounded-md px-4 py-2 text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 ${
+                    isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
                 >
                   {isLoading ? "Creating..." : "Create Task"}
                 </button>

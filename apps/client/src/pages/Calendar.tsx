@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
+import { EventClickArg } from "@fullcalendar/core";
 import "../styles/calendar-styles.css";
 import CalenderTaskModal from "../components/CalenderTaskModal";
 import { useAuth } from "@clerk/clerk-react";
@@ -83,7 +84,7 @@ const convertEventsToFullCalendarFormat = (events: CalendarEvent[]) => {
 };
 
 const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
-  const calendarRef = useRef<any>(null);
+  const calendarRef = useRef<FullCalendar | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [taskState, setTaskState] = useState(false);
@@ -98,7 +99,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
         throw new Error("Authentication token or workspace name not available");
       }
       const response = await axios.get(
-        api.getApiEndpoint(`/tasks/workspace/${workspaceName}`),
+        api.getApiEndpoint(`api/tasks/workspace/${workspaceName}`),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -145,13 +146,13 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
     mapTasksToEvents(tasks),
   );
 
-  const handleDateClick = (arg: any) => {
+  const handleDateClick = (arg: DateClickArg) => {
     setSelectedDate(arg.dateStr);
     setTaskState(true);
     console.log("Date clicked", arg);
   };
 
-  const handleEventClick = (arg: any) => {
+  const handleEventClick = (arg: EventClickArg) => {
     console.log("Event clicked", arg);
   };
 
@@ -191,8 +192,9 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full rounded-lg flex flex-col p-6 ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-black"
-        }`}
+      className={`w-full h-full rounded-lg flex flex-col p-6 ${
+        darkMode ? "bg-[#1C1C1C] text-white" : "bg-white text-black"
+      }`}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
         <CalenderTaskModal
@@ -207,15 +209,17 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
         />
 
         <div
-          className={`flex space-x-2 rounded-md p-1 ${darkMode ? "bg-[#171717]" : "bg-gray-200"
-            }`}
+          className={`flex space-x-2 rounded-md p-1 ${
+            darkMode ? "bg-[#171717]" : "bg-gray-200"
+          }`}
         >
           {viewOptions.map((option) => (
             <button
               key={option.view}
               onClick={() => changeView(option.view)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors hover:${darkMode ? "bg-[#333]" : "bg-gray-300"
-                } focus:outline-none`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors hover:${
+                darkMode ? "bg-[#333]" : "bg-gray-300"
+              } focus:outline-none`}
             >
               {option.name}
             </button>

@@ -1,7 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Peer, { MediaConnection } from "peerjs";
 import io from "socket.io-client";
-import { Mic, MicOff, Video, VideoOff, PhoneOff, MessageSquare } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  PhoneOff,
+  MessageSquare,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 // import { useNavigate } from "react-router-dom";
 import { getApiUrl } from "../utils/api";
@@ -10,11 +17,55 @@ import ChatRoom from "../components/ChatRoom";
 
 // Generate unique peer ID
 const generateSafePeerId = (roomCode: string, userId: string): string => {
-  const safeUserId = userId.replace(/[^a-zA-Z0-9]/g, '');
-  const safeRoomCode = roomCode.replace(/[^a-zA-Z0-9]/g, '');
+  const safeUserId = userId.replace(/[^a-zA-Z0-9]/g, "");
+  const safeRoomCode = roomCode.replace(/[^a-zA-Z0-9]/g, "");
   const random = Math.random().toString(36).slice(2, 8); // Random suffix
   const timestamp = Date.now().toString(36);
   return `${safeRoomCode}-${safeUserId}-${timestamp}-${random}`;
+};
+
+// Function to fetch Metered TURN server credentials
+const fetchMeteredTurnServers = async () => {
+  try {
+    const apiKey = import.meta.env.VITE_METERED_API_KEY;
+    const response = await fetch(
+      `https://pixbay.metered.live/api/v1/turn/credentials?apiKey=${apiKey}`,
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch TURN credentials: ${response.statusText}`,
+      );
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching Metered TURN credentials:", error);
+    // Fallback to environment variable credentials if API fetch fails
+    return [
+      {
+        urls: import.meta.env.VITE_METERED_STUN_URL,
+      },
+      {
+        urls: import.meta.env.VITE_METERED_TURN_URL1,
+        username: import.meta.env.VITE_METERED_TURN_USERNAME,
+        credential: import.meta.env.VITE_METERED_TURN_CREDENTIAL,
+      },
+      {
+        urls: import.meta.env.VITE_METERED_TURN_URL2,
+        username: import.meta.env.VITE_METERED_TURN_USERNAME,
+        credential: import.meta.env.VITE_METERED_TURN_CREDENTIAL,
+      },
+      {
+        urls: import.meta.env.VITE_METERED_TURN_URL3,
+        username: import.meta.env.VITE_METERED_TURN_USERNAME,
+        credential: import.meta.env.VITE_METERED_TURN_CREDENTIAL,
+      },
+      {
+        urls: import.meta.env.VITE_METERED_TURN_URL4,
+        username: import.meta.env.VITE_METERED_TURN_USERNAME,
+        credential: import.meta.env.VITE_METERED_TURN_CREDENTIAL,
+      },
+    ];
+  }
 };
 
 interface RoomProps {
@@ -46,6 +97,70 @@ const VideoRoom: React.FC<RoomProps> = ({
   const isMountedRef = useRef(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  const connectToNewUser = useCallback(
+    (peerId: string, stream: MediaStream) => {
+      if (!peerRef.current || peerId === myPeerIdRef.current) return;
+      console.log("Initiating call to:", peerId);
+      const call = peerRef.current.call(peerId, stream);
+      peerCallsRef.current[peerId] = call;
+      call.on("stream", (remoteStream) => {
+        if (isMountedRef.current) {
+          console.log("Received remote stream from call to:", peerId);
+          addRemoteStream(remoteStream, peerId);
+        }
+      });
+      call.on("close", () => {
+        console.log("Call closed with:", peerId);
+        removeRemoteStream(peerId);
+      });
+      call.on("error", (err) => {
+        console.error("Call error with", peerId, ":", err);
+        removeRemoteStream(peerId);
+      });
+    },
+    [],
+  ); // Empty dependency array since all used values are refs
+
+  const addRemoteStream = (stream: MediaStream, peerId: string) => {
+    if (addedPeerIdsRef.current.has(peerId)) return;
+    addedPeerIdsRef.current.add(peerId);
+
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.className =
+      "w-[200px] h-[150px] bg-[#1F1F1F] rounded-lg object-cover border border-[#2C2C2C]";
+    (video as HTMLVideoElement & { peerId: string }).peerId = peerId;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "relative";
+    wrapper.appendChild(video);
+
+    const label = document.createElement("div");
+    label.className =
+      "absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs font-medium rounded-b-lg";
+    label.textContent = `User ${peerId.slice(0, 6)}`;
+    wrapper.appendChild(label);
+
+    remoteVideosRef.current?.appendChild(wrapper);
+  };
+
+  const removeRemoteStream = (peerId: string) => {
+    if (addedPeerIdsRef.current.has(peerId)) {
+      addedPeerIdsRef.current.delete(peerId);
+    }
+    if (remoteVideosRef.current) {
+      Array.from(remoteVideosRef.current.children).forEach((child) => {
+        if (
+          "peerId" in child &&
+          (child as { peerId: string }).peerId === peerId
+        ) {
+          child.remove();
+        }
+      });
+    }
+  };
+
   useEffect(() => {
     if (!roomCode || !userId) {
       setError("Missing room code or user ID");
@@ -58,22 +173,27 @@ const VideoRoom: React.FC<RoomProps> = ({
     socketRef.current = io(getApiUrl(), {
       query: { roomCode, userId },
       path: "/socket.io",
-      transports: ['polling'],
+      transports: ["polling"], // Try WebSocket first, fall back to polling
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       timeout: 10000,
     });
 
-    socketRef.current.on('connect_error', (err) => {
-      console.error('Socket.IO connect error:', err.message, err);
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Socket.IO connect error:", err.message, err);
       if (isMountedRef.current) {
         setError(`Connection failed: ${err.message}. Retrying...`);
       }
     });
 
-    socketRef.current.on('connect', () => {
-      console.log('Socket.IO connected:', socketRef.current?.id, 'Transport:', socketRef.current?.io.engine.transport.name);
+    socketRef.current.on("connect", () => {
+      console.log(
+        "Socket.IO connected:",
+        socketRef.current?.id,
+        "Transport:",
+        socketRef.current?.io.engine.transport.name,
+      );
       if (isMountedRef.current) {
         setError(null);
       }
@@ -83,37 +203,47 @@ const VideoRoom: React.FC<RoomProps> = ({
     const safePeerId = generateSafePeerId(roomCode, userId);
     myPeerIdRef.current = safePeerId;
 
-    // Initialize PeerJS
-    peerRef.current = new Peer(safePeerId, {
-      host: new URL(getApiUrl()).hostname,
-      port: process.env.NODE_ENV === "production" ? 443 : 5000,
-      path: "/peerjs",
-      secure: process.env.NODE_ENV === "production",
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:stun1.l.google.com:19302" },
-          {
-            urls: "turn:numb.viagenie.ca",
-            username: "webrtc@live.com",
-            credential: "muazkh",
-          }, // Free TURN server for testing
-        ],
-      },
-      debug: 3,
-    });
+    // Initialize PeerJS with Metered TURN servers
+    const initializePeer = async () => {
+      try {
+        // Fetch TURN server credentials from Metered
+        const iceServers = await fetchMeteredTurnServers();
+        console.log("Using Metered TURN servers");
 
-    peerRef.current.on('open', (id) => {
-      console.log('PeerJS connected with ID:', id);
-      socketRef.current?.emit('join-room', roomCode, id);
-    });
+        peerRef.current = new Peer(safePeerId, {
+          host: new URL(getApiUrl()).hostname,
+          port: process.env.NODE_ENV === "production" ? 443 : 5000,
+          path: "/peerjs",
+          secure: process.env.NODE_ENV === "production",
+          config: {
+            iceServers: iceServers,
+          },
+          debug: 3,
+        });
 
-    peerRef.current.on('error', (err) => {
-      console.error('PeerJS error:', err);
-      if (isMountedRef.current) {
-        setError(`PeerJS error: ${err.message}`);
+        peerRef.current.on("open", (id) => {
+          console.log("PeerJS connected with ID:", id);
+          socketRef.current?.emit("join-room", roomCode, id);
+        });
+
+        peerRef.current.on("error", (err) => {
+          console.error("PeerJS error:", err);
+          if (isMountedRef.current) {
+            setError(`PeerJS error: ${err.message}`);
+          }
+        });
+
+        // Initialize media stream
+        await initializeMediaStream();
+      } catch (err) {
+        console.error("Failed to initialize peer connection:", err);
+        if (isMountedRef.current) {
+          setError(
+            `Failed to initialize connection: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       }
-    });
+    };
 
     // Initialize media stream
     const initializeMediaStream = async () => {
@@ -128,35 +258,38 @@ const VideoRoom: React.FC<RoomProps> = ({
         }
 
         // Handle incoming calls
-        peerRef.current?.on('call', (call: MediaConnection) => {
-          console.log('Receiving call from:', call.peer);
+        peerRef.current?.on("call", (call: MediaConnection) => {
+          console.log("Receiving call from:", call.peer);
           peerCallsRef.current[call.peer] = call;
           call.answer(stream);
-          call.on('stream', (remoteStream) => {
+          call.on("stream", (remoteStream) => {
             if (isMountedRef.current) {
-              console.log('Received remote stream from:', call.peer);
+              console.log("Received remote stream from:", call.peer);
               addRemoteStream(remoteStream, call.peer);
             }
           });
-          call.on('close', () => {
-            console.log('Call closed with:', call.peer);
+          call.on("close", () => {
+            console.log("Call closed with:", call.peer);
             removeRemoteStream(call.peer);
           });
-          call.on('error', (err) => {
-            console.error('Call error with', call.peer, ':', err);
+          call.on("error", (err) => {
+            console.error("Call error with", call.peer, ":", err);
             removeRemoteStream(call.peer);
           });
         });
 
         // Handle user connection
-        socketRef.current?.on('user-connected', (peerId: string) => {
+        socketRef.current?.on("user-connected", (peerId: string) => {
           if (peerId !== myPeerIdRef.current) {
-            console.log('User connected event received for:', peerId);
+            console.log("User connected event received for:", peerId);
             connectToNewUser(peerId, stream);
             // Retry connection if no stream after 5 seconds
             setTimeout(() => {
-              if (!addedPeerIdsRef.current.has(peerId) && isMountedRef.current) {
-                console.log('Retrying call to:', peerId);
+              if (
+                !addedPeerIdsRef.current.has(peerId) &&
+                isMountedRef.current
+              ) {
+                console.log("Retrying call to:", peerId);
                 connectToNewUser(peerId, stream);
               }
             }, 5000);
@@ -164,20 +297,22 @@ const VideoRoom: React.FC<RoomProps> = ({
         });
 
         // Handle user disconnection
-        socketRef.current?.on('user-disconnected', (peerId: string) => {
-          console.log('User disconnected:', peerId);
+        socketRef.current?.on("user-disconnected", (peerId: string) => {
+          console.log("User disconnected:", peerId);
           removeRemoteStream(peerId);
           delete peerCallsRef.current[peerId];
         });
-      } catch (err: any) {
-        console.error('Media access error:', err);
+      } catch (err: unknown) {
+        console.error("Media access error:", err);
         if (isMountedRef.current) {
-          setError('Failed to access camera/microphone. Please check permissions.');
+          setError(
+            "Failed to access camera/microphone. Please check permissions.",
+          );
         }
       }
     };
 
-    initializeMediaStream();
+    initializePeer();
 
     // Cleanup
     return () => {
@@ -197,63 +332,7 @@ const VideoRoom: React.FC<RoomProps> = ({
         addedPeerIdsRef.current.clear();
       }, 1000);
     };
-  }, [roomCode, userId, initialMuted, initialVideoOff]);
-
-  const connectToNewUser = (peerId: string, stream: MediaStream) => {
-    if (!peerRef.current || peerId === myPeerIdRef.current) return;
-    console.log('Initiating call to:', peerId);
-    const call = peerRef.current.call(peerId, stream);
-    peerCallsRef.current[peerId] = call;
-    call.on('stream', (remoteStream) => {
-      if (isMountedRef.current) {
-        console.log('Received remote stream from call to:', peerId);
-        addRemoteStream(remoteStream, peerId);
-      }
-    });
-    call.on('close', () => {
-      console.log('Call closed with:', peerId);
-      removeRemoteStream(peerId);
-    });
-    call.on('error', (err) => {
-      console.error('Call error with', peerId, ':', err);
-      removeRemoteStream(peerId);
-    });
-  };
-
-  const addRemoteStream = (stream: MediaStream, peerId: string) => {
-    if (addedPeerIdsRef.current.has(peerId)) return;
-    addedPeerIdsRef.current.add(peerId);
-
-    const video = document.createElement('video');
-    video.srcObject = stream;
-    video.autoplay = true;
-    video.className = 'w-[200px] h-[150px] bg-[#1F1F1F] rounded-lg object-cover border border-[#2C2C2C]';
-    (video as any).peerId = peerId;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'relative';
-    wrapper.appendChild(video);
-
-    const label = document.createElement('div');
-    label.className = 'absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs font-medium rounded-b-lg';
-    label.textContent = `User ${peerId.slice(0, 6)}`;
-    wrapper.appendChild(label);
-
-    remoteVideosRef.current?.appendChild(wrapper);
-  };
-
-  const removeRemoteStream = (peerId: string) => {
-    if (addedPeerIdsRef.current.has(peerId)) {
-      addedPeerIdsRef.current.delete(peerId);
-    }
-    if (remoteVideosRef.current) {
-      Array.from(remoteVideosRef.current.children).forEach((child) => {
-        if ((child as any).peerId === peerId) {
-          child.remove();
-        }
-      });
-    }
-  };
+  }, [roomCode, userId, initialMuted, initialVideoOff, connectToNewUser]);
 
   const toggleMute = () => {
     if (localStreamRef.current) {
@@ -285,7 +364,9 @@ const VideoRoom: React.FC<RoomProps> = ({
       className="flex h-screen bg-[#0F0F0F] text-white"
     >
       {/* Main Content Area */}
-      <div className={`flex flex-col flex-1 transition-all duration-300 ${isChatOpen ? 'mr-96' : ''}`}>
+      <div
+        className={`flex flex-col flex-1 transition-all duration-300 ${isChatOpen ? "mr-96" : ""}`}
+      >
         {/* Error Display */}
         <AnimatePresence>
           {error && (
@@ -327,7 +408,10 @@ const VideoRoom: React.FC<RoomProps> = ({
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-[#1F1F1F]">
                   <div className="text-center">
-                    <VideoOff size={32} className="text-gray-500 mx-auto mb-2" />
+                    <VideoOff
+                      size={32}
+                      className="text-gray-500 mx-auto mb-2"
+                    />
                     <span className="text-gray-400 text-sm">Camera Off</span>
                   </div>
                 </div>
@@ -365,10 +449,11 @@ const VideoRoom: React.FC<RoomProps> = ({
             {/* Mute Button */}
             <motion.button
               onClick={toggleMute}
-              className={`p-3 rounded-full transition-all duration-200 ${isMuted
-                ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30'
-                : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
-                }`}
+              className={`p-3 rounded-full transition-all duration-200 ${
+                isMuted
+                  ? "bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30"
+                  : "bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]"
+              }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -378,10 +463,11 @@ const VideoRoom: React.FC<RoomProps> = ({
             {/* Video Button */}
             <motion.button
               onClick={toggleVideo}
-              className={`p-3 rounded-full transition-all duration-200 ${isVideoOff
-                ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30'
-                : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
-                }`}
+              className={`p-3 rounded-full transition-all duration-200 ${
+                isVideoOff
+                  ? "bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30"
+                  : "bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]"
+              }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -391,10 +477,11 @@ const VideoRoom: React.FC<RoomProps> = ({
             {/* Chat Button */}
             <motion.button
               onClick={toggleChat}
-              className={`p-3 rounded-full transition-all duration-200 ${isChatOpen
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
-                : 'bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]'
-                }`}
+              className={`p-3 rounded-full transition-all duration-200 ${
+                isChatOpen
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30"
+                  : "bg-[#2C2C2C] text-gray-300 border border-[#3C3C3C] hover:bg-[#3C3C3C]"
+              }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >

@@ -47,7 +47,9 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
     try {
       const token = await getToken();
       const response = await axios.get(
-        getApiEndpoint(`api/workspaces/${encodeURIComponent(workspaceName)}/members`),
+        getApiEndpoint(
+          `api/workspaces/${encodeURIComponent(workspaceName)}/members`,
+        ),
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -145,10 +147,11 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
         </p>
         <button
           onClick={fetchWorkspaceMembers}
-          className={`mt-4 rounded-md px-4 py-2 text-sm transition-colors ${darkMode
+          className={`mt-4 rounded-md px-4 py-2 text-sm transition-colors ${
+            darkMode
               ? "bg-[#2C2C2C] text-white hover:bg-[#3C3C3C]"
               : "bg-gray-200 text-black hover:bg-gray-300"
-            }`}
+          }`}
         >
           Try Again
         </button>
@@ -270,10 +273,11 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
         className={`border-t p-4 flex justify-center ${darkMode ? "border-[#2C2C2C]" : "border-gray-300"}`}
       >
         <motion.button
-          className={`flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${darkMode
+          className={`flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            darkMode
               ? "bg-emerald-600 text-white hover:bg-emerald-700"
               : "bg-emerald-500 text-white hover:bg-emerald-600"
-            }`}
+          }`}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

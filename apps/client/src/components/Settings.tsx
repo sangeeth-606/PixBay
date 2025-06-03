@@ -80,7 +80,9 @@ export function Settings({
         const email = user.emailAddresses[0].emailAddress;
 
         const response = await axios.get(
-          api.getApiEndpoint(`/api/users/check?email=${encodeURIComponent(email)}`),
+          api.getApiEndpoint(
+            `/api/users/check?email=${encodeURIComponent(email)}`,
+          ),
           { headers: { Authorization: `Bearer ${token}` } },
         );
 
@@ -390,10 +392,11 @@ export function Settings({
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`mb-4 rounded-md p-3 ${message.type === "success"
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300"
-                : "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300"
-                }`}
+              className={`mb-4 rounded-md p-3 ${
+                message.type === "success"
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300"
+                  : "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300"
+              }`}
             >
               {message.type === "success" ? (
                 <Check className="mr-2 inline h-5 w-5" />
@@ -425,14 +428,15 @@ export function Settings({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center whitespace-nowrap rounded-t-md px-4 py-2 text-sm font-medium ${activeTab === tab.id
-                  ? darkMode
-                    ? "border-b-2 border-emerald-500 text-emerald-500"
-                    : "border-b-2 border-emerald-600 text-emerald-600"
-                  : darkMode
-                    ? "text-gray-400 hover:text-gray-300"
-                    : "text-gray-600 hover:text-gray-800"
-                  }`}
+                className={`flex items-center whitespace-nowrap rounded-t-md px-4 py-2 text-sm font-medium ${
+                  activeTab === tab.id
+                    ? darkMode
+                      ? "border-b-2 border-emerald-500 text-emerald-500"
+                      : "border-b-2 border-emerald-600 text-emerald-600"
+                    : darkMode
+                      ? "text-gray-400 hover:text-gray-300"
+                      : "text-gray-600 hover:text-gray-800"
+                }`}
               >
                 {tab.icon}
                 {tab.label}
@@ -497,8 +501,9 @@ export function Settings({
                   <button
                     onClick={handleProfileUpdate}
                     disabled={isSaving}
-                    className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${isSaving ? "opacity-75 cursor-not-allowed" : ""
-                      }`}
+                    className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${
+                      isSaving ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     {isSaving ? (
                       <>
@@ -605,10 +610,11 @@ export function Settings({
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`inline-block rounded-md px-2 py-1 text-sm ${darkMode
-                                  ? "bg-[#2C2C2C] text-gray-200"
-                                  : "bg-gray-100 text-[#212121]"
-                                  }`}
+                                className={`inline-block rounded-md px-2 py-1 text-sm ${
+                                  darkMode
+                                    ? "bg-[#2C2C2C] text-gray-200"
+                                    : "bg-gray-100 text-[#212121]"
+                                }`}
                               >
                                 {member.role}
                               </span>
@@ -619,10 +625,11 @@ export function Settings({
                             <td className="px-4 py-3 text-right">
                               <button
                                 onClick={() => handleRemoveMember(member.id)}
-                                className={`rounded-md p-1 ${darkMode
-                                  ? "hover:bg-red-900/30 text-red-400"
-                                  : "hover:bg-red-100 text-red-600"
-                                  }`}
+                                className={`rounded-md p-1 ${
+                                  darkMode
+                                    ? "hover:bg-red-900/30 text-red-400"
+                                    : "hover:bg-red-100 text-red-600"
+                                }`}
                                 title="Remove member"
                               >
                                 <Trash2 size={16} />
@@ -655,10 +662,11 @@ export function Settings({
                       <button
                         onClick={handleInviteMember}
                         disabled={isSaving || !newMemberEmail}
-                        className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${isSaving || !newMemberEmail
-                          ? "opacity-75 cursor-not-allowed"
-                          : ""
-                          }`}
+                        className={`px-4 py-2 text-sm font-medium text-white bg-emerald-500 border border-transparent rounded-md shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out flex items-center ${
+                          isSaving || !newMemberEmail
+                            ? "opacity-75 cursor-not-allowed"
+                            : ""
+                        }`}
                       >
                         {isSaving ? (
                           <LoadingSpinner size={16} />
@@ -680,10 +688,11 @@ export function Settings({
                   <button
                     onClick={handleDeleteWorkspace}
                     disabled={isSaving}
-                    className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out border ${darkMode
-                      ? "text-red-400 bg-[#2C2C2C] hover:bg-[#333] border-[#333]"
-                      : "text-red-600 bg-white hover:bg-gray-100 border-gray-300"
-                      } flex items-center ${isSaving ? "opacity-75 cursor-not-allowed" : ""}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition duration-150 ease-in-out border ${
+                      darkMode
+                        ? "text-red-400 bg-[#2C2C2C] hover:bg-[#333] border-[#333]"
+                        : "text-red-600 bg-white hover:bg-gray-100 border-gray-300"
+                    } flex items-center ${isSaving ? "opacity-75 cursor-not-allowed" : ""}`}
                   >
                     {isSaving ? (
                       <>

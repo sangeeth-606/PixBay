@@ -1,9 +1,7 @@
 import prisma from "../db.js";
 
 export const roomSockets = (io) => {
-  // Use Map for better memory management
   const whiteboardHistory = new Map();
-  // Track connected users per room
   const connectedUsers = new Map();
 
   io.on("connection", (socket) => {
@@ -32,7 +30,6 @@ export const roomSockets = (io) => {
       socket.to(roomName).emit("user-connected", peerId);
 
       try {
-        // Fetch chat messages
         const messages = await prisma.chatMessage.findMany({
           where: { roomName: roomName },
           orderBy: { createdAt: "asc" },
@@ -85,7 +82,7 @@ export const roomSockets = (io) => {
       }
     });
 
-    // Whiteboard handling
+    // Whiteboard handling with improved history management
     socket.on("join-whiteboard", (roomCode) => {
       console.log(`User ${socket.id} joined whiteboard for room: ${roomCode}`);
       socket.join(roomCode);
@@ -96,13 +93,13 @@ export const roomSockets = (io) => {
       }
 
       // Send existing history
-      socket.emit("whiteboard-history", whiteboardHistory.get(roomCode));
+      const history = whiteboardHistory.get(roomCode) || [];
+      socket.emit("whiteboard-history", history);
     });
 
     socket.on("get-whiteboard-history", (roomCode) => {
-      if (whiteboardHistory.has(roomCode)) {
-        socket.emit("whiteboard-history", whiteboardHistory.get(roomCode));
-      }
+      const history = whiteboardHistory.get(roomCode) || [];
+      socket.emit("whiteboard-history", history);
     });
 
     socket.on("whiteboard-action", ({ roomCode, action }) => {
@@ -111,64 +108,132 @@ export const roomSockets = (io) => {
       }
 
       const history = whiteboardHistory.get(roomCode);
-      history.push(action);
+      if (history) {
+        history.push(action);
 
-      // Limit history size to prevent memory issues
-      if (history.length > 10000) {
-        history.splice(0, 1000); // Remove old actions when limit is reached
+        // Limit history size to prevent memory issues
+        if (history.length > 10000) {
+          history.splice(0, 1000);
+        }
+
+        // Broadcast to all users in room
+        io.to(roomCode).emit("whiteboard-action", action);
       }
-
-      // Broadcast to all users in room
-      io.to(roomCode).emit("whiteboard-action", action);
     });
 
-    socket.on("whiteboard-clear", (roomCode) => {
-      if (whiteboardHistory.has(roomCode)) {
+    socket.on("whiteboard-batch", ({ roomCode, actions }) => {
+      if (!whiteboardHistory.has(roomCode)) {
         whiteboardHistory.set(roomCode, []);
       }
 
       const history = whiteboardHistory.get(roomCode);
+      if (history) {
+        // Add timestamp to each action if not present
+        const timestamp = Date.now();
+        const processedActions = actions.map((action) => ({
+          ...action,
+          timestamp: action.timestamp || timestamp,
+        }));
 
-      // Optimize batch processing
-      const processedActions = actions.map((action) => ({
-        ...action,
-        timestamp: Date.now(), // Add timestamp for synchronization
-      }));
+        // Optimize storage while preserving drawing quality
+        const optimizedActions = processedActions.map((action) => {
+          if (action.points && action.points.length > 30) {
+            // Keep more points for better quality (30 instead of 20)
+            // Use adaptive sampling based on curve complexity
+            const points = action.points;
+            let result = [points[0]]; // Always keep first point
 
-      // Process actions in chunks for better performance
-      const chunkSize = 10;
-      for (let i = 0; i < processedActions.length; i += chunkSize) {
-        const chunk = processedActions.slice(i, i + chunkSize);
-        history.push(...chunk);
+            // Simplified Douglas-Peucker algorithm for point reduction
+            // while preserving curve characteristics
+            const simplifyPoints = (start, end, epsilon) => {
+              let maxDist = 0;
+              let maxIndex = 0;
 
-        // Broadcast chunk to room members
-        socket.to(roomCode).emit("whiteboard-batch", chunk);
-      }
+              // Find point with maximum distance from line
+              const startPoint = points[start];
+              const endPoint = points[end];
 
-      // Keep history size manageable
-      if (history.length > 10000) {
-        const keepLast = 5000;
-        history.splice(0, history.length - keepLast);
-        console.log(
-          `Trimmed history for room ${roomCode} to ${keepLast} actions`
-        );
+              if (end - start <= 1) return;
+
+              for (let i = start + 1; i < end; i++) {
+                const point = points[i];
+
+                // Calculate distance from point to line
+                const dx = endPoint.x - startPoint.x;
+                const dy = endPoint.y - startPoint.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+
+                let dist;
+                if (length > 0) {
+                  dist = Math.abs(
+                    (dy * point.x - dx * point.y + endPoint.x * startPoint.y - endPoint.y * startPoint.x) /
+                      length
+                  );
+                } else {
+                  dist = Math.sqrt(
+                    Math.pow(point.x - startPoint.x, 2) + Math.pow(point.y - startPoint.y, 2)
+                  );
+                }
+
+                if (dist > maxDist) {
+                  maxDist = dist;
+                  maxIndex = i;
+                }
+              }
+
+              // If max distance is greater than epsilon, recursively simplify
+              if (maxDist > epsilon) {
+                simplifyPoints(start, maxIndex, epsilon);
+                result.push(points[maxIndex]);
+                simplifyPoints(maxIndex, end, epsilon);
+              }
+            };
+
+            // Apply simplification with appropriate epsilon (tolerance)
+            // based on drawing complexity
+            const epsilon = 1.0; // Adjust for quality/size trade-off
+            simplifyPoints(0, points.length - 1, epsilon);
+            result.push(points[points.length - 1]); // Always keep last point
+
+            // Ensure we preserve pressure values for line width consistency
+            result = result.map((point) => ({
+              x: point.x,
+              y: point.y,
+              pressure: point.pressure,
+            }));
+
+            return { ...action, points: result };
+          }
+          return action;
+        });
+
+        history.push(...optimizedActions);
+
+        // Keep history size manageable
+        if (history.length > 10000) {
+          const keepLast = 5000;
+          history.splice(0, history.length - keepLast);
+          console.log(
+            `Trimmed history for room ${roomCode} to ${keepLast} actions`
+          );
+        }
+
+        // Broadcast batch to room members with original quality
+        io.to(roomCode).emit("whiteboard-batch", processedActions);
       }
     });
 
     socket.on("whiteboard-clear", (roomCode) => {
-      if (whiteboardHistory.has(roomCode)) {
-        whiteboardHistory.set(roomCode, []);
-        io.to(roomCode).emit("whiteboard-history", []);
-      }
+      const history = whiteboardHistory.get(roomCode) || [];
+      whiteboardHistory.set(roomCode, []);
+      io.to(roomCode).emit("whiteboard-history", []);
     });
 
     socket.on("whiteboard-undo", ({ roomCode }) => {
-      if (whiteboardHistory.has(roomCode)) {
-        const history = whiteboardHistory.get(roomCode);
-        if (history.length > 0) {
-          history.pop();
-          io.to(roomCode).emit("whiteboard-history", history);
-        }
+      const history = whiteboardHistory.get(roomCode) || [];
+      if (history.length > 0) {
+        history.pop();
+        io.to(roomCode).emit("whiteboard-history", history);
       }
     });
 
@@ -189,26 +254,25 @@ export const roomSockets = (io) => {
         // Check if room is completely empty
         const room = io.sockets.adapter.rooms.get(roomCode);
         if (!room || room.size === 0) {
-          // Optional: Save history to persistent storage before clearing
-          // await saveHistoryToDB(roomCode, whiteboardHistory.get(roomCode));
-
           whiteboardHistory.delete(roomCode);
           console.log(`Cleaned up whiteboard history for room: ${roomCode}`);
         }
       }
     });
 
-    // Handle errors
+    // Enhanced error handling
     socket.on("error", (error) => {
       console.error("Socket error:", error);
-      // Attempt to clean up if error occurs
       if (roomCode) {
         connectedUsers.get(roomCode)?.delete(socket.id);
       }
+
+      // Attempt to recover connection
+      if (error.message.includes("transport close")) {
+        setTimeout(() => {
+          socket.connect();
+        }, 1000);
+      }
     });
-
-    // End of socket connection handling
   });
-
-  // End of roomSockets export
 };

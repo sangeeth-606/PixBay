@@ -4,36 +4,7 @@ import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import { getApiEndpoint } from "../utils/api";
-
-// Enum definitions
-export enum TaskStatus {
-  TODO = "TODO",
-  IN_PROGRESS = "IN_PROGRESS",
-  DONE = "DONE",
-  ARCHIVED = "ARCHIVED",
-}
-
-export enum Priority {
-  HIGH = "HIGH",
-  MEDIUM = "MEDIUM",
-  LOW = "LOW",
-}
-
-export enum TaskType {
-  TASK = "TASK",
-  BUG = "BUG",
-  STORY = "STORY",
-  EPIC = "EPIC",
-}
-
-interface User {
-  id: string;
-  userId: string;
-  name: string | null;
-  email: string | null;
-  role: string;
-  joinedAt: string;
-}
+import { TaskStatus, Priority, TaskType, User } from "../utils/taskTypes";
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -89,7 +60,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       let actualUserId = assigneeId;
       if (assigneeId) {
         const selectedAssignee = workspaceMembers.find(
-          (m) => m.id === assigneeId,
+          (m) => m.id === assigneeId
         );
         if (selectedAssignee && selectedAssignee.userId) {
           actualUserId = selectedAssignee.userId;
@@ -108,8 +79,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       };
 
       const apiUrl = getApiEndpoint("/api/tasks/create");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const response = await axios.post(apiUrl, data, {
+      await axios.post(apiUrl, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

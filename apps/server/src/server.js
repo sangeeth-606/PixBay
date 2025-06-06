@@ -1,9 +1,9 @@
 // Load environment variables first, before any other imports
-import dotenv from "dotenv";
-const result = dotenv.config();
-if (result.error) {
-  console.error("⚠️ Error loading .env file:", result.error);
-}
+// import dotenv from "dotenv";
+// const result = dotenv.config();
+// if (result.error) {
+//   console.error("⚠️ Error loading .env file:", result.error);
+// }
 
 import express from "express";
 import cors from "cors";

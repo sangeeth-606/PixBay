@@ -20,6 +20,7 @@ export enum TaskType {
 
 export interface User {
   id: string;
+  userId: string; // Add this required property
   name: string | null;
   email: string | null;
   role: string;

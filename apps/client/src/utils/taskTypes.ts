@@ -11,6 +11,13 @@ export enum Priority {
   HIGH = "HIGH",
 }
 
+export enum TaskType {
+  TASK = "TASK",
+  BUG = "BUG",
+  STORY = "STORY",
+  EPIC = "EPIC",
+}
+
 export interface User {
   id: string;
   name: string | null;

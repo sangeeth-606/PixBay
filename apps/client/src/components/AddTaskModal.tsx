@@ -4,35 +4,10 @@ import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import { getApiEndpoint } from "../utils/api";
+import { TaskStatus, Priority, TaskType, User } from "../utils/taskTypes"; 
 
-// Enum definitions
-export enum TaskStatus {
-  TODO = "TODO",
-  IN_PROGRESS = "IN_PROGRESS",
-  DONE = "DONE",
-  ARCHIVED = "ARCHIVED",
-}
-
-export enum Priority {
-  HIGH = "HIGH",
-  MEDIUM = "MEDIUM",
-  LOW = "LOW",
-}
-
-export enum TaskType {
-  TASK = "TASK",
-  BUG = "BUG",
-  STORY = "STORY",
-  EPIC = "EPIC",
-}
-
-interface User {
-  id: string;
-  name: string | null;
-  email: string | null;
-  role: string;
-  joinedAt: string;
-}
+// Enum definitions - re-exported for backward compatibility
+export { TaskStatus, Priority, TaskType };
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -103,15 +78,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
       console.log("Data being sent to backend:", data);
 
-      const response = await axios.post(
-        getApiEndpoint("/api/tasks/create"),
-        data,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await axios.post(getApiEndpoint("/api/tasks/create"), data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      console.log("Task created:", response.data);
+      console.log("Task created successfully");
       onTaskAdded();
       onClose();
     } catch (error) {
@@ -211,7 +182,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     className={inputClasses}
                   >
                     {Object.values(TaskType).map((type) => (
-                      <option key={type} value={type}>
+                      <option key={type as string} value={type as string}>
                         {type}
                       </option>
                     ))}
@@ -232,7 +203,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     className={inputClasses}
                   >
                     {Object.values(Priority).map((p) => (
-                      <option key={p} value={p}>
+                      <option key={p as string} value={p as string}>
                         {p}
                       </option>
                     ))}

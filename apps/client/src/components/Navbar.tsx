@@ -37,7 +37,7 @@ function Navbar({ workspaceCode, darkMode, toggleDarkMode }: NavbarProps) {
           {darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </motion.button>
 
-        <SignIn />
+        <SignIn darkMode={darkMode} />
       </div>
     </motion.header>
   );

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import SignIn from "../components/SignIn";
 import Footer from "../components/Footer";
 import CallToAction from "../components/CallToAction";
-import ProjectsSection from "../components/ProjectsSection";
+// import ProjectsSection from "../components/ProjectsSection";
 import FeaturesSection from "../components/FeaturesSection";
 import TrustedBySection from "../components/TrustedBySection";
 import PlatFormMockup from "../icons/PlatFormMockup";
@@ -806,9 +806,6 @@ const LandingPage = () => {
 
       {/* Features Section */}
       <FeaturesSection darkMode={darkMode} />
-
-      {/* Projects Showcase Section */}
-      <ProjectsSection darkMode={darkMode} />
 
       {/* Call to Action */}
       <CallToAction darkMode={darkMode} />

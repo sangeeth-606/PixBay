@@ -1,4 +1,6 @@
+// filepath: /home/zape777/Documents/pixbay/apps/server/src/controllers/workspaceController.js
 import prisma from "../db.js";
+import { setCache, getCache, deleteCache, clearUserWorkspacesCache } from '../utils/redis.js';
 
 export const createWorkspace = async (req, res) => {
   try {
@@ -41,6 +43,9 @@ export const createWorkspace = async (req, res) => {
       },
     });
 
+    // Clear cache for this user's workspaces
+    await clearUserWorkspacesCache(email);
+
     // Respond with success
     res.status(201).json({ message: "Room created successfully", room });
   } catch (error) {
@@ -48,6 +53,7 @@ export const createWorkspace = async (req, res) => {
     res.status(500).json({ error: "failed to create workspace" });
   }
 };
+
 // to join existing workspace
 export const joinWorkspace = async (req, res) => {
   try {
@@ -73,7 +79,7 @@ export const joinWorkspace = async (req, res) => {
       return res.status(404).json({ error: "Workspace not found" });
     }
 
-    // / Check if user is already a member
+    // Check if user is already a member
     const existingMember = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: { workspaceId: workspace.id, userId: user.id },
@@ -83,19 +89,25 @@ export const joinWorkspace = async (req, res) => {
     if (existingMember) {
       return res.status(400).json({ error: "User is already a member" });
     }
+    
     const member = await prisma.workspaceMember.create({
       data: {
-        workspaceId: workspace.id, // Use the found workspace’s ID
+        workspaceId: workspace.id, // Use the found workspace's ID
         userId: user.id,
         role: "MEMBER", // Joiner gets MEMBER role
       },
     });
+    
+    // Clear cache for this user's workspaces
+    await clearUserWorkspacesCache(email);
+    
     res.status(200).json({ message: "Joined workspace successfully", member });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to join workspace" });
   }
 };
+
 // Get user's workspaces
 export const getUserWorkspaces = async (req, res) => {
   try {
@@ -108,6 +120,18 @@ export const getUserWorkspaces = async (req, res) => {
       console.log("No email found in auth data");
       return res.status(400).json({ error: "Email not found in authentication data" });
     }
+
+    // Try to get data from Redis cache first
+    const cacheKey = `user-workspaces:${email}`;
+    const cachedWorkspaces = await getCache(cacheKey);
+    
+    if (cachedWorkspaces) {
+      console.log("Returning workspaces from cache for:", email);
+      return res.status(200).json(cachedWorkspaces);
+    }
+    
+    // Cache miss, fetch from database
+    console.log("Cache miss, fetching workspaces from database for:", email);
 
     // First check if user exists
     const user = await prisma.user.findFirst({
@@ -136,6 +160,9 @@ export const getUserWorkspaces = async (req, res) => {
       role: member.role,
     }));
 
+    // Store in Redis cache (expire after 1 hour)
+    await setCache(cacheKey, workspaces, 3600);
+    
     res.status(200).json(workspaces);
   } catch (error) {
     console.error("Error in getUserWorkspaces:", error);
@@ -145,6 +172,7 @@ export const getUserWorkspaces = async (req, res) => {
     });
   }
 };
+
 export const workSpaceMembers = async (req, res) => {
   try {
     const { name } = req.params;
@@ -152,6 +180,15 @@ export const workSpaceMembers = async (req, res) => {
 
     if (!name) {
       return res.status(400).json({ error: "Workspace name is required" });
+    }
+
+    // Try to get data from Redis cache first
+    const cacheKey = `workspace-members:${name}`;
+    const cachedWorkspaceDetails = await getCache(cacheKey);
+    
+    if (cachedWorkspaceDetails) {
+      console.log("Returning workspace members from cache for:", name);
+      return res.status(200).json(cachedWorkspaceDetails);
     }
 
     // Find the workspace by name
@@ -207,12 +244,16 @@ export const workSpaceMembers = async (req, res) => {
     console.log("Returning workspace members with IDs:", 
       workspaceDetails.members.map(m => ({ memberId: m.id, userId: m.userId })));
 
+    // Cache the workspace details (expire after 30 minutes)
+    await setCache(cacheKey, workspaceDetails, 1800);
+    
     res.status(200).json(workspaceDetails);
   } catch (error) {
     console.error("Error fetching workspace members:", error);
     res.status(500).json({ error: "Failed to fetch workspace members" });
   }
 };
+
 // Get workspace by name
 export const getWorkspaceByName = async (req, res) => {
   try {
@@ -220,6 +261,15 @@ export const getWorkspaceByName = async (req, res) => {
     
     if (!name) {
       return res.status(400).json({ error: "Workspace name is required" });
+    }
+
+    // Try to get data from Redis cache first
+    const cacheKey = `workspace-detail:${name}`;
+    const cachedWorkspace = await getCache(cacheKey);
+    
+    if (cachedWorkspace) {
+      console.log("Returning workspace from cache for:", name);
+      return res.status(200).json(cachedWorkspace);
     }
 
     // Find the workspace by name
@@ -230,6 +280,9 @@ export const getWorkspaceByName = async (req, res) => {
     if (!workspace) {
       return res.status(404).json({ error: "Workspace not found" });
     }
+
+    // Cache the workspace (expire after 1 hour)
+    await setCache(cacheKey, workspace, 3600);
 
     res.status(200).json(workspace);
   } catch (error) {
@@ -285,6 +338,11 @@ export const deleteWorkspace = async (req, res) => {
     await prisma.workspace.delete({
       where: { id: workspace.id },
     });
+
+    // Clear all related caches
+    await deleteCache(`workspace-detail:${name}`);
+    await deleteCache(`workspace-members:${name}`);
+    await clearUserWorkspacesCache(email);
 
     res.status(200).json({ message: "Workspace deleted successfully" });
   } catch (error) {
@@ -347,11 +405,23 @@ export const removeWorkspaceMember = async (req, res) => {
       return res.status(400).json({ error: "You cannot remove yourself from the workspace" });
     }
 
+    // Get the user email of the member being removed for cache invalidation
+    const memberUser = await prisma.user.findUnique({
+      where: { id: memberToRemove.userId }
+    });
+    
     // Remove the member
     await prisma.workspaceMember.delete({
       where: { id: memberId }
     });
 
+    // Clear cache for both the workspace and the removed user
+    const workspaceName = memberToRemove.workspace.name;
+    await deleteCache(`workspace-members:${workspaceName}`);
+    if (memberUser && memberUser.email) {
+      await clearUserWorkspacesCache(memberUser.email);
+    }
+    
     res.status(200).json({ message: "Member removed successfully" });
   } catch (error) {
     console.error("Error removing workspace member:", error);

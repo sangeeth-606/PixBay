@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// filepath: /home/zape777/Documents/pixbay/apps/client/src/pages/LandingPage.tsx
+import { useState, useEffect, useMemo } from "react";
 import { ArrowRight, Moon, Sun, AlertCircle, X } from "lucide-react";
 import axios from "axios";
 import { useUser, useAuth } from "@clerk/clerk-react";
@@ -6,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import SignIn from "../components/SignIn";
 import Footer from "../components/Footer";
 import CallToAction from "../components/CallToAction";
-// import ProjectsSection from "../components/ProjectsSection";
 import FeaturesSection from "../components/FeaturesSection";
 import TrustedBySection from "../components/TrustedBySection";
 import PlatFormMockup from "../icons/PlatFormMockup";
@@ -18,14 +18,17 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import api from "../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  useCheckUser,
+  useUserWorkspaces,
+  useCreateWorkspace,
+  useJoinWorkspace,
+  useCreateUser,
+} from "../utils/apiHooks";
+import { useQueryClient } from "@tanstack/react-query";
 
-interface Workspace {
-  id: string | number;
-  name: string;
-}
-
+// Generate a random code for workspace names
 const WorkSpaceNameCode = () => {
   const characters = "0123456789";
   let code = "";
@@ -44,104 +47,92 @@ const LandingPage = () => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [workspaceNameInput, setWorkspaceNameInput] = useState("");
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState("");
-  const [isNameSubmitLoading, setIsNameSubmitLoading] = useState(false);
-  const [isCreateWorkspaceLoading, setIsCreateWorkspaceLoading] =
-    useState(false);
-  const [isJoinWorkspaceLoading, setIsJoinWorkspaceLoading] = useState(false);
-  // const [workspaceError, setWorkspaceError] = useState<string | null>(null);
 
-  const { isSignedIn, getToken } = useAuth();
+  // React Query setup
+  const queryClient = useQueryClient();
+
+  // Auth setup
+  const { isSignedIn } = useAuth();
   const { user } = useUser();
   const navigate = useNavigate();
 
+  // React Query hooks
+  const { data: userData, refetch: refetchUser } = useCheckUser();
+  const { data, isLoading: isWorkspacesLoading } = useUserWorkspaces();
+  // Ensure workspaces is always an array - wrapped in useMemo to avoid dependency issues
+  const workspaces = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const { mutate: createUser, isPending: isNameSubmitLoading } =
+    useCreateUser();
+  const { mutate: createWorkspace, isPending: isCreateWorkspaceLoading } =
+    useCreateWorkspace();
+  const { mutate: joinWorkspace, isPending: isJoinWorkspaceLoading } =
+    useJoinWorkspace();
+
+  // NOTE: The backend now uses Redis caching for workspaces data:
+  // - User workspaces are cached with key `user-workspaces:${email}` (1 hour TTL)
+  // - Workspace details are cached with key `workspace-detail:${name}` (1 hour TTL)
+  // - Workspace members are cached with key `workspace-members:${name}` (30 min TTL)
+  // Cache is automatically invalidated on workspace creation, joining, deletion, or member removal
+  // This provides faster response times without requiring any frontend changes
+  //
+  // ADDITIONALLY: The frontend now uses React Query for client-side caching:
+  // - Prevents redundant API requests during the user session
+  // - Automatically manages loading and error states
+  // - Provides stale-while-revalidate behavior for a smoother UX
+
   const email = user?.emailAddresses?.[0]?.emailAddress || null;
-  console.log(email);
 
-  const fetchUserData = async () => {
-    if (isSignedIn && email) {
-      try {
-        const token = await getToken();
-        console.log("Checking user with email:", email);
+  // Set email in the query client for the useCheckUser hook
+  useEffect(() => {
+    if (email) {
+      queryClient.setQueryData(["user", "email"], email);
+      refetchUser(); // Trigger the user check query
+    }
+  }, [email, queryClient, refetchUser]);
 
-        // First ensure user exists
-        const userResponse = await axios.get(
-          api.getApiEndpoint(
-            `/api/users/check?email=${encodeURIComponent(email)}`,
-          ),
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+  // Handle user data changes
+  useEffect(() => {
+    if (userData) {
+      console.log("User data response:", userData);
 
-        console.log("User data response:", userResponse.data);
-
-        if (userResponse.data.exists) {
-          setUserName(userResponse.data.name || "");
-          const shouldShowNameModal =
-            !userResponse.data.hasName || !userResponse.data.name;
-          console.log("Should show name modal:", shouldShowNameModal);
-          setShowNameModal(shouldShowNameModal);
-
-          // Only fetch workspaces after confirming user exists
-          const workspacesResponse = await axios.get(
-            api.getApiEndpoint("/api/workspaces/user"),
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-          console.log("Workspaces response:", workspacesResponse.data);
-          setWorkspaces(workspacesResponse.data);
-        } else {
-          console.log("User doesn't exist, showing name modal");
-          setShowNameModal(true);
-        }
-      } catch (error) {
-        console.error("Error checking user:", error);
+      if (userData.exists) {
+        setUserName(userData.name || "");
+        const shouldShowNameModal = !userData.hasName || !userData.name;
+        setShowNameModal(shouldShowNameModal);
+      } else {
+        console.log("User doesn't exist, showing name modal");
         setShowNameModal(true);
       }
     }
-  };
+  }, [userData]);
 
+  // Log the workspaces data when it changes
   useEffect(() => {
-    fetchUserData();
-  }, [isSignedIn, email, getToken]);
+    console.log("Workspaces state:", {
+      isArray: Array.isArray(workspaces),
+      length: workspaces?.length || 0,
+      data: workspaces,
+    });
+  }, [workspaces]);
 
-  const handleNameSubmit = async () => {
+  const handleNameSubmit = () => {
     if (userName.trim() && email) {
-      setIsNameSubmitLoading(true);
-      try {
-        const token = await getToken();
-        await axios.post(
-          api.getApiEndpoint("/api/users"),
-          {
-            email,
-            name: userName,
-            role: "MEMBER",
+      // Using the useCreateUser hook instead of direct API call
+      createUser(
+        { email, name: userName },
+        {
+          onSuccess: () => {
+            setUserName(userName);
+            setShowNameModal(false);
+            // The query invalidation is handled in the hook's onSuccess callback
           },
-          {
-            headers: { Authorization: `Bearer ${token}` },
+          onError: (error) => {
+            console.error("Error creating user:", error);
+            alert("Failed to create user. Please try again.");
           },
-        );
-
-        setUserName(userName);
-        setShowNameModal(false);
-
-        // After creating user, fetch workspaces
-        const workspacesResponse = await axios.get(
-          api.getApiEndpoint("/api/workspaces/user"),
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        setWorkspaces(workspacesResponse.data);
-      } catch (error) {
-        console.error("Error creating user:", error);
-        alert("Failed to create user. Please try again.");
-      } finally {
-        setIsNameSubmitLoading(false);
-      }
+        }
+      );
     } else {
       alert("Please enter a valid name");
     }
@@ -151,41 +142,30 @@ const LandingPage = () => {
     setShowWorkspaceModal(true);
   };
 
-  const handleCreateWorkspace = async () => {
+  const handleCreateWorkspace = () => {
     if (!isSignedIn) {
       alert("Please sign in to create a room.");
       return;
     }
 
-    setIsCreateWorkspaceLoading(true);
-    try {
-      const token = await getToken();
-      const randomCode = WorkSpaceNameCode();
-      const finalWorkspaceName = `${workspaceNameInput}-${randomCode}`;
+    const randomCode = WorkSpaceNameCode();
+    const finalWorkspaceName = `${workspaceNameInput}-${randomCode}`;
 
-      await axios.post(
-        api.getApiEndpoint("/api/workspaces/create"),
-        {
-          name: finalWorkspaceName,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      console.log("Workspace created with name:", finalWorkspaceName);
-      setShowWorkspaceModal(false);
-      navigate(`/workspace/${finalWorkspaceName}`);
-    } catch (error) {
-      console.error("Error creating workspace:", error);
-    } finally {
-      setIsCreateWorkspaceLoading(false);
-    }
+    // Use the createWorkspace hook instead of direct API call
+    createWorkspace(finalWorkspaceName, {
+      onSuccess: () => {
+        console.log("Workspace created with name:", finalWorkspaceName);
+        setShowWorkspaceModal(false);
+        navigate(`/workspace/${finalWorkspaceName}`);
+      },
+      onError: (error) => {
+        console.error("Error creating workspace:", error);
+        alert("Failed to create workspace. Please try again.");
+      },
+    });
   };
 
-  const handleJoinWorkspace = async (e: React.FormEvent) => {
+  const handleJoinWorkspace = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isSignedIn) {
@@ -199,53 +179,45 @@ const LandingPage = () => {
       return;
     }
 
-    setIsJoinWorkspaceLoading(true);
-
-    try {
-      const token = await getToken();
-      const workspaceName = roomCode;
-
-      await axios.post(
-        api.getApiEndpoint("/api/workspaces/join"),
-        { workspaceName: workspaceName },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      console.log("joined WorkSpace:", workspaceName);
-      navigate(`/workspace/${workspaceName}`);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          if (error.response.data?.message?.includes("already a member")) {
-            alert("You are already a member of this workspace!");
-            navigate(`/workspace/${roomCode}`);
-          } else {
+    // Use the joinWorkspace hook instead of direct API call
+    joinWorkspace(roomCode, {
+      onSuccess: () => {
+        console.log("Joined workspace:", roomCode);
+        navigate(`/workspace/${roomCode}`);
+      },
+      onError: (error: unknown) => {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 400) {
+            if (error.response.data?.message?.includes("already a member")) {
+              alert("You are already a member of this workspace!");
+              navigate(`/workspace/${roomCode}`);
+            } else {
+              setAlertMessage(
+                "Invalid workspace code. Please check and try again."
+              );
+              setShowAlert(true);
+            }
+          } else if (error.response?.status === 404) {
             setAlertMessage(
-              "Invalid workspace code. Please check and try again.",
+              "Workspace not found. Please check the code and try again."
             );
             setShowAlert(true);
+          } else {
+            setAlertMessage(
+              `Failed to join workspace: ${error.response?.data?.message || "Unknown error"}`
+            );
+            setShowAlert(true);
+            console.error("Error joining workspace:", error);
           }
-        } else if (error.response?.status === 404) {
-          setAlertMessage(
-            "Workspace not found. Please check the code and try again.",
-          );
-          setShowAlert(true);
         } else {
           setAlertMessage(
-            `Failed to join workspace: ${error.response?.data?.message || "Unknown error"}`,
+            "An unexpected error occurred. Please try again later."
           );
           setShowAlert(true);
           console.error("Error joining workspace:", error);
         }
-      } else {
-        setAlertMessage(
-          "An unexpected error occurred. Please try again later.",
-        );
-        setShowAlert(true);
-        console.error("Error joining workspace:", error);
-      }
-    } finally {
-      setIsJoinWorkspaceLoading(false);
-    }
+      },
+    });
   };
 
   const handleWorkspaceSelect = (value: string) => {
@@ -282,6 +254,38 @@ const LandingPage = () => {
       scale: 0.98,
       transition: { duration: 0.15, ease: "easeOut" },
     },
+  };
+
+  // Ensure we have valid workspaces to render
+  const renderWorkspaces = () => {
+    if (isWorkspacesLoading) {
+      return (
+        <div className="py-2 px-4 text-sm opacity-50">
+          Loading workspaces...
+        </div>
+      );
+    }
+
+    if (!workspaces || !Array.isArray(workspaces) || workspaces.length === 0) {
+      return (
+        <div className="py-2 px-4 text-sm opacity-50">No workspaces found</div>
+      );
+    }
+
+    return (
+      <>
+        {workspaces.map((workspace) => (
+          <SelectItem
+            key={workspace.id || Math.random().toString()}
+            value={workspace.name}
+            className={`cursor-pointer py-2 px-4 hover:bg-emerald-500/10 rounded-none
+            ${darkMode ? "focus:bg-emerald-500/20 focus:text-white" : "focus:bg-emerald-500/10"}`}
+          >
+            {workspace.name}
+          </SelectItem>
+        ))}
+      </>
+    );
   };
 
   return (
@@ -731,22 +735,7 @@ const LandingPage = () => {
                 sideOffset={5}
                 align="start"
               >
-                {workspaces.length === 0 ? (
-                  <div className="py-2 px-4 text-sm opacity-50">
-                    No workspaces found
-                  </div>
-                ) : (
-                  workspaces.map((workspace) => (
-                    <SelectItem
-                      key={workspace.id}
-                      value={workspace.name}
-                      className={`cursor-pointer py-2 px-4 hover:bg-emerald-500/10 rounded-none
-                      ${darkMode ? "focus:bg-emerald-500/20 focus:text-white" : "focus:bg-emerald-500/10"}`}
-                    >
-                      {workspace.name}
-                    </SelectItem>
-                  ))
-                )}
+                {renderWorkspaces()}
               </SelectContent>
             </Select>
           </div>

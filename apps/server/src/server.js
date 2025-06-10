@@ -19,6 +19,7 @@ import { Server } from "socket.io";
 import http from "http";
 import { ExpressPeerServer } from "peer";
 import { verifyDatabaseConnection } from "./db.js";
+import redisClient from "./utils/redis.js";
 
 // Log environment variables for debugging (only non-sensitive ones)
 console.log("Environment:", {

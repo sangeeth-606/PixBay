@@ -1,6 +1,7 @@
 // filepath: /home/zape777/Documents/pixbay/apps/server/src/controllers/workspaceController.js
 import prisma from "../db.js";
-import { setCache, getCache, deleteCache, clearUserWorkspacesCache } from '../utils/redis.js';
+import { setCache, getCache, deleteCache, clearUserWorkspacesCache, isRedisCacheAvailable } from '../utils/redis.js';
+import { withCacheInvalidation } from '../utils/transactionHelpers.js';
 
 export const createWorkspace = async (req, res) => {
   try {
@@ -23,31 +24,40 @@ export const createWorkspace = async (req, res) => {
       return res.status(400).json({ error: "User Not Found " });
     }
 
-    const Workspace = await prisma.workspace.create({
-      data: {
-        name,
-        members: {
-          create: {
-            userId: user.id,
-            role: "ADMIN", // Creator gets ADMIN role
+    // Use transaction helper for coordinated DB and cache operations
+    const { workspace, room } = await withCacheInvalidation(
+      // Database operation
+      async () => {
+        const workspace = await prisma.workspace.create({
+          data: {
+            name,
+            members: {
+              create: {
+                userId: user.id,
+                role: "ADMIN", // Creator gets ADMIN role
+              },
+            },
           },
-        },
+        });
+        
+        const room = await prisma.room.create({
+          data: {
+            name,
+            ownerId: user.id,
+          },
+        });
+        
+        return { workspace, room };
       },
-    });
-    
-
-    const room = await prisma.room.create({
-      data: {
-        name,
-        ownerId: user.id,
+      // Cache invalidation operation
+      async () => {
+        await clearUserWorkspacesCache(email);
       },
-    });
-
-    // Clear cache for this user's workspaces
-    await clearUserWorkspacesCache(email);
+      "Create workspace"
+    );
 
     // Respond with success
-    res.status(201).json({ message: "Room created successfully", room });
+    res.status(201).json({ message: "Room created successfully", workspace, room });
   } catch (error) {
     console.error("Error creating workspace:", error);
     res.status(500).json({ error: "failed to create workspace" });
@@ -334,15 +344,22 @@ export const deleteWorkspace = async (req, res) => {
       return res.status(403).json({ error: "Only admins can delete a workspace" });
     }
 
-    // Delete the workspace
-    await prisma.workspace.delete({
-      where: { id: workspace.id },
-    });
-
-    // Clear all related caches
-    await deleteCache(`workspace-detail:${name}`);
-    await deleteCache(`workspace-members:${name}`);
-    await clearUserWorkspacesCache(email);
+    // Use transaction helper for coordinated DB and cache operations
+    await withCacheInvalidation(
+      // Database operation
+      async () => {
+        return await prisma.workspace.delete({
+          where: { id: workspace.id },
+        });
+      },
+      // Cache invalidation operation
+      async () => {
+        await deleteCache(`workspace-detail:${name}`);
+        await deleteCache(`workspace-members:${name}`);
+        await clearUserWorkspacesCache(email);
+      },
+      "Delete workspace"
+    );
 
     res.status(200).json({ message: "Workspace deleted successfully" });
   } catch (error) {
@@ -410,17 +427,25 @@ export const removeWorkspaceMember = async (req, res) => {
       where: { id: memberToRemove.userId }
     });
     
-    // Remove the member
-    await prisma.workspaceMember.delete({
-      where: { id: memberId }
-    });
-
-    // Clear cache for both the workspace and the removed user
     const workspaceName = memberToRemove.workspace.name;
-    await deleteCache(`workspace-members:${workspaceName}`);
-    if (memberUser && memberUser.email) {
-      await clearUserWorkspacesCache(memberUser.email);
-    }
+    
+    // Use transaction helper to ensure DB and cache operations are more tightly coupled
+    await withCacheInvalidation(
+      // Database operation
+      async () => {
+        return await prisma.workspaceMember.delete({
+          where: { id: memberId }
+        });
+      },
+      // Cache invalidation operation
+      async () => {
+        await deleteCache(`workspace-members:${workspaceName}`);
+        if (memberUser && memberUser.email) {
+          await clearUserWorkspacesCache(memberUser.email);
+        }
+      },
+      "Remove workspace member"
+    );
     
     res.status(200).json({ message: "Member removed successfully" });
   } catch (error) {

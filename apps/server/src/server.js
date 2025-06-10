@@ -19,7 +19,8 @@ import { Server } from "socket.io";
 import http from "http";
 import { ExpressPeerServer } from "peer";
 import { verifyDatabaseConnection } from "./db.js";
-import redisClient from "./utils/redis.js";
+import redisClient, { checkRedisHealthAndReconnect } from "./utils/redis.js";
+import { redisHealthMiddleware } from "./middleware/redisHealth.js";
 
 // Log environment variables for debugging (only non-sensitive ones)
 console.log("Environment:", {
@@ -47,6 +48,9 @@ app.use(
 );
 
 app.use(express.json());
+
+// Add Redis health check middleware
+app.use(redisHealthMiddleware);
 
 const io = new Server(server, {
   cors: {
@@ -111,7 +115,19 @@ const PORT = process.env.PORT || 5000;
 // Start server only after database connection is verified
 async function startServer() {
   try {
+    // Verify database connection
     await verifyDatabaseConnection();
+    
+    // Check Redis health but don't block server startup if Redis is unavailable
+    try {
+      const isRedisConnected = await checkRedisHealthAndReconnect();
+      console.log(`Redis connection status: ${isRedisConnected ? 'Connected' : 'Disconnected'}`);
+      if (!isRedisConnected) {
+        console.warn('Server starting without Redis connection. Caching functionality will degrade gracefully.');
+      }
+    } catch (redisError) {
+      console.warn('Redis health check failed, but continuing server startup:', redisError.message);
+    }
 
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

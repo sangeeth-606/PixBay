@@ -59,7 +59,12 @@ const LandingPage = () => {
 
   // React Query hooks
   const { data: userData, refetch: refetchUser } = useCheckUser();
-  const { data, isLoading: isWorkspacesLoading } = useUserWorkspaces();
+  const {
+    data,
+    isLoading: isWorkspacesLoading,
+    isError: isWorkspacesError,
+    error: workspacesError,
+  } = useUserWorkspaces();
   // Ensure workspaces is always an array - wrapped in useMemo to avoid dependency issues
   const workspaces = useMemo(() => (Array.isArray(data) ? data : []), [data]);
   const { mutate: createUser, isPending: isNameSubmitLoading } =
@@ -262,6 +267,15 @@ const LandingPage = () => {
       return (
         <div className="py-2 px-4 text-sm opacity-50">
           Loading workspaces...
+        </div>
+      );
+    }
+
+    if (isWorkspacesError) {
+      console.error("Workspace error:", workspacesError);
+      return (
+        <div className="py-2 px-4 text-sm text-red-500">
+          Error loading workspaces. Please try again.
         </div>
       );
     }

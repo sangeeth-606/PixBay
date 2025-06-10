@@ -110,7 +110,7 @@ export function useUserWorkspaces() {
       } catch (error: unknown) {
         console.error('Error fetching workspaces:', error);
         debugInfo.current.lastError = error;
-        return [];
+        throw error; // Throw error to allow React Query to handle it
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

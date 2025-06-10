@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, CalendarIcon } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 import api from "../utils/api";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { format } from "date-fns";
+import { cn } from "../lib/utils";
 
 interface Project {
   id: string;
@@ -52,7 +57,7 @@ export function SprintFormModal({
             },
           );
           setProjects(response.data);
-        } catch (err: any) {
+        } catch (err: Error | unknown) {
           setProjectsError("Failed to fetch projects");
           console.error("Error fetching projects:", err);
         }
@@ -110,11 +115,26 @@ export function SprintFormModal({
       if (onSprintCreated) {
         onSprintCreated();
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create sprint");
+    } catch (err: Error | unknown) {
+      // Cast to axios error response
+      type ErrorWithResponse = { response?: { data?: { error?: string } } };
+      const errorResponse = (err as ErrorWithResponse).response;
+      setError(errorResponse?.data?.error || "Failed to create sprint");
       console.error("Error creating sprint:", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    if (date) {
+      setStartDate(format(date, "yyyy-MM-dd"));
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    if (date) {
+      setEndDate(format(date, "yyyy-MM-dd"));
     }
   };
 
@@ -269,12 +289,31 @@ export function SprintFormModal({
                     >
                       Start Date
                     </label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className={inputStyles}
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left",
+                            !startDate && "text-gray-500",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {startDate
+                            ? format(new Date(startDate), "PPP")
+                            : "Select start date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={startDate ? new Date(startDate) : undefined}
+                          onSelect={handleStartDateChange}
+                          initialFocus
+                          required={false}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <div>
@@ -285,12 +324,31 @@ export function SprintFormModal({
                     >
                       End Date
                     </label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className={inputStyles}
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left",
+                            !endDate && "text-gray-500",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {endDate
+                            ? format(new Date(endDate), "PPP")
+                            : "Select end date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={endDate ? new Date(endDate) : undefined}
+                          onSelect={handleEndDateChange}
+                          initialFocus
+                          required={false}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 

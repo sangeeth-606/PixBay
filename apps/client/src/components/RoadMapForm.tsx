@@ -1,5 +1,10 @@
 import { FC } from "react";
-import { XIcon, AlertCircle, Loader2 } from "lucide-react";
+import { XIcon, AlertCircle, Loader2, CalendarIcon } from "lucide-react";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { format } from "date-fns";
+// import { cn } from "../lib/utils";
 
 export type MilestoneStatus =
   | "UPCOMING"
@@ -141,18 +146,35 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 >
                   Start Date
                 </label>
-                <input
-                  type="date"
-                  id="startDate"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                    darkMode
-                      ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
-                  } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
-                  required
-                />
+                <Popover>
+                  <PopoverTrigger>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left ${
+                        darkMode
+                          ? "bg-[#2C2C2C] text-white"
+                          : "bg-white text-gray-900"
+                      }`}
+                    >
+                      {startDate
+                        ? format(new Date(startDate), "PPP")
+                        : "Select start date"}
+                      <CalendarIcon className="w-5 h-5 ml-auto" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={startDate ? new Date(startDate) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          setStartDate(format(date, "yyyy-MM-dd"));
+                        }
+                      }}
+                      className="rounded-b-lg"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* End Date */}
@@ -165,18 +187,35 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                 >
                   End Date
                 </label>
-                <input
-                  type="date"
-                  id="endDate"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={`mt-1 block w-full px-4 py-2.5 rounded-lg border-2 shadow-sm transition-all duration-200 ease-in-out ${
-                    darkMode
-                      ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:bg-white"
-                  } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-emerald-500/50`}
-                  required
-                />
+                <Popover>
+                  <PopoverTrigger>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left ${
+                        darkMode
+                          ? "bg-[#2C2C2C] text-white"
+                          : "bg-white text-gray-900"
+                      }`}
+                    >
+                      {endDate
+                        ? format(new Date(endDate), "PPP")
+                        : "Select end date"}
+                      <CalendarIcon className="w-5 h-5 ml-auto" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={endDate ? new Date(endDate) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          setEndDate(format(date, "yyyy-MM-dd"));
+                        }
+                      }}
+                      className="rounded-b-lg"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 

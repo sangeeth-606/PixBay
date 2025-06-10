@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import { useAuth } from '@clerk/clerk-react';
-import api from './api';
-import { useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import api from "./api";
+import { useRef } from "react";
 
 interface Workspace {
   id: string | number;
@@ -23,17 +23,19 @@ export function useCheckUser() {
   const queryClient = useQueryClient();
 
   return useQuery<User | null>({
-    queryKey: ['user', 'check'],
+    queryKey: ["user", "check"],
     queryFn: async () => {
       const token = await getToken();
-      const email = queryClient.getQueryData<string>(['user', 'email']);
+      const email = queryClient.getQueryData<string>(["user", "email"]);
       if (!email) return null;
 
       const response = await axios.get<User>(
-        api.getApiEndpoint(`/api/users/check?email=${encodeURIComponent(email)}`),
+        api.getApiEndpoint(
+          `/api/users/check?email=${encodeURIComponent(email)}`,
+        ),
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data;
     },
@@ -55,19 +57,25 @@ export function useUserWorkspaces() {
   });
 
   return useQuery<Workspace[], Error>({
-    queryKey: ['workspaces'],
+    queryKey: ["workspaces"],
     queryFn: async () => {
       try {
         const token = await getToken();
-        console.log('Making workspaces API request with token:', token ? 'Token exists' : 'No token');
+        console.log(
+          "Making workspaces API request with token:",
+          token ? "Token exists" : "No token",
+        );
 
-        const response = await axios.get(api.getApiEndpoint('/api/workspaces/user'), {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          api.getApiEndpoint("/api/workspaces/user"),
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
 
         debugInfo.current.lastResponse = response.data;
 
-        console.log('Workspaces API response:', {
+        console.log("Workspaces API response:", {
           data: response.data,
           isArray: Array.isArray(response.data),
           type: typeof response.data,
@@ -76,17 +84,17 @@ export function useUserWorkspaces() {
         });
 
         if (Array.isArray(response.data)) {
-          console.log('Returning direct array from API');
+          console.log("Returning direct array from API");
           return response.data;
         }
 
         if (!response.data) {
-          console.log('No data in response, returning empty array');
+          console.log("No data in response, returning empty array");
           return [];
         }
 
-        if (typeof response.data === 'object' && response.data !== null) {
-          const possibleArrayProps = ['workspaces', 'data', 'items', 'results'];
+        if (typeof response.data === "object" && response.data !== null) {
+          const possibleArrayProps = ["workspaces", "data", "items", "results"];
 
           for (const prop of possibleArrayProps) {
             const value = (response.data as Record<string, unknown>)[prop];
@@ -105,16 +113,18 @@ export function useUserWorkspaces() {
           }
         }
 
-        console.warn('Failed to find workspaces array in response, returning empty array');
+        console.warn(
+          "Failed to find workspaces array in response, returning empty array",
+        );
         return [];
       } catch (error: unknown) {
-        console.error('Error fetching workspaces:', error);
+        console.error("Error fetching workspaces:", error);
         debugInfo.current.lastError = error;
         throw error; // Throw error to allow React Query to handle it
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30,   // 30 minutes (React Query v5+)
+    gcTime: 1000 * 60 * 30, // 30 minutes (React Query v5+)
   });
 }
 
@@ -127,16 +137,16 @@ export function useCreateWorkspace() {
     mutationFn: async (name: string) => {
       const token = await getToken();
       const response = await axios.post(
-        api.getApiEndpoint('/api/workspaces/create'),
+        api.getApiEndpoint("/api/workspaces/create"),
         { name },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
 }
@@ -150,16 +160,16 @@ export function useJoinWorkspace() {
     mutationFn: async (workspaceName: string) => {
       const token = await getToken();
       const response = await axios.post(
-        api.getApiEndpoint('/api/workspaces/join'),
+        api.getApiEndpoint("/api/workspaces/join"),
         { workspaceName },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
 }
@@ -173,17 +183,17 @@ export function useCreateUser() {
     mutationFn: async ({ email, name }: { email: string; name: string }) => {
       const token = await getToken();
       const response = await axios.post(
-        api.getApiEndpoint('/api/users'),
-        { email, name, role: 'MEMBER' },
+        api.getApiEndpoint("/api/users"),
+        { email, name, role: "MEMBER" },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
 }

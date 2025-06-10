@@ -17,7 +17,7 @@ import {
   SelectContent,
   SelectItem,
   SelectValue,
-} from "@/components/ui/select";
+} from "../components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   useCheckUser,
@@ -136,7 +136,7 @@ const LandingPage = () => {
             console.error("Error creating user:", error);
             alert("Failed to create user. Please try again.");
           },
-        }
+        },
       );
     } else {
       alert("Please enter a valid name");
@@ -198,25 +198,25 @@ const LandingPage = () => {
               navigate(`/workspace/${roomCode}`);
             } else {
               setAlertMessage(
-                "Invalid workspace code. Please check and try again."
+                "Invalid workspace code. Please check and try again.",
               );
               setShowAlert(true);
             }
           } else if (error.response?.status === 404) {
             setAlertMessage(
-              "Workspace not found. Please check the code and try again."
+              "Workspace not found. Please check the code and try again.",
             );
             setShowAlert(true);
           } else {
             setAlertMessage(
-              `Failed to join workspace: ${error.response?.data?.message || "Unknown error"}`
+              `Failed to join workspace: ${error.response?.data?.message || "Unknown error"}`,
             );
             setShowAlert(true);
             console.error("Error joining workspace:", error);
           }
         } else {
           setAlertMessage(
-            "An unexpected error occurred. Please try again later."
+            "An unexpected error occurred. Please try again later.",
           );
           setShowAlert(true);
           console.error("Error joining workspace:", error);
@@ -292,8 +292,11 @@ const LandingPage = () => {
           <SelectItem
             key={workspace.id || Math.random().toString()}
             value={workspace.name}
-            className={`cursor-pointer py-2 px-4 hover:bg-emerald-500/10 rounded-none
-            ${darkMode ? "focus:bg-emerald-500/20 focus:text-white" : "focus:bg-emerald-500/10"}`}
+            className={
+              darkMode
+                ? "hover:bg-[#333]/80 focus:bg-[#333] data-[highlighted]:bg-[#333]"
+                : "hover:bg-gray-100/80 focus:bg-gray-100 data-[highlighted]:bg-gray-100"
+            }
           >
             {workspace.name}
           </SelectItem>
@@ -308,7 +311,7 @@ const LandingPage = () => {
     >
       {/* Navigation */}
       <nav
-        className={` sticky top-0 px-6 py-4 flex justify-between items-center border-b ${
+        className={`sticky top-0 px-6 py-4 flex justify-between items-center border-b z-50 ${
           darkMode
             ? "bg-[#171717] border-[#2C2C2C]"
             : "bg-white border-gray-200"
@@ -719,34 +722,25 @@ const LandingPage = () => {
               onValueChange={handleWorkspaceSelect}
             >
               <SelectTrigger
-                className={`border-2 !h-[56px] min-h-[56px] py-4 px-6 w-[200px] font-medium shadow-sm 
-                focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 rounded-md
-                flex items-center justify-between text-base
+                className={`w-[200px] font-medium shadow-md rounded-md transition-all duration-200
                 ${
                   darkMode
-                    ? "bg-[#2C2C2C] border-[#333] text-white hover:border-emerald-500/50"
-                    : "bg-white border-gray-200 text-[#212121] hover:border-emerald-500/50"
-                }`}
-                style={{ height: "56px" }}
+                    ? "bg-[#262626] border border-[#444] text-white hover:bg-[#2A2A2A] hover:border-[#555]"
+                    : "bg-white/90 border border-gray-100 text-[#212121] hover:bg-white hover:shadow-lg"
+                } focus:ring-1 focus:ring-offset-1 ${darkMode ? "focus:ring-gray-500" : "focus:ring-gray-200"}`}
+                style={{ height: "50px" }}
               >
-                <SelectValue
-                  placeholder="All your spaces"
-                  className={`text-left truncate ${
-                    darkMode
-                      ? "text-white placeholder:text-white"
-                      : "text-[#212121] placeholder:text-[#212121]"
-                  }`}
-                />
+                <SelectValue placeholder="All your spaces" />
               </SelectTrigger>
               <SelectContent
-                className={`w-[200px] rounded-md border-2 
+                className={`rounded-md overflow-hidden shadow-lg border-0 backdrop-blur-sm
                 ${
                   darkMode
-                    ? "bg-[#2C2C2C] border-[#333] text-white"
-                    : "bg-white border-gray-200 text-[#212121]"
+                    ? "bg-[#282828]/90 text-white"
+                    : "bg-white/95 text-[#212121]"
                 }`}
                 position="popper"
-                sideOffset={5}
+                sideOffset={8}
                 align="start"
               >
                 {renderWorkspaces()}

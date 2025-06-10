@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, CalendarIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../utils/api"; // Import the API utility
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { format } from "date-fns";
+import { cn } from "../lib/utils";
 
 type SprintStatus = "PLANNING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "ARCHIVED";
@@ -435,14 +440,40 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
                   setNewTask({ ...newTask, storyPoints: e.target.value })
                 }
               />
-              <input
-                type="date"
-                className={`w-full p-2 mb-2 ${inputBg} ${textColor} rounded-md`}
-                value={newTask.dueDate}
-                onChange={(e) =>
-                  setNewTask({ ...newTask, dueDate: e.target.value })
-                }
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mb-2",
+                      !newTask.dueDate && "text-muted-foreground",
+                      `${inputBg} ${textColor} rounded-md`,
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newTask.dueDate ? (
+                      format(new Date(newTask.dueDate), "PPP")
+                    ) : (
+                      <span>Select due date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={
+                      newTask.dueDate ? new Date(newTask.dueDate) : undefined
+                    }
+                    onSelect={(date) =>
+                      setNewTask({
+                        ...newTask,
+                        dueDate: date ? format(date, "yyyy-MM-dd") : "",
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <div className="flex justify-end gap-2">
                 <button
                   className={`px-4 py-2 rounded-md ${buttonBg} ${textColor}`}

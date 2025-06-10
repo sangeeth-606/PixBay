@@ -175,6 +175,7 @@ const Nub: React.FC<NubProps> = ({ selected, darkMode }) => {
 
   useEffect(() => {
     moveNub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   const moveNub = () => {
@@ -221,83 +222,77 @@ const Products: React.FC<ComponentProps> = ({ darkMode }) => {
           <h3
             className={`mb-2 text-sm font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
           >
-            Startup
+            Collaboration
           </h3>
           <a
             href="#"
             className={`mb-1 block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            Bookkeeping
+            Video Meetings
           </a>
           <a
             href="#"
             className={`block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            Invoicing
+            Real-time Chat
           </a>
         </div>
         <div>
           <h3
             className={`mb-2 text-sm font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
           >
-            Scaleup
+            Project Management
           </h3>
           <a
             href="#"
             className={`mb-1 block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            Live Coaching
+            Kanban Boards
           </a>
           <a
             href="#"
             className={`mb-1 block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            Reviews
+            Sprint Planning
           </a>
           <a
             href="#"
             className={`block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            Tax/VAT
+            Task Management
           </a>
         </div>
         <div>
           <h3
             className={`mb-2 text-sm font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
           >
-            Enterprise
+            Workspaces
           </h3>
           <a
             href="#"
             className={`mb-1 block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            White glove
+            Create Room
           </a>
           <a
             href="#"
             className={`mb-1 block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            SOX Compliance
+            Join Existing
           </a>
           <a
             href="#"
             className={`block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
           >
-            Staffing
-          </a>
-          <a
-            href="#"
-            className={`block text-sm ${darkMode ? "text-neutral-400 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
-          >
-            More
+            Member Management
           </a>
         </div>
       </div>
 
       <button
-        className={`ml-auto mt-4 flex items-center gap-1 text-sm ${darkMode ? "text-indigo-300" : "text-indigo-600"}`}
+        className={`ml-auto mt-4 flex items-center gap-1 text-sm ${darkMode ? "text-emerald-300" : "text-emerald-600"}`}
       >
-        <span>View more</span>
+        <span>Explore all features</span>
         <FiArrowRight />
       </button>
     </div>
@@ -318,9 +313,9 @@ const Pricing: React.FC<ComponentProps> = ({ darkMode }) => {
         }`}
       >
         <FiHome
-          className={`mb-2 text-xl ${darkMode ? "text-indigo-300" : "text-indigo-600"}`}
+          className={`mb-2 text-xl ${darkMode ? "text-emerald-300" : "text-emerald-600"}`}
         />
-        <span className="text-xs">Startup</span>
+        <span className="text-xs">Remote Teams</span>
       </a>
       <a
         href="#"
@@ -331,9 +326,9 @@ const Pricing: React.FC<ComponentProps> = ({ darkMode }) => {
         }`}
       >
         <FiBarChart2
-          className={`mb-2 text-xl ${darkMode ? "text-indigo-300" : "text-indigo-600"}`}
+          className={`mb-2 text-xl ${darkMode ? "text-emerald-300" : "text-emerald-600"}`}
         />
-        <span className="text-xs">Scaleup</span>
+        <span className="text-xs">Project Planning</span>
       </a>
       <a
         href="#"
@@ -344,9 +339,9 @@ const Pricing: React.FC<ComponentProps> = ({ darkMode }) => {
         }`}
       >
         <FiPieChart
-          className={`mb-2 text-xl ${darkMode ? "text-indigo-300" : "text-indigo-600"}`}
+          className={`mb-2 text-xl ${darkMode ? "text-emerald-300" : "text-emerald-600"}`}
         />
-        <span className="text-xs">Enterprise</span>
+        <span className="text-xs">Agile Workflows</span>
       </a>
     </div>
   );
@@ -357,46 +352,42 @@ const Blog: React.FC<ComponentProps> = ({ darkMode }) => {
     <div>
       <div className="grid grid-cols-2 gap-2">
         <a href="#">
-          <img
-            className="mb-2 h-14 w-full rounded object-cover"
-            src="/imgs/blog/4.png"
-            alt="Placeholder image"
-          />
+          <div className="mb-2 h-14 w-full rounded object-cover bg-emerald-500/20 flex items-center justify-center">
+            <span className="text-emerald-500 font-bold">Guide</span>
+          </div>
           <h4
             className={`mb-0.5 text-sm font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
           >
-            Lorem ipsum dolor
+            Getting Started with Pixbay
           </h4>
           <p
             className={`text-xs ${darkMode ? "text-neutral-400" : "text-gray-600"}`}
           >
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet illo
-            quidem eos.
+            Learn how to create your first workspace and invite team members for
+            seamless collaboration.
           </p>
         </a>
         <a href="#">
-          <img
-            className="mb-2 h-14 w-full rounded object-cover"
-            src="/imgs/blog/5.png"
-            alt="Placeholder image"
-          />
+          <div className="mb-2 h-14 w-full rounded object-cover bg-emerald-500/20 flex items-center justify-center">
+            <span className="text-emerald-500 font-bold">Tutorial</span>
+          </div>
           <h4
             className={`mb-0.5 text-sm font-medium ${darkMode ? "text-white" : "text-gray-900"}`}
           >
-            Lorem ipsum dolor
+            Video Meeting Best Practices
           </h4>
           <p
             className={`text-xs ${darkMode ? "text-neutral-400" : "text-gray-600"}`}
           >
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet illo
-            quidem eos.
+            Tips and tricks to make your virtual meetings more productive and
+            engaging with Pixbay.
           </p>
         </a>
       </div>
       <button
-        className={`ml-auto mt-4 flex items-center gap-1 text-sm ${darkMode ? "text-indigo-300" : "text-indigo-600"}`}
+        className={`ml-auto mt-4 flex items-center gap-1 text-sm ${darkMode ? "text-emerald-300" : "text-emerald-600"}`}
       >
-        <span>View more</span>
+        <span>Browse more resources</span>
         <FiArrowRight />
       </button>
     </div>
@@ -405,15 +396,15 @@ const Blog: React.FC<ComponentProps> = ({ darkMode }) => {
 
 const TABS = [
   {
-    title: "Products",
+    title: "Features",
     Component: Products,
   },
   {
-    title: "Pricing",
+    title: "Solutions",
     Component: Pricing,
   },
   {
-    title: "Blog",
+    title: "Resources",
     Component: Blog,
   },
 ].map((n, idx) => ({ ...n, id: idx + 1 }));

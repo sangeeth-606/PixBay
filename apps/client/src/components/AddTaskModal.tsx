@@ -5,6 +5,12 @@ import { useAuth } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import { getApiEndpoint } from "../utils/api";
 import { TaskStatus, Priority, TaskType, User } from "../utils/taskTypes";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "../lib/utils";
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -29,7 +35,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>(Priority.MEDIUM);
   const [taskType, setTaskType] = useState<TaskType>(TaskType.TASK);
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [assigneeId, setAssigneeId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +48,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       setDescription("");
       setPriority(Priority.MEDIUM);
       setTaskType(TaskType.TASK);
-      setDueDate("");
+      setDueDate(undefined);
       setAssigneeId("");
       setError("");
     }
@@ -60,7 +66,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       let actualUserId = assigneeId;
       if (assigneeId) {
         const selectedAssignee = workspaceMembers.find(
-          (m) => m.id === assigneeId
+          (m) => m.id === assigneeId,
         );
         if (selectedAssignee && selectedAssignee.userId) {
           actualUserId = selectedAssignee.userId;
@@ -74,7 +80,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         type: taskType,
         status: TaskStatus.TODO,
         projectId,
-        dueDate: dueDate || undefined,
+        dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : undefined,
         assigneeId: actualUserId || undefined,
       };
 
@@ -218,13 +224,53 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   >
                     Due Date
                   </label>
-                  <input
-                    id="dueDate"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className={inputClasses}
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        id="dueDate"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dueDate && "text-muted-foreground",
+                          darkMode
+                            ? "bg-[#2C2C2C] border-gray-700 text-white hover:bg-[#2C2C2C] focus:border-blue-500 focus:ring-blue-500 focus-visible:ring-offset-gray-900"
+                            : "bg-white border-gray-300 text-gray-900 hover:bg-white focus:border-blue-500 focus:ring-blue-500",
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dueDate ? (
+                          format(dueDate, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className={cn(
+                        "w-auto p-0",
+                        darkMode &&
+                          "bg-[#2C2C2C] border-gray-700 text-white shadow-lg shadow-black/20",
+                      )}
+                      align="start"
+                      side="top"
+                      sideOffset={4}
+                      avoidCollisions={true}
+                      collisionBoundary={document.body}
+                      sticky="always"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={dueDate}
+                        onSelect={setDueDate}
+                        initialFocus
+                        className={
+                          darkMode
+                            ? "bg-[#2C2C2C] text-white [&_button:not(:disabled)]:text-white [&_.rdp-day_button:hover]:bg-gray-600 [&_.rdp-day_button[aria-selected=true]]:bg-emerald-600 [&_.rdp-nav_button:hover]:bg-gray-600 [&_.rdp-caption_dropdowns]:text-white"
+                            : "[&_.rdp-day_button[aria-selected=true]]:bg-emerald-600 [&_.rdp-day_button:hover]:bg-gray-100"
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div>

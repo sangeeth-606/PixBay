@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, CalendarIcon } from "lucide-react";
 import { getApiEndpoint } from "../utils/api";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { format } from "date-fns";
+// import { cn } from "../lib/utils";
 
 export enum TaskStatus {
   TODO = "TODO",
@@ -361,12 +366,44 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
                   >
                     Due Date
                   </label>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className={inputStyles}
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start text-left font-normal ${
+                          !dueDate && "text-muted-foreground"
+                        } ${
+                          darkMode
+                            ? "bg-[#171717] border-[#2C2C2C] text-white hover:bg-[#1A1A1A]"
+                            : "bg-white border-gray-200 text-[#212121] hover:bg-gray-50"
+                        }`}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dueDate ? (
+                          format(new Date(dueDate), "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className={`w-auto p-0 ${
+                        darkMode && "bg-[#171717] border-[#2C2C2C] text-white"
+                      }`}
+                      align="start"
+                      side="top"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={dueDate ? new Date(dueDate) : undefined}
+                        onSelect={(date) =>
+                          setDueDate(date ? format(date, "yyyy-MM-dd") : "")
+                        }
+                        initialFocus
+                        className={darkMode ? "bg-[#171717] text-white" : ""}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <button

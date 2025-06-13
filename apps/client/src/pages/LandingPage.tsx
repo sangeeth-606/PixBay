@@ -136,7 +136,7 @@ const LandingPage = () => {
             console.error("Error creating user:", error);
             alert("Failed to create user. Please try again.");
           },
-        },
+        }
       );
     } else {
       alert("Please enter a valid name");
@@ -198,25 +198,25 @@ const LandingPage = () => {
               navigate(`/workspace/${roomCode}`);
             } else {
               setAlertMessage(
-                "Invalid workspace code. Please check and try again.",
+                "Invalid workspace code. Please check and try again."
               );
               setShowAlert(true);
             }
           } else if (error.response?.status === 404) {
             setAlertMessage(
-              "Workspace not found. Please check the code and try again.",
+              "Workspace not found. Please check the code and try again."
             );
             setShowAlert(true);
           } else {
             setAlertMessage(
-              `Failed to join workspace: ${error.response?.data?.message || "Unknown error"}`,
+              `Failed to join workspace: ${error.response?.data?.message || "Unknown error"}`
             );
             setShowAlert(true);
             console.error("Error joining workspace:", error);
           }
         } else {
           setAlertMessage(
-            "An unexpected error occurred. Please try again later.",
+            "An unexpected error occurred. Please try again later."
           );
           setShowAlert(true);
           console.error("Error joining workspace:", error);
@@ -318,7 +318,11 @@ const LandingPage = () => {
         }`}
       >
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-emerald-500 rounded-md"></div>
+          <img
+            src="/favicon_io/favicon-32x32.png"
+            alt="Pixbay Logo"
+            className="w-8 h-8"
+          />
           <span className="text-xl font-bold">Pixbay </span>
         </div>
         <div className="flex items-center space-x-6">

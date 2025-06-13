@@ -12,7 +12,11 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div className="flex items-center space-x-2 mb-6 md:mb-0">
-            <div className="w-8 h-8 bg-emerald-500 rounded-md"></div>
+            <img
+              src="/favicon_io/favicon-32x32.png"
+              alt="Pixbay Logo"
+              className="w-8 h-8"
+            />
             <span className="text-xl font-bold">Pixbay </span>
           </div>
           <div className="flex space-x-4">
@@ -58,7 +62,7 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
                 >
                   <Icon />
                 </a>
-              ),
+              )
             )}
           </div>
         </div>

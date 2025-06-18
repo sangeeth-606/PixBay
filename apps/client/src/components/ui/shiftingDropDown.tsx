@@ -149,7 +149,7 @@ const Content: React.FC<ContentProps> = ({ selected, dir, darkMode }) => {
                   x: dir === "l" ? 100 : dir === "r" ? -100 : 0,
                 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
+                transition={{ duration: 0.25, ease: [0.42, 0, 0.58, 1] }}
               >
                 <t.Component darkMode={darkMode} />
               </motion.div>
@@ -200,7 +200,7 @@ const Nub: React.FC<NubProps> = ({ selected, darkMode }) => {
         clipPath: "polygon(0 0, 100% 0, 50% 50%, 0% 100%)",
       }}
       animate={{ left }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
+      transition={{ duration: 0.25, ease: [0.42, 0, 0.58, 1] }}
       className={`absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-tl border ${
         darkMode
           ? "border-neutral-600 bg-neutral-900"

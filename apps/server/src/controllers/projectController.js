@@ -1,4 +1,5 @@
 import prisma from '../db.js'
+import { setCache, getCache, deleteCache } from '../utils/redis.js';
 
 export const createProject = async (req, res) => {
     try {
@@ -43,6 +44,11 @@ export const createProject = async (req, res) => {
           key: name.slice(0, 3).toUpperCase(),
         },
       });
+
+      // Invalidate workspace projects cache
+      await deleteCache(`workspace-projects:${workspaceName}`);
+      // Invalidate workspace members cache
+      await deleteCache(`workspace-members:${workspaceName}`);
   
       res.status(201).json({ message: 'Project created successfully', project });
     } catch (error) {
@@ -58,6 +64,17 @@ export const getWorkspaceProjects = async (req, res) => {
       if (!workspaceName) {
         return res.status(400).json({ error: 'Workspace name is required' });
       }
+
+      // Try to get from cache first
+      const cacheKey = `workspace-projects:${workspaceName}`;
+      const cachedProjects = await getCache(cacheKey);
+      
+      if (cachedProjects) {
+        console.log(`[Cache] ✅ Cache HIT: Found projects for workspace ${workspaceName} in cache`);
+        return res.status(200).json(cachedProjects);
+      }
+
+      console.log(`[Cache] ❌ Cache MISS: No projects found in cache for workspace ${workspaceName}, fetching from database...`);
 
       const workspace = await prisma.workspace.findFirst({
         where: { name: workspaceName },
@@ -98,6 +115,10 @@ export const getWorkspaceProjects = async (req, res) => {
         return res.status(403).json({ error: 'User is not a member of this workspace' });
       }
 
+      // Cache the projects for 1 hour
+      await setCache(cacheKey, workspace.projects, 3600);
+      console.log(`[Cache] ✅ Successfully cached projects for workspace ${workspaceName}`);
+
       res.status(200).json(workspace.projects);
     } catch (error) {
       console.error(error);
@@ -112,6 +133,17 @@ export const getProjectInfo = async(req, res) => {
     if (!projectId) {
       return res.status(400).json({ error: 'Project ID is required' });
     }
+
+    // Try to get from cache first
+    const cacheKey = `project-info:${projectId}`;
+    const cachedProjectInfo = await getCache(cacheKey);
+    
+    if (cachedProjectInfo) {
+      console.log(`[Cache] ✅ Cache HIT: Found project info for ${projectId} in cache`);
+      return res.status(200).json(cachedProjectInfo);
+    }
+
+    console.log(`[Cache] ❌ Cache MISS: No project info found in cache for ${projectId}, fetching from database...`);
     
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -164,6 +196,10 @@ export const getProjectInfo = async(req, res) => {
       teamMembers: memberCount,
       // Add other project properties as needed
     };
+
+    // Cache the project info for 1 hour
+    await setCache(cacheKey, projectData, 3600);
+    console.log(`[Cache] ✅ Successfully cached project info for ${projectId}`);
     
     res.status(200).json(projectData);
   } catch (error) {
@@ -230,6 +266,11 @@ export const deleteProject = async (req, res) => {
     await prisma.project.delete({
       where: { id: projectId }
     });
+
+    // Invalidate caches
+    await deleteCache(`project-info:${projectId}`);
+    await deleteCache(`workspace-projects:${project.workspace.name}`);
+    await deleteCache(`workspace-members:${project.workspace.name}`);
     
     res.status(200).json({ message: 'Project deleted successfully' });
   } catch (error) {

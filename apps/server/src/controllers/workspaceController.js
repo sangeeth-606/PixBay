@@ -1,13 +1,13 @@
 // filepath: /home/zape777/Documents/pixbay/apps/server/src/controllers/workspaceController.js
 import prisma from "../db.js";
-import { setCache, getCache, deleteCache, clearUserWorkspacesCache, isRedisCacheAvailable } from '../utils/redis.js';
+import { setCache, getCache, deleteCache, isRedisCacheAvailable } from '../utils/redis.js';
 import { withCacheInvalidation } from '../utils/transactionHelpers.js';
 
 export const createWorkspace = async (req, res) => {
   try {
     console.log("createWorkspace called", req.body, req.auth);
     const { name } = req.body;
-    const { emailAddresses } = req.auth; // will be getting aftewr clerk middleware check
+    const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
 
     if (!name) {
@@ -51,7 +51,7 @@ export const createWorkspace = async (req, res) => {
       },
       // Cache invalidation operation
       async () => {
-        await clearUserWorkspacesCache(email);
+        await deleteCache(`user-workspaces:${email}`);
       },
       "Create workspace"
     );
@@ -100,16 +100,25 @@ export const joinWorkspace = async (req, res) => {
       return res.status(400).json({ error: "User is already a member" });
     }
     
-    const member = await prisma.workspaceMember.create({
-      data: {
-        workspaceId: workspace.id, // Use the found workspace's ID
-        userId: user.id,
-        role: "MEMBER", // Joiner gets MEMBER role
+    // Use transaction helper for coordinated DB and cache operations
+    const { member } = await withCacheInvalidation(
+      // Database operation
+      async () => {
+        const member = await prisma.workspaceMember.create({
+          data: {
+            workspaceId: workspace.id,
+            userId: user.id,
+            role: "MEMBER", // Joiner gets MEMBER role
+          },
+        });
+        return { member };
       },
-    });
-    
-    // Clear cache for this user's workspaces
-    await clearUserWorkspacesCache(email);
+      // Cache invalidation operation
+      async () => {
+        await deleteCache(`user-workspaces:${email}`);
+      },
+      "Join workspace"
+    );
     
     res.status(200).json({ message: "Joined workspace successfully", member });
   } catch (error) {
@@ -356,7 +365,7 @@ export const deleteWorkspace = async (req, res) => {
       async () => {
         await deleteCache(`workspace-detail:${name}`);
         await deleteCache(`workspace-members:${name}`);
-        await clearUserWorkspacesCache(email);
+        await deleteCache(`user-workspaces:${email}`);
       },
       "Delete workspace"
     );
@@ -441,7 +450,7 @@ export const removeWorkspaceMember = async (req, res) => {
       async () => {
         await deleteCache(`workspace-members:${workspaceName}`);
         if (memberUser && memberUser.email) {
-          await clearUserWorkspacesCache(memberUser.email);
+          await deleteCache(`user-workspaces:${memberUser.email}`);
         }
       },
       "Remove workspace member"

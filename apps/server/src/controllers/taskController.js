@@ -1,4 +1,6 @@
 import prisma from "../db.js";
+import { setCache, getCache, deleteCache } from '../utils/redis.js';
+import { withCacheInvalidation } from '../utils/transactionHelpers.js';
 
 export const createTask = async (req, res) => {
   try {
@@ -94,69 +96,81 @@ export const createTask = async (req, res) => {
       }
     }
 
-    // Create the task with the workspace name as parentId
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description: description || null,
-        projectId,
-        type: type || "TASK",
-        priority: priority || "MEDIUM",
-        status: status || "TODO",
-        dueDate: dueDate ? new Date(dueDate) : null,
-        creatorId: user.id,
-        assigneeId: assigneeId && assigneeId.trim() !== '' ? assigneeId : null,
-        parentId: workspace.name,
-      },
-    });
+    console.log(`[Cache] Creating new task and invalidating caches...`);
 
-    // Log activity for task creation
-    try {
-      await prisma.activity.create({
-        data: {
-          type: "CREATED",
-          content: `Task "${task.title}" was created`,
-          userId: user.id,
-          taskId: task.id,
-        },
-      });
-    } catch (activityError) {
-      console.error("Failed to log activity:", activityError);
-    }
-
-    // Create a notification for the creator
-    try {
-      await prisma.notification.create({
-        data: {
-          title: `You Created a Task: ${task.title}`,
-          content: `You have created a new task: ${task.title} in project ${projectId}`,
-          userId: user.id,
-          isRead: false,
-        },
-      });
-    } catch (notificationError) {
-      console.error("Failed to create notification:", notificationError);
-    }
-
-    // Create a notification for the assignee (if there is one)
-    if (assigneeId && assigneeId.trim() !== '') {
-      try {
-        await prisma.notification.create({
+    // Use transaction helper for coordinated DB and cache operations
+    const { task } = await withCacheInvalidation(
+      // Database operation
+      async () => {
+        const task = await prisma.task.create({
           data: {
-            title: `New Task Assigned: ${task.title}`,
-            content: `You have been assigned a new task: ${task.title} in project ${projectId}`,
-            userId: assigneeId,
-            isRead: false,
+            title,
+            description: description || null,
+            projectId,
+            type: type || "TASK",
+            priority: priority || "MEDIUM",
+            status: status || "TODO",
+            dueDate: dueDate ? new Date(dueDate) : null,
+            creatorId: user.id,
+            assigneeId: assigneeId && assigneeId.trim() !== '' ? assigneeId : null,
+            parentId: workspace.name,
           },
         });
-      } catch (notificationError) {
-        console.error("Failed to create notification:", notificationError);
-      }
-    }
+
+        // Log activity for task creation
+        try {
+          await prisma.activity.create({
+            data: {
+              type: "CREATED",
+              content: `Task "${task.title}" was created`,
+              userId: user.id,
+              taskId: task.id,
+            },
+          });
+        } catch (activityError) {
+          console.error("Failed to log activity:", activityError);
+        }
+
+        // Create notifications
+        try {
+          await prisma.notification.create({
+            data: {
+              title: `You Created a Task: ${task.title}`,
+              content: `You have created a new task: ${task.title} in project ${projectId}`,
+              userId: user.id,
+              isRead: false,
+            },
+          });
+
+          if (assigneeId && assigneeId.trim() !== '') {
+            await prisma.notification.create({
+              data: {
+                title: `New Task Assigned: ${task.title}`,
+                content: `You have been assigned a new task: ${task.title} in project ${projectId}`,
+                userId: assigneeId,
+                isRead: false,
+              },
+            });
+          }
+        } catch (notificationError) {
+          console.error("Failed to create notification:", notificationError);
+        }
+
+        return { task };
+      },
+      // Cache invalidation operation
+      async () => {
+        console.log(`[Cache] 🗑️ Invalidating caches for project ${projectId} and workspace ${workspace.name}...`);
+        await deleteCache(`project-tasks:${projectId}`);
+        await deleteCache(`workspace-tasks:${workspace.name}`);
+        console.log(`[Cache] ✅ Successfully invalidated caches`);
+      },
+      "Create task"
+    );
 
     res.status(201).json({ message: "Task created successfully", task });
   } catch (error) {
-    console.error("Task creation error:", error);
+    console.error("[Cache] ❌ Error in createTask:", error);
     res.status(500).json({ error: "Failed to create task" });
   }
 };
@@ -164,9 +178,22 @@ export const createTask = async (req, res) => {
 // Get tasks for a project
 export const getProjectTasks = async (req, res) => {
   try {
-    const { projectId } = req.params; // From URL
+    const { projectId } = req.params;
     const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
+
+    console.log(`[Cache] Attempting to get tasks for project ${projectId} from cache...`);
+
+    // Try to get from cache first
+    const cacheKey = `project-tasks:${projectId}`;
+    const cachedTasks = await getCache(cacheKey);
+    
+    if (cachedTasks) {
+      console.log(`[Cache] ✅ Cache HIT: Found ${cachedTasks.length} tasks for project ${projectId} in cache`);
+      return res.status(200).json(cachedTasks);
+    }
+
+    console.log(`[Cache] ❌ Cache MISS: No tasks found in cache for project ${projectId}, fetching from database...`);
 
     // Find user by email
     const user = await prisma.user.findFirst({
@@ -200,7 +227,7 @@ export const getProjectTasks = async (req, res) => {
     if (!workspaceMember) {
       return res
         .status(403)
-        .json({ error: "User is not a member of the project’s workspace" });
+        .json({ error: "User is not a member of the project's workspace" });
     }
 
     // Fetch tasks for the project
@@ -212,9 +239,14 @@ export const getProjectTasks = async (req, res) => {
       },
     });
 
+    console.log(`[Cache] 📝 Caching ${tasks.length} tasks for project ${projectId}...`);
+    // Cache the tasks for 1 hour
+    await setCache(cacheKey, tasks, 3600);
+    console.log(`[Cache] ✅ Successfully cached tasks for project ${projectId}`);
+
     res.status(200).json(tasks);
   } catch (error) {
-    console.error(error);
+    console.error("[Cache] ❌ Error in getProjectTasks:", error);
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
@@ -253,7 +285,7 @@ export const deleteTask = async (req, res) => {
       return res.status(404).json({ error: "Task not found" });
     }
 
-    // Check if user is a member of the workspace (uncommented for consistency)
+    // Check if user is a member of the workspace
     const workspaceMember = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
@@ -279,28 +311,44 @@ export const deleteTask = async (req, res) => {
         .json({ error: "You don't have permission to delete this task" });
     }
 
-    // Log activity for task deletion
-    try {
-      await prisma.activity.create({
-        data: {
-          type: "DELETED",
-          content: `Task "${task.title}" was deleted`,
-          userId: user.id,
-          taskId: task.id,
-        },
-      });
-    } catch (activityError) {
-      console.error("Failed to log activity:", activityError);
-    }
+    console.log(`[Cache] Deleting task ${taskId} and invalidating caches...`);
 
-    // Delete the task
-    await prisma.task.delete({
-      where: { id: taskId },
-    });
+    // Use transaction helper for coordinated DB and cache operations
+    await withCacheInvalidation(
+      // Database operation
+      async () => {
+        // Log activity for task deletion
+        try {
+          await prisma.activity.create({
+            data: {
+              type: "DELETED",
+              content: `Task "${task.title}" was deleted`,
+              userId: user.id,
+              taskId: task.id,
+            },
+          });
+        } catch (activityError) {
+          console.error("Failed to log activity:", activityError);
+        }
+
+        // Delete the task
+        await prisma.task.delete({
+          where: { id: taskId },
+        });
+      },
+      // Cache invalidation operation
+      async () => {
+        console.log(`[Cache] 🗑️ Invalidating caches for project ${task.projectId} and workspace ${task.parentId}...`);
+        await deleteCache(`project-tasks:${task.projectId}`);
+        await deleteCache(`workspace-tasks:${task.parentId}`);
+        console.log(`[Cache] ✅ Successfully invalidated caches`);
+      },
+      "Delete task"
+    );
 
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
-    console.error(error);
+    console.error("[Cache] ❌ Error in deleteTask:", error);
     res.status(500).json({ error: "Failed to delete task" });
   }
 };
@@ -308,9 +356,22 @@ export const deleteTask = async (req, res) => {
 // Get tasks by workspace name
 export const getTasksByWorkspaceName = async (req, res) => {
   try {
-    const { workspaceName } = req.params; // Workspace name passed as a URL parameter
+    const { workspaceName } = req.params;
     const { emailAddresses } = req.auth;
     const email = emailAddresses?.[0]?.emailAddress;
+
+    console.log(`[Cache] Attempting to get tasks for workspace ${workspaceName} from cache...`);
+
+    // Try to get from cache first
+    const cacheKey = `workspace-tasks:${workspaceName}`;
+    const cachedTasks = await getCache(cacheKey);
+    
+    if (cachedTasks) {
+      console.log(`[Cache] ✅ Cache HIT: Found ${cachedTasks.length} tasks for workspace ${workspaceName} in cache`);
+      return res.status(200).json(cachedTasks);
+    }
+
+    console.log(`[Cache] ❌ Cache MISS: No tasks found in cache for workspace ${workspaceName}, fetching from database...`);
 
     // Find user by email
     const user = await prisma.user.findFirst({
@@ -356,9 +417,14 @@ export const getTasksByWorkspaceName = async (req, res) => {
       },
     });
 
+    console.log(`[Cache] 📝 Caching ${tasks.length} tasks for workspace ${workspaceName}...`);
+    // Cache the tasks for 1 hour
+    await setCache(cacheKey, tasks, 3600);
+    console.log(`[Cache] ✅ Successfully cached tasks for workspace ${workspaceName}`);
+
     res.status(200).json(tasks);
   } catch (error) {
-    console.error(error);
+    console.error("[Cache] ❌ Error in getTasksByWorkspaceName:", error);
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
@@ -432,40 +498,54 @@ export const updateTask = async (req, res) => {
         .json({ error: "You don't have permission to update this task" });
     }
 
-    // Prepare data for update
-    const updatedData = {
-      title: title ?? task.title,
-      description: description ?? task.description,
-      type: type ?? task.type,
-      priority: priority ?? task.priority,
-      status: status ?? task.status,
-      dueDate: dueDate ? new Date(dueDate) : task.dueDate,
-      assigneeId: assigneeId ?? task.assigneeId,
-    };
+    console.log(`[Cache] Updating task ${taskId} and invalidating caches...`);
 
-    // Update the task
-    const updatedTask = await prisma.task.update({
-      where: { id: taskId },
-      data: updatedData,
-    });
+    // Use transaction helper for coordinated DB and cache operations
+    const { updatedTask } = await withCacheInvalidation(
+      // Database operation
+      async () => {
+        const updatedTask = await prisma.task.update({
+          where: { id: taskId },
+          data: {
+            title: title ?? task.title,
+            description: description ?? task.description,
+            type: type ?? task.type,
+            priority: priority ?? task.priority,
+            status: status ?? task.status,
+            dueDate: dueDate ? new Date(dueDate) : task.dueDate,
+            assigneeId: assigneeId ?? task.assigneeId,
+          },
+        });
 
-    // Log activity for task update
-    try {
-      await prisma.activity.create({
-        data: {
-          type: "UPDATED",
-          content: `Task "${updatedTask.title}" was updated`,
-          userId: user.id,
-          taskId: updatedTask.id,
-        },
-      });
-    } catch (activityError) {
-      console.error("Failed to log activity:", activityError);
-    }
+        // Log activity for task update
+        try {
+          await prisma.activity.create({
+            data: {
+              type: "UPDATED",
+              content: `Task "${updatedTask.title}" was updated`,
+              userId: user.id,
+              taskId: updatedTask.id,
+            },
+          });
+        } catch (activityError) {
+          console.error("Failed to log activity:", activityError);
+        }
+
+        return { updatedTask };
+      },
+      // Cache invalidation operation
+      async () => {
+        console.log(`[Cache] 🗑️ Invalidating caches for project ${task.projectId} and workspace ${task.parentId}...`);
+        await deleteCache(`project-tasks:${task.projectId}`);
+        await deleteCache(`workspace-tasks:${task.parentId}`);
+        console.log(`[Cache] ✅ Successfully invalidated caches`);
+      },
+      "Update task"
+    );
 
     res.status(200).json({ message: "Task updated successfully", updatedTask });
   } catch (error) {
-    console.error(error);
+    console.error("[Cache] ❌ Error in updateTask:", error);
     res.status(500).json({ error: "Failed to update task" });
   }
 };

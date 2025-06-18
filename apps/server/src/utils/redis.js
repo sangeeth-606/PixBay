@@ -130,19 +130,4 @@ export const checkRedisHealthAndReconnect = async () => {
   return isRedisConnected;
 };
 
-export const clearUserWorkspacesCache = async (email) => {
-  if (!isRedisConnected) {
-    console.warn('Redis not connected, skipping cache clear operation');
-    return false;
-  }
-  
-  try {
-    await redisClient.del(`user-workspaces:${email}`);
-    return true;
-  } catch (error) {
-    console.error('Redis cache clear error:', error);
-    return false;
-  }
-};
-
 export default redisClient;

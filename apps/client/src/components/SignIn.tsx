@@ -2,11 +2,10 @@ import {
   SignedIn,
   SignedOut,
   useClerk,
-  UserButton,
   useUser,
 } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import { useState } from "react";
 import FullScreenModal from "./FullScreenModal";
 import CustomSignInForm from "./CustomSignInForm";
 import PlatFormMockup from "../icons/PlatFormMockup";
@@ -151,7 +150,7 @@ function SignIn({ darkMode = false }: SignInProps) {
 }
 
 function UserProfilePopover() {
-  const { user, openUserProfile } = useUser();
+  const { user } = useUser();
   const { signOut, openUserProfile: openProfileModal } = useClerk();
 
   if (!user) return null;

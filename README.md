@@ -1,7 +1,7 @@
 # PixBay
 
 [Client](https://www.pixbay.space/)
-[Server](pixbay-gb4u.onrender.com)
+[Server](https://kalpixbay.onrender.com)
 
 ## Project Name: PixBay
 

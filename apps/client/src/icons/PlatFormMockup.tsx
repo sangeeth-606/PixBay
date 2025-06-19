@@ -19,10 +19,12 @@ const PlatFormMockup = ({ darkMode = false }: PlatFormMockupProps) => {
         </div>
         <div
           className={`px-4 py-1 rounded-md text-xs ${
-            darkMode ? "bg-[#2C2C2C]" : "bg-gray-200"
+            darkMode
+              ? "bg-[#23272f] text-gray-200"
+              : "bg-gray-200 text-gray-700"
           }`}
         >
-          pixbay.workspace/room/XYZ-123
+          pixbay.space/workspace/xyz-1234
         </div>
         <div className="flex items-center space-x-3">
           <VideoIcon size={16} className="text-emerald-500" />

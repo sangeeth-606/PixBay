@@ -62,7 +62,7 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
                 >
                   <Icon />
                 </a>
-              )
+              ),
             )}
           </div>
         </div>

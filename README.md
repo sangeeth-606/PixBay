@@ -1,116 +1,90 @@
-# PixBay
-
+# PixBay Workspace
 [Client](https://www.pixbay.space/)
 [Server](https://kalpixbay.onrender.com)
 
-## Project Name: PixBay
 
-### What It Is
+PixBay Workspace is an all-in-one collaborative platform designed for teams to manage projects, collaborate in real-time, and access a suite of powerful tools. It combines video conferencing, interactive whiteboards, real-time chat, project management, and documentation into a single, unified workspace.
 
-PixBay Workspace is an all-in-one collaborative platform designed for teams to manage projects, collaborate in real-time, and access a suite of powerful tools. It combines video conferencing, interactive whiteboards, real-time chat, project management, documentation, and more into a single, unified workspace.
+Inspired by tools like Notion, Jira, and Kanban, PixBay is tailored for small to medium-sized teams—especially remote or distributed ones—offering a seamless and engaging experience with unique features like a virtual office space and AI assistance.
 
-Inspired by tools like Notion, Atlassian(jira), and Kanban boards, PixBay is tailored for small to medium-sized teams—especially remote or distributed ones—offering a seamless and engaging experience with unique features like a virtual office space, AI assistance, and gamification.
+## ✨ Features
 
----
+- **Real-Time Collaboration**:
+    - **Video Conferencing**: Host meetings for up to 10 users per room with one-click access using WebRTC.
+    - **Interactive Whiteboard**: Collaborate on a shared canvas with real-time synchronization.
+    - **Real-Time Chat**: Communicate instantly with team members within project rooms.
+- **Project Management**:
+    - **Kanban Boards**: Organize tasks with drag-and-drop functionality.
+    - **Task Assignments & Deadlines**: Assign tasks and set due dates.
+    - **Project Overview**: Monitor progress with stats and deadlines.
+- **Additional Tools**:
+    - **Calendar Integration**: Schedule meetings and track deadlines.
+    - **Member Management**: Manage team roles and statuses.
+    - **Notification Inbox**: Receive updates on tasks and messages.
+    - **Customizable Dashboard**: Arrange widgets to fit your workflow.
 
-## Features
+## 🚀 Tech Stack
 
-### Real-Time Collaboration Tools
+- **Frontend**: React, TypeScript, Tailwind CSS, Vite
+- **Backend**: Node.js, Express, Socket.IO
+- **Database**: PostgreSQL, Prisma
+- **Authentication**: Clerk
+- **Real-Time**: WebRTC (PeerJS), Socket.IO
+- **Monorepo**: Turborepo
 
-- **Video Conferencing**: Host meetings for up to 10 users per room with one-click access using WebRTC.
-- **Interactive Whiteboard**: Collaborate on a shared canvas with real-time synchronization, powered by Fabric.js.
-- **Real-Time Chat**: Communicate instantly with team members within project rooms.
-- **AI-Assisted Drawing (Optional)**: Get AI-powered suggestions to enhance whiteboard sketches.
-- **PDF Export**: Export whiteboard sessions or other content as PDFs for easy sharing.
+## 📦 Monorepo Structure
 
-### Project Management
+This project is a monorepo managed by Turborepo.
 
-- **Kanban Boards**: Organize tasks with drag-and-drop functionality for streamlined workflows.
-- **Task Assignments & Deadlines**: Assign tasks to team members and set due dates.
-- **Project Overview**: Monitor progress with stats like task completion rates and upcoming deadlines.
+- `apps/client`: The React frontend application.
+- `apps/server`: The Node.js backend server.
+- `packages/ui`: Shared UI components.
+- `packages/typescript-config`: Shared TypeScript configurations.
+- `packages/eslint-config`: Shared ESLint configurations.
 
-### Documentation Hub
+## 🏁 Getting Started
 
-- **Notion-Like Editor**: Create, edit, and share notes, wikis, and meeting summaries with rich text support and real-time collaboration.
+### Prerequisites
 
-### Additional Tools
+- Node.js (v18 or higher)
+- npm (v9.2.0 or higher)
+- Docker (for PostgreSQL)
 
-- **Calendar Integration**: Schedule meetings, track deadlines, and view team events.
-- **Member Management**: Manage team roles, statuses, and contact details.
-- **Inbox for Notifications**: Receive updates on tasks, messages, and project alerts.
-- **Customizable Dashboard**: Arrange widgets (e.g., task lists, project stats, member activity) to fit your workflow.
+### Installation
 
----
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/pixbay.git
+    cd pixbay
+    ```
 
-## Unique Features
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-- **Virtual Office Space**: Navigate an immersive environment with project "rooms" for a connected remote experience.
-- **AI Assistance**: Access AI-powered meeting summaries and task suggestions.
-- **Gamification**: Earn rewards and badges for task completion and team engagement.
+3.  **Set up environment variables:**
 
----
+    Create a `.env` file in `apps/server` and add the necessary environment variables (e.g., database URL, Clerk keys).
 
-## Tech Stack
+4.  **Start the development servers:**
+    ```bash
+    npm run dev
+    ```
 
-### Frontend
+This will start the frontend and backend applications in development mode.
 
-- React
-- TypeScript
-- Fabric.js (for whiteboard)
-- PeerJS (for WebRTC video calls)
-- Socket.IO-client (for real-time communication)
-- Clerk (for authentication)
-- Tailwind CSS (for styling)
+## 🔧 Available Scripts
 
-### Backend
+- `npm run dev`: Start the development servers for all apps.
+- `npm run build`: Build all apps for production.
+- `npm run lint`: Lint all apps.
+- `npm run format`: Format the codebase with Prettier.
 
-- Node.js
-- Express
-- Socket.IO (for real-time features)
-- Prisma (for database ORM)
-- PostgreSQL (database)
+## 🤝 Contributing
 
-### Deployment
+Contributions are welcome! Please feel free to submit a pull request.
 
-- Vercel (frontend)
-- Render (backend)
+## 📝 License
 
-### Monorepo Management
-
-- Turborepo
-
----
-
-## Daily Plan with Timelines
-
-Given the expanded scope, the original 2-3 week sprint has been revised to a 6-week timeline, assuming ~3-4 hours/day.
-
-### **Weeks 1-2: Foundation & Core Features**
-
-- Set up the monorepo with Turborepo, initialize frontend (React, TypeScript) and backend (Node.js, Express).
-- Implement authentication using Clerk.
-- Configure the database with PostgreSQL and Prisma.
-- Develop the room system with unique codes for project spaces.
-- Integrate basic video calls using WebRTC and PeerJS.
-- Add the interactive whiteboard with Fabric.js and real-time sync via Socket.IO.
-- Implement real-time chat within rooms.
-
-### **Weeks 3-4: Expanded Features**
-
-- Build project management tools: Kanban boards, task assignments, and deadlines.
-- Develop the documentation system with a Notion-like editor supporting rich text and real-time collaboration.
-- Add calendar integration for scheduling and deadline tracking.
-- Implement member management and an inbox for notifications.
-- Create a customizable dashboard with widgets for tasks, projects, and team activity.
-
----
-
-## Why PixBay?
-
-PixBay Workspace builds on the original idea of real-time collaboration (video, whiteboard, chat) and elevates it into a comprehensive platform. It draws inspiration from Notion’s documentation, Atlassian’s project management, and Kanban-style workflows, while adding unique elements like:
-
-- A virtual office space for an immersive team experience.
-- AI-powered tools to boost productivity.
-- Gamification to keep teams engaged.
-
-It’s designed for small to medium-sized teams who need an all-in-one solution for remote or distributed work, eliminating the need to juggle multiple tools.
+This project is licensed under the MIT License.

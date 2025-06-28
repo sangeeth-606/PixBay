@@ -3,7 +3,6 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
-import { EventClickArg } from "@fullcalendar/core";
 import "../styles/calendar-styles.css";
 import CalenderTaskModal from "../components/CalenderTaskModal";
 import { useAuth } from "@clerk/clerk-react";

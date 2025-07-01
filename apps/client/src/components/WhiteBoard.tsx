@@ -289,14 +289,11 @@ const WhiteBoard: React.FC<WhiteBoardProps> = ({ roomCode, userId }) => {
       if (canvasRef.current) {
         const container = canvasRef.current.parentElement;
         if (container) {
-          const prevWidth = canvasRef.current.width;
-          const prevHeight = canvasRef.current.height;
-
           canvasRef.current.width = container.clientWidth;
           canvasRef.current.height = container.clientHeight;
 
           // console.log(
-          //   `Canvas resized from ${prevWidth}x${prevHeight} to ${canvasRef.current.width}x${canvasRef.current.height}`,
+          //   `Canvas resized to ${canvasRef.current.width}x${canvasRef.current.height}`,
           // );
           // console.log(`Redrawing ${actionsRef.current.length} actions`);
 

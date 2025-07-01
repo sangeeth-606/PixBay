@@ -139,7 +139,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
 
       // console.log("Data being sent to backend:", data);
 
-      const response = await axios.post(
+      await axios.post(
         getApiEndpoint("/api/tasks/create"),
         data,
         {
@@ -147,7 +147,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
         },
       );
 
-      // console.log("Task created:", response.data);
+      // console.log("Task created successfully");
       onTaskAdded();
       onClose();
     } catch (error: unknown) {

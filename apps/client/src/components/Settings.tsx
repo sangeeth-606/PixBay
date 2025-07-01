@@ -303,12 +303,12 @@ export function Settings({
       // console.log("Attempting to remove member with ID:", memberId);
       const token = await getToken();
 
-      const response = await axios.delete(
+      await axios.delete(
         api.getApiEndpoint(`/api/workspaces/members/${memberId}`),
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      // console.log("Member removal response:", response.data);
+      // console.log("Member removed successfully");
 
       setMembers((prevMembers) =>
         prevMembers.filter((member) => member.id !== memberId),

@@ -1,7 +1,7 @@
 import { requireAuth, clerkClient } from '@clerk/express';
 
 const authMiddleware = async (req, res, next) => {
-  console.log('authMiddleware triggered');
+  // console.log('authMiddleware triggered');
   // Use requireAuth to ensure the user is authenticated and attach req.auth
   requireAuth({
     onError: (req, res) => {

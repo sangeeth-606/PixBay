@@ -1,9 +1,4 @@
-import {
-  SignedIn,
-  SignedOut,
-  useClerk,
-  useUser,
-} from "@clerk/clerk-react";
+import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import FullScreenModal from "./FullScreenModal";

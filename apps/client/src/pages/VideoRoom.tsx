@@ -100,17 +100,17 @@ const VideoRoom: React.FC<RoomProps> = ({
   const connectToNewUser = useCallback(
     (peerId: string, stream: MediaStream) => {
       if (!peerRef.current || peerId === myPeerIdRef.current) return;
-      console.log("Initiating call to:", peerId);
+      // //////console.log("Initiating call to:", peerId);
       const call = peerRef.current.call(peerId, stream);
       peerCallsRef.current[peerId] = call;
       call.on("stream", (remoteStream) => {
         if (isMountedRef.current) {
-          console.log("Received remote stream from call to:", peerId);
+          // //////console.log("Received remote stream from call to:", peerId);
           addRemoteStream(remoteStream, peerId);
         }
       });
       call.on("close", () => {
-        console.log("Call closed with:", peerId);
+        ////console.log("Call closed with:", peerId);
         removeRemoteStream(peerId);
       });
       call.on("error", (err) => {
@@ -188,12 +188,13 @@ const VideoRoom: React.FC<RoomProps> = ({
     });
 
     socketRef.current.on("connect", () => {
-      console.log(
-        "Socket.IO connected:",
-        socketRef.current?.id,
-        "Transport:",
-        socketRef.current?.io.engine.transport.name,
-      );
+      // ////console.log(
+
+      //   "Socket.IO connected:",
+      //   socketRef.current?.id,
+      //   "Transport:",
+      //   socketRef.current?.io.engine.transport.name,
+      // );
       if (isMountedRef.current) {
         setError(null);
       }
@@ -208,7 +209,7 @@ const VideoRoom: React.FC<RoomProps> = ({
       try {
         // Fetch TURN server credentials from Metered
         const iceServers = await fetchMeteredTurnServers();
-        console.log("Using Metered TURN servers");
+        // ////console.log("Using Metered TURN servers");
 
         peerRef.current = new Peer(safePeerId, {
           host: new URL(getApiUrl()).hostname,
@@ -222,7 +223,7 @@ const VideoRoom: React.FC<RoomProps> = ({
         });
 
         peerRef.current.on("open", (id) => {
-          console.log("PeerJS connected with ID:", id);
+          // ////console.log("PeerJS connected with ID:", id);
           socketRef.current?.emit("join-room", roomCode, id);
         });
 
@@ -259,17 +260,17 @@ const VideoRoom: React.FC<RoomProps> = ({
 
         // Handle incoming calls
         peerRef.current?.on("call", (call: MediaConnection) => {
-          console.log("Receiving call from:", call.peer);
+          // ////console.log("Receiving call from:", call.peer);
           peerCallsRef.current[call.peer] = call;
           call.answer(stream);
           call.on("stream", (remoteStream) => {
             if (isMountedRef.current) {
-              console.log("Received remote stream from:", call.peer);
+              ////console.log("Received remote stream from:", call.peer);
               addRemoteStream(remoteStream, call.peer);
             }
           });
           call.on("close", () => {
-            console.log("Call closed with:", call.peer);
+            //////console.log("Call closed with:", call.peer);
             removeRemoteStream(call.peer);
           });
           call.on("error", (err) => {
@@ -281,7 +282,7 @@ const VideoRoom: React.FC<RoomProps> = ({
         // Handle user connection
         socketRef.current?.on("user-connected", (peerId: string) => {
           if (peerId !== myPeerIdRef.current) {
-            console.log("User connected event received for:", peerId);
+            //////console.log("User connected event received for:", peerId);
             connectToNewUser(peerId, stream);
             // Retry connection if no stream after 5 seconds
             setTimeout(() => {
@@ -289,7 +290,7 @@ const VideoRoom: React.FC<RoomProps> = ({
                 !addedPeerIdsRef.current.has(peerId) &&
                 isMountedRef.current
               ) {
-                console.log("Retrying call to:", peerId);
+                //////console.log("Retrying call to:", peerId);
                 connectToNewUser(peerId, stream);
               }
             }, 5000);
@@ -298,7 +299,7 @@ const VideoRoom: React.FC<RoomProps> = ({
 
         // Handle user disconnection
         socketRef.current?.on("user-disconnected", (peerId: string) => {
-          console.log("User disconnected:", peerId);
+          //////console.log("User disconnected:", peerId);
           removeRemoteStream(peerId);
           delete peerCallsRef.current[peerId];
         });

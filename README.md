@@ -1,7 +1,7 @@
 # PixBay Workspace
+
 [Client](https://www.pixbay.space/)
 [Server](https://kalpixbay.onrender.com)
-
 
 PixBay Workspace is an all-in-one collaborative platform designed for teams to manage projects, collaborate in real-time, and access a suite of powerful tools. It combines video conferencing, interactive whiteboards, real-time chat, project management, and documentation into a single, unified workspace.
 
@@ -10,18 +10,18 @@ Inspired by tools like Notion, Jira, and Kanban, PixBay is tailored for small to
 ## ✨ Features
 
 - **Real-Time Collaboration**:
-    - **Video Conferencing**: Host meetings for up to 10 users per room with one-click access using WebRTC.
-    - **Interactive Whiteboard**: Collaborate on a shared canvas with real-time synchronization.
-    - **Real-Time Chat**: Communicate instantly with team members within project rooms.
+  - **Video Conferencing**: Host meetings for up to 10 users per room with one-click access using WebRTC.
+  - **Interactive Whiteboard**: Collaborate on a shared canvas with real-time synchronization.
+  - **Real-Time Chat**: Communicate instantly with team members within project rooms.
 - **Project Management**:
-    - **Kanban Boards**: Organize tasks with drag-and-drop functionality.
-    - **Task Assignments & Deadlines**: Assign tasks and set due dates.
-    - **Project Overview**: Monitor progress with stats and deadlines.
+  - **Kanban Boards**: Organize tasks with drag-and-drop functionality.
+  - **Task Assignments & Deadlines**: Assign tasks and set due dates.
+  - **Project Overview**: Monitor progress with stats and deadlines.
 - **Additional Tools**:
-    - **Calendar Integration**: Schedule meetings and track deadlines.
-    - **Member Management**: Manage team roles and statuses.
-    - **Notification Inbox**: Receive updates on tasks and messages.
-    - **Customizable Dashboard**: Arrange widgets to fit your workflow.
+  - **Calendar Integration**: Schedule meetings and track deadlines.
+  - **Member Management**: Manage team roles and statuses.
+  - **Notification Inbox**: Receive updates on tasks and messages.
+  - **Customizable Dashboard**: Arrange widgets to fit your workflow.
 
 ## 🚀 Tech Stack
 
@@ -53,12 +53,14 @@ This project is a monorepo managed by Turborepo.
 ### Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/your-username/pixbay.git
     cd pixbay
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     npm install
     ```

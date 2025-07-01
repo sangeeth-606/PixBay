@@ -19,11 +19,10 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
     setError("");
     setLoading(true);
     try {
-      await signIn?.authenticateWithRedirect({
+      await signIn.authenticateWithPopup({
         strategy: "oauth_google",
-        redirectUrl: "/",
-        redirectUrlComplete: "/",
       });
+      await setActive({ session: signIn.createdSessionId });
     } catch (err: any) {
       setError(err?.errors?.[0]?.message || "Google sign-in failed");
       setLoading(false);

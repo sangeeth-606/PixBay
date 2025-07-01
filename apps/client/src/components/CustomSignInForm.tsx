@@ -1,21 +1,21 @@
 import React, { useState } from "react";
-import { useSignIn } from "@clerk/clerk-react";
+import { useSignIn, useSignUp } from "@clerk/clerk-react";
 
 interface CustomSignInFormProps {
   hideHeading?: boolean;
 }
 
 const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
-  const { signIn, isLoaded, setActive } = useSignIn();
+  const { signIn, isLoaded: isSignInLoaded, setActive } = useSignIn();
+  const { signUp, isLoaded: isSignUpLoaded } = useSignUp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [info, setInfo] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  // Google sign-in handler (restored to match Clerk prebuilt flow)
   const handleGoogleSignIn = async () => {
-    if (!isLoaded) return;
+    if (!isSignInLoaded) return;
     setError("");
     setLoading(true);
     try {
@@ -30,19 +30,23 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
     }
   };
 
-  // Email/password sign-in handler
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSignUp) {
+      await handleSignUp();
+    } else {
+      await handleSignIn();
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!isSignInLoaded) return;
     setLoading(true);
     setError("");
-    setInfo("");
     try {
       const result = await signIn?.create({ identifier: email, password });
       if (result?.status === "complete") {
         await setActive?.({ session: result.createdSessionId });
-        // Optionally, close modal or redirect here
-      } else if (result?.status === "needs_first_factor") {
-        setError("Additional authentication required.");
       } else {
         setError("Sign in failed. Please try again.");
       }
@@ -52,41 +56,38 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
     setLoading(false);
   };
 
-  // Sign up and forgot password handlers (show info for now)
-  const handleSignUp = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setInfo(
-      "Sign up flow is not implemented in this modal. Please use the main sign up page.",
-    );
-  };
-  const handleForgotPassword = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setInfo(
-      "Password reset flow is not implemented in this modal. Please use the main reset page.",
-    );
+  const handleSignUp = async () => {
+    if (!isSignUpLoaded) return;
+    setLoading(true);
+    setError("");
+    try {
+      await signUp?.create({ emailAddress: email, password });
+      await signUp?.prepareEmailAddressVerification({ strategy: "email_code" });
+      // Handle verification flow if needed
+    } catch (err: any) {
+      setError(err?.errors?.[0]?.message || "Sign up failed");
+    }
+    setLoading(false);
   };
 
   return (
     <>
-      {/* Only render heading/subheading if not hidden */}
       {!hideHeading && (
         <>
           <h2 className="text-lg font-medium mb-1 text-gray-900 tracking-tight">
-            Sign in to Pixbay
+            {isSignUp ? "Create an account" : "Sign in to Pixbay"}
           </h2>
           <p className="text-gray-400 mb-5 text-xs font-normal">
-            Welcome back! To continue, sign in to your account
+            {isSignUp ? "Welcome! Please fill in your details to get started." : "Welcome back! To continue, sign in to your account"}
           </p>
         </>
       )}
-      {/* Social login */}
       <button
         type="button"
         className="w-full bg-white border border-gray-200 text-gray-800 py-2 rounded-md font-medium flex items-center justify-center mb-3 hover:bg-gray-100 transition text-sm shadow-sm"
         onClick={handleGoogleSignIn}
         disabled={loading}
       >
-        {/* Google icon */}
         <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
           <g>
             <path
@@ -107,16 +108,14 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
             />
           </g>
         </svg>
-        Sign in with Google
+        {isSignUp ? "Sign up with Google" : "Sign in with Google"}
       </button>
-      {/* Divider mimic */}
       <div className="flex items-center my-3 w-full">
         <div className="flex-grow h-px bg-gray-200" />
         <span className="mx-2 text-gray-400 text-xs">or</span>
         <div className="flex-grow h-px bg-gray-200" />
       </div>
-      {/* Email/password form */}
-      <form onSubmit={handleSignIn} className="space-y-2 w-full">
+      <form onSubmit={handleSubmit} className="space-y-2 w-full">
         <input
           type="email"
           className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm bg-white placeholder-gray-400 transition"
@@ -134,34 +133,37 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
           required
         />
         {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
-        {info && <div className="text-blue-500 text-xs mt-1">{info}</div>}
         <button
           type="submit"
           className="w-full bg-emerald-500 text-white py-2 rounded-md font-medium hover:bg-emerald-600 transition text-sm shadow disabled:opacity-60"
           disabled={loading}
         >
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? "Processing..." : (isSignUp ? "Sign up" : "Sign in")}
         </button>
       </form>
-      {/* Links mimic */}
       <div className="flex justify-between mt-4 w-full text-xs text-gray-400">
         <span>
-          Don&apos;t have an account?{" "}
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <a
             href="#"
             className="text-emerald-600 hover:underline"
-            onClick={handleSignUp}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsSignUp(!isSignUp);
+              setError("");
+            }}
           >
-            Sign up
+            {isSignUp ? "Sign in" : "Sign up"}
           </a>
         </span>
-        <a
-          href="#"
-          className="text-emerald-600 hover:underline"
-          onClick={handleForgotPassword}
-        >
-          Forgot password?
-        </a>
+        {!isSignUp && (
+          <a
+            href="#"
+            className="text-emerald-600 hover:underline"
+          >
+            Forgot password?
+          </a>
+        )}
       </div>
     </>
   );

@@ -22,7 +22,6 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
       await signIn?.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
       });
     } catch (err: any) {
       setError(err?.errors?.[0]?.message || "Google sign-in failed");

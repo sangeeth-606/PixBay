@@ -7,14 +7,14 @@ export default function SSOCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    handleRedirectCallback()
-      .then(() => {
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error("Error handling redirect callback:", error);
-        navigate("/");
-      });
+    handleRedirectCallback({
+      afterSignInUrl: "/",
+      afterSignUpUrl: "/",
+    }).catch((error) => {
+      console.error("Error handling redirect callback:", error);
+      // On error, still navigate away from the callback page.
+      navigate("/");
+    });
   }, [handleRedirectCallback, navigate]);
 
   return <div>Loading...</div>;

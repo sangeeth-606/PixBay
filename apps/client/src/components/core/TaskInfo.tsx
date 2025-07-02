@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import { motion } from "framer-motion";
 import api from "@/lib/api";
 
@@ -34,7 +34,7 @@ function TaskInfo({
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   useEffect(() => {
     setEditedDescription(description || "");

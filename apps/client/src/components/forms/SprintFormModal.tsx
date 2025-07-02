@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CalendarIcon } from "lucide-react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import axios from "axios";
 import api from "@/lib/api";
 import { Calendar } from "@/components/ui/calendar";
@@ -46,7 +46,7 @@ export function SprintFormModal({
   const [error, setError] = useState("");
   const [projectsError, setProjectsError] = useState("");
 
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   // Fetch projects when modal opens
   useEffect(() => {

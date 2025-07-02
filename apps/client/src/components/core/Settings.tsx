@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
+import { useUser } from "@clerk/clerk-react";
 import api from "@/lib/api";
 import {
   User,
@@ -77,7 +78,7 @@ export function Settings({
   const [isAdmin, setIsAdmin] = useState(false);
 
   const { user } = useUser();
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
   const navigate = useNavigate();
 
   const [profileName, setProfileName] = useState("");

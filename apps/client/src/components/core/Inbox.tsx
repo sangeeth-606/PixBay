@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,7 +21,7 @@ interface InboxProps {
 function Inbox({ darkMode = true }: InboxProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
   const [forceRender, setForceRender] = useState(0);
 
   useEffect(() => {

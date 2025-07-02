@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import AddTaskModal from "../forms/AddTaskModal";
 import TaskInfo from "../core/TaskInfo";
 import Board from "./Board";
@@ -30,7 +30,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   );
   const [isFetchingMembers, setIsFetchingMembers] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   // Use projectId directly without fallback to URL
   const effectiveProjectId = projectId;

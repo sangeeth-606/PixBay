@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CalendarDays, CalendarIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import api from "@/lib/api"; // Import the API utility
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -62,7 +62,7 @@ const Sprint: React.FC<SprintProps> = ({ sprintId, darkMode }) => {
     storyPoints: "",
     dueDate: "",
   });
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   useEffect(() => {
     const fetchSprint = async () => {

@@ -12,7 +12,7 @@ import {
   Plus,
 } from "lucide-react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import RoadMapForm from "@/components/forms/RoadMapForm";
 import api from "@/lib/api";
 
@@ -105,7 +105,7 @@ const Roadmap: React.FC<RoadmapProps> = ({ workspaceName, darkMode }) => {
     "list" | "timeline" | "dependencies"
   >("list");
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
   const [loadingTasks, setLoadingTasks] = useState<{ [key: string]: boolean }>(
     {},
   );

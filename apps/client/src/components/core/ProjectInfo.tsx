@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import { getApiEndpoint } from "@/lib/api"; // Import the API utility function
 
 interface ProjectInfo {
@@ -21,7 +21,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode, projectId }) => {
   const [project, setProject] = useState<ProjectInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   const fetchProjectInfo = useCallback(async () => {
     if (!projectId) {

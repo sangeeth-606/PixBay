@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import "../styles/calendar-styles.css";
 import CalenderTaskModal from "@/components/calendar/CalenderTaskModal";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import axios from "axios";
 import api from "@/lib/api";
 
@@ -88,7 +88,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const [taskState, setTaskState] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const fetchTasksByWorkspaceName = async () => {
@@ -204,7 +204,6 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
           projectId=""
           onTaskAdded={handleTaskAdded}
           selectedDate={selectedDate}
-          getToken={getToken}
         />
 
         <div

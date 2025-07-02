@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import { motion } from "framer-motion";
 import { getApiEndpoint } from "@/lib/api";
 import { TaskStatus, Priority, TaskType, User } from "@/lib/types/taskTypes";
@@ -43,7 +43,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [assigneeId, setAssigneeId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   // Reset form when modal opens/closes
   useEffect(() => {

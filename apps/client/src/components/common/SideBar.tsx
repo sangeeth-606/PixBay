@@ -15,12 +15,12 @@ import {
   Columns,
   Search,
 } from "lucide-react";
-import { FormModal } from "./FormModal";
-import { SprintFormModal } from "./SprintFormModal";
+import { FormModal } from "@/components/forms/FormModal";
+import { SprintFormModal } from "@/components/forms/SprintFormModal";
 import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import api from "../utils/api"; // Import the API utility
+import api from "@/lib/api"; // Import the API utility
 
 interface SidebarProps {
   selectedItem: string;

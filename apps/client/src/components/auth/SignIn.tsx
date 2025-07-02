@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import FullScreenModal from "./FullScreenModal";
+import FullScreenModal from "../common/FullScreenModal";
 import CustomSignInForm from "./CustomSignInForm";
 import PlatFormMockup from "../icons/PlatFormMockup";
 import {
@@ -11,7 +11,7 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 
 interface SignInProps {
   darkMode?: boolean;

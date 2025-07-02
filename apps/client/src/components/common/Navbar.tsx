@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
-import SignIn from "./SignIn";
+import SignIn from "../auth/SignIn";
 
 interface NavbarProps {
   workspaceCode?: string;

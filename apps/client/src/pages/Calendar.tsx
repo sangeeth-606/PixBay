@@ -3,12 +3,11 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
-import { EventClickArg } from "@fullcalendar/core";
 import "../styles/calendar-styles.css";
-import CalenderTaskModal from "../components/CalenderTaskModal";
+import CalenderTaskModal from "@/components/calendar/CalenderTaskModal";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
-import api from "../utils/api";
+import api from "@/lib/api";
 
 interface CalendarEvent {
   id: string;
@@ -152,7 +151,7 @@ const Calendar: React.FC<CalendarProps> = ({ workspaceName, darkMode }) => {
     // console.log("Date clicked", arg);
   };
 
-  const handleEventClick = (_arg: EventClickArg) => {
+  const handleEventClick = () => {
     // console.log("Event clicked", _arg);
   };
 

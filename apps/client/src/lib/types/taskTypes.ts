@@ -6,9 +6,9 @@ export enum TaskStatus {
 }
 
 export enum Priority {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
   HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
 }
 
 export enum TaskType {
@@ -20,11 +20,13 @@ export enum TaskType {
 
 export interface User {
   id: string;
-  userId: string; // Add this required property
+  userId?: string;
   name: string | null;
   email: string | null;
-  role: string;
-  joinedAt: string;
+  exists?: boolean;
+  hasName?: boolean;
+  role?: string;
+  joinedAt?: string;
 }
 
 export interface Task {
@@ -35,7 +37,7 @@ export interface Task {
   priority: Priority;
   dueDate?: string;
   creator: User;
-  assignee?: User | null; // Update type to User | null
+  assignee?: User | null;
   projectId: string;
   type?: string;
   name?: string;

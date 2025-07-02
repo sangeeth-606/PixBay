@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import { getApiEndpoint } from "../utils/api"; // Import the API utility function
+import { getApiEndpoint } from "@/lib/api"; // Import the API utility function
 
 interface ProjectInfo {
   name: string;
@@ -48,7 +48,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ darkMode, projectId }) => {
 
       setProject(projectData);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching project:", err);
 
       let errorMessage = "Failed to load project information";

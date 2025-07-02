@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import AddTaskModal from "./AddTaskModal";
-import TaskInfo from "./TaskInfo";
+import AddTaskModal from "../forms/AddTaskModal";
+import TaskInfo from "../core/TaskInfo";
 import Board from "./Board";
-import Projectinfo from "./ProjectInfo";
-import { Task, User, TaskStatus } from "../utils/taskTypes";
+import Projectinfo from "../core/ProjectInfo";
+import { Task, User, TaskStatus } from "@/lib/types/taskTypes";
 import { motion, AnimatePresence } from "framer-motion";
-import { getApiEndpoint } from "../utils/api"; // Import the API utility function
+import { getApiEndpoint } from "@/lib/api"; // Import the API utility function
 
 interface KanbanBoardProps {
   projectId: string | null;

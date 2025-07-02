@@ -24,8 +24,11 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
         redirectUrl: "/sso-callback",
         redirectUrlComplete: "/",
       });
-    } catch (err: any) {
-      setError(err?.errors?.[0]?.message || "Google sign-in failed");
+    } catch (err: unknown) {
+      setError(
+        (err as { errors?: { message: string }[] })?.errors?.[0]?.message ||
+          "Google sign-in failed",
+      );
       setLoading(false);
     }
   };
@@ -51,6 +54,7 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
         setError("Sign in failed. Please try again.");
       }
     } catch (err: any) {
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(err?.errors?.[0]?.message || "Sign in failed");
     }
     setLoading(false);
@@ -65,6 +69,7 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
       await signUp?.prepareEmailAddressVerification({ strategy: "email_code" });
       // Handle verification flow if needed
     } catch (err: any) {
+      // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(err?.errors?.[0]?.message || "Sign up failed");
     }
     setLoading(false);
@@ -78,7 +83,9 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
             {isSignUp ? "Create an account" : "Sign in to Pixbay"}
           </h2>
           <p className="text-gray-400 mb-5 text-xs font-normal">
-            {isSignUp ? "Welcome! Please fill in your details to get started." : "Welcome back! To continue, sign in to your account"}
+            {isSignUp
+              ? "Welcome! Please fill in your details to get started."
+              : "Welcome back! To continue, sign in to your account"}
           </p>
         </>
       )}
@@ -138,7 +145,7 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
           className="w-full bg-emerald-500 text-white py-2 rounded-md font-medium hover:bg-emerald-600 transition text-sm shadow disabled:opacity-60"
           disabled={loading}
         >
-          {loading ? "Processing..." : (isSignUp ? "Sign up" : "Sign in")}
+          {loading ? "Processing..." : isSignUp ? "Sign up" : "Sign in"}
         </button>
       </form>
       <div className="flex justify-between mt-4 w-full text-xs text-gray-400">
@@ -157,10 +164,7 @@ const CustomSignInForm: React.FC<CustomSignInFormProps> = ({ hideHeading }) => {
           </a>
         </span>
         {!isSignUp && (
-          <a
-            href="#"
-            className="text-emerald-600 hover:underline"
-          >
+          <a href="#" className="text-emerald-600 hover:underline">
             Forgot password?
           </a>
         )}

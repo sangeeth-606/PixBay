@@ -3,12 +3,16 @@ import { CalendarDays, CalendarIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import api from "../utils/api"; // Import the API utility
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Button } from "./ui/button";
+import api from "@/lib/api"; // Import the API utility
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { cn } from "../lib/utils";
+import { cn } from "@/lib/utils";
 
 type SprintStatus = "PLANNING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "ARCHIVED";

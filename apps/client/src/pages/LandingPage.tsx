@@ -4,12 +4,12 @@ import { ArrowRight, Moon, Sun, AlertCircle, X } from "lucide-react";
 import axios from "axios";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import SignIn from "../components/SignIn";
-import Footer from "../components/Footer";
-import CallToAction from "../components/CallToAction";
-import FeaturesSection from "../components/FeaturesSection";
-import TrustedBySection from "../components/TrustedBySection";
-import PlatFormMockup from "../icons/PlatFormMockup";
+import SignIn from "../components/auth/SignIn";
+import Footer from "../components/common/Footer";
+import CallToAction from "../components/common/CallToAction";
+import FeaturesSection from "../components/common/FeaturesSection";
+import TrustedBySection from "../components/common/TrustedBySection";
+import PlatFormMockup from "../components/icons/PlatFormMockup";
 import { ShiftingDropDown } from "../components/ui/shiftingDropDown";
 import {
   Select,
@@ -25,7 +25,7 @@ import {
   useCreateWorkspace,
   useJoinWorkspace,
   useCreateUser,
-} from "../utils/apiHooks";
+} from "../lib/api/index";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Generate a random code for workspace names

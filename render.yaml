@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: pixbay-server
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: cd apps/server && npm install && npx prisma generate
+    startCommand: cd apps/server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pixbay-db
+          property: connectionString
+
+databases:
+  - name: pixbay-db
+    databaseName: pixbay
+    user: pixbay_user
+    region: ohio
+    plan: free

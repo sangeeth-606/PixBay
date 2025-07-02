@@ -21,26 +21,34 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
           </div>
           <div className="flex space-x-4">
             <a
-              href="#"
-              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors`}
+              href="https://sangeeth.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors cursor-pointer`}
             >
               About
             </a>
             <a
-              href="#"
-              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors`}
+              href="https://sangeeth.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors cursor-pointer`}
             >
               Features
             </a>
             <a
-              href="#"
-              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors`}
+              href="https://sangeeth.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors cursor-pointer`}
             >
               Support
             </a>
             <a
-              href="#"
-              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors`}
+              href="https://sangeeth.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors cursor-pointer`}
             >
               Contact
             </a>
@@ -57,8 +65,10 @@ const Footer: React.FC<FooterProps> = ({ darkMode }) => {
               (Icon, i) => (
                 <a
                   key={i}
-                  href="#"
-                  className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors`}
+                  href="https://sangeeth.is-a.dev/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${darkMode ? "text-gray-400 hover:text-white" : "text-gray-600 hover:text-black"} transition-colors cursor-pointer`}
                 >
                   <Icon />
                 </a>

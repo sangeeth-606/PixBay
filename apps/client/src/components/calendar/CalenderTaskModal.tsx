@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CalendarIcon } from "lucide-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import { getApiEndpoint } from "@/lib/api";
 import { TaskStatus, Priority, TaskType } from "@/lib/types/taskTypes";
 import { Calendar } from "@/components/ui/calendar";
@@ -39,7 +40,6 @@ interface CalenderTaskModalProps {
   isFetchingMembers?: boolean;
   workspaceName?: string;
   selectedDate?: string;
-  getToken: () => Promise<string | null>;
 }
 
 const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
@@ -49,7 +49,6 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
   onTaskAdded,
   workspaceName = "",
   selectedDate = "",
-  getToken,
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -61,6 +60,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { getToken } = useAuthToken();
 
   useEffect(() => {
     if (isOpen) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { User, UserCircle, Shield, Users, Plus } from "lucide-react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { getApiEndpoint } from "@/lib/api";
 
@@ -34,7 +34,7 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
     useState<WorkspaceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   // Fetch workspace members
   const fetchWorkspaceMembers = async () => {

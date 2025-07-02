@@ -19,7 +19,7 @@ import { FormModal } from "@/components/forms/FormModal";
 import { SprintFormModal } from "@/components/forms/SprintFormModal";
 import { LoadingSpinner } from "./LoadingSpinner";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import api from "@/lib/api"; // Import the API utility
 
 interface SidebarProps {
@@ -69,7 +69,7 @@ export function Sidebar({
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
 
   const openProjectModal = () => setIsProjectModalOpen(true);
   const closeProjectModal = () => setIsProjectModalOpen(false);

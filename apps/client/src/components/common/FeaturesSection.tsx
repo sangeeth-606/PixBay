@@ -1,4 +1,4 @@
-import { VideoIcon, Clipboard, Users } from "lucide-react";
+import { Video, Users, Clipboard, MessageCircle } from "lucide-react";
 
 interface FeaturesSectionProps {
   darkMode: boolean;
@@ -23,8 +23,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ darkMode }) => {
             className={`rounded-xl p-6 ${darkMode ? "bg-[#171717]" : "bg-white shadow-md"} 
             transform transition-all hover:scale-105 border ${darkMode ? "border-[#2C2C2C]" : "border-gray-200"}`}
           >
-            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 bg-opacity-20">
-              <VideoIcon size={24} className="text-emerald-500" />
+            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 text-white flex items-center justify-center">
+              <Video size={24} className="text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2">One-Click Video Meetings</h3>
             <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
@@ -38,8 +38,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ darkMode }) => {
             className={`rounded-xl p-6 ${darkMode ? "bg-[#171717]" : "bg-white shadow-md"} 
             transform transition-all hover:scale-105 border ${darkMode ? "border-[#2C2C2C]" : "border-gray-200"}`}
           >
-            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 bg-opacity-20">
-              <Clipboard size={24} className="text-emerald-500" />
+            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 text-white flex items-center justify-center">
+              <Clipboard size={24} className="text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2">Project Management</h3>
             <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
@@ -53,8 +53,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ darkMode }) => {
             className={`rounded-xl p-6 ${darkMode ? "bg-[#171717]" : "bg-white shadow-md"} 
             transform transition-all hover:scale-105 border ${darkMode ? "border-[#2C2C2C]" : "border-gray-200"}`}
           >
-            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 bg-opacity-20">
-              <Users size={24} className="text-emerald-500" />
+            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 text-white flex items-center justify-center">
+              <Users size={24} className="text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2">Create or Join Rooms</h3>
             <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
@@ -68,8 +68,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ darkMode }) => {
             className={`rounded-xl p-6 ${darkMode ? "bg-[#171717]" : "bg-white shadow-md"} 
             transform transition-all hover:scale-105 border ${darkMode ? "border-[#2C2C2C]" : "border-gray-200"}`}
           >
-            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 bg-opacity-20">
-              <Users size={24} className="text-emerald-500" />
+            <div className="p-3 mb-4 rounded-lg inline-block bg-emerald-500 text-white flex items-center justify-center">
+              <MessageCircle size={24} className="text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2">Real-Time Collaboration</h3>
             <p className={darkMode ? "text-gray-400" : "text-gray-600"}>

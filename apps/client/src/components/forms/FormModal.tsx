@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthToken } from "@/hooks/useAuthToken";
 import { getApiEndpoint } from "@/lib/api";
 
 interface FormModalProps {
@@ -22,7 +22,7 @@ export function FormModal({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { getToken } = useAuth();
+  const { getToken } = useAuthToken();
   const params = useParams();
 
   const workspaceName = params.workspaceCode;

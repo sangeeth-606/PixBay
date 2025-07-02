@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
-import api from "../utils/api";
+import api from "@/lib/api";
 
 interface TaskInfoProps {
   taskId: string;
@@ -94,7 +94,7 @@ function TaskInfo({
       if (onTaskDeleted) {
         onTaskDeleted();
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to delete task:", error);
       if (axios.isAxiosError(error)) {
         console.error("Error details:", error.response?.data);

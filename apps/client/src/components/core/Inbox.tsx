@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Circle } from "lucide-react";
-import api from "../utils/api"; // Changed to import the default export
+import api from "@/lib/api"; // Changed to import the default export
 
 // Define a type for the notification
 type Notification = {

@@ -1,17 +1,17 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import SideBar from "../components/SideBar";
-import KanbanBoard from "../components/KanbanBoard";
-import Navbar from "../components/Navbar";
-import Members from "../components/Members";
-import Sprint from "../components/Sprint";
+import SideBar from "../components/common/SideBar";
+import KanbanBoard from "../components/board/KanbanBoard";
+import Navbar from "../components/common/Navbar";
+import Members from "../components/core/Members";
+import Sprint from "../components/sprint/Sprint";
 import Calendar from "./Calendar";
-import Roadmap from "../components/Roadmap";
-import Inbox from "../components/Inbox";
-import ChatRoom from "../components/ChatRoom";
-import { JoinCallButton } from "../components/VideoButton";
+import Roadmap from "../components/roadmap/Roadmap";
+import Inbox from "../components/core/Inbox";
+import ChatRoom from "../components/core/ChatRoom";
+import { JoinCallButton } from "../components/common/VideoButton";
 import { useUser } from "@clerk/clerk-react";
-import Settings from "../components/Settings";
+import Settings from "../components/core/Settings";
 
 function DashBoard() {
   const { workspaceCode } = useParams();

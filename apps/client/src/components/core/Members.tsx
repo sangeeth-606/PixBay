@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { User, UserCircle, Shield, Users, Plus } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { getApiEndpoint } from "../utils/api"; // Import the API utility function
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { getApiEndpoint } from "@/lib/api";
 
 interface MembersProps {
   workspaceName: string;
@@ -25,7 +25,6 @@ interface WorkspaceDetails {
   createdAt: string;
   updatedAt: string;
   members: WorkspaceMember[];
-  projects: any[];
   memberCount: number;
   projectCount: number;
 }
@@ -56,11 +55,9 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
       );
 
       setWorkspaceDetails(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching workspace members:", err);
-      setError(
-        err.response?.data?.error || "Failed to fetch workspace members",
-      );
+      setError("Failed to fetch workspace members");
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +66,7 @@ export function Members({ workspaceName, darkMode = true }: MembersProps) {
   useEffect(() => {
     // console.log("Members component received workspace name:", workspaceName);
     fetchWorkspaceMembers();
-  }, [workspaceName]);
+  }, [workspaceName, getToken]);
 
   // Animation variants
   const containerVariants = {

@@ -1,8 +1,12 @@
 import { FC } from "react";
 import { XIcon, AlertCircle, Loader2, CalendarIcon } from "lucide-react";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Button } from "./ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "../ui/button";
 import { format } from "date-fns";
 // import { cn } from "../lib/utils";
 
@@ -166,7 +170,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                     <Calendar
                       mode="single"
                       selected={startDate ? new Date(startDate) : undefined}
-                      onSelect={(date) => {
+                      onSelect={(date: Date | undefined) => {
                         if (date) {
                           setStartDate(format(date, "yyyy-MM-dd"));
                         }
@@ -207,7 +211,7 @@ const RoadMapForm: FC<RoadMapFormProps> = ({
                     <Calendar
                       mode="single"
                       selected={endDate ? new Date(endDate) : undefined}
-                      onSelect={(date) => {
+                      onSelect={(date: Date | undefined) => {
                         if (date) {
                           setEndDate(format(date, "yyyy-MM-dd"));
                         }

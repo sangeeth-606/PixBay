@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import io, { Socket } from "socket.io-client";
 import { X, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getApiUrl } from "../utils/api"; // Import the API utility function
+import { getApiUrl } from "@/lib/api"; // Import the API utility function
 
 interface ChatRoomProps {
   roomCode: string;

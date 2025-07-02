@@ -2,32 +2,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CalendarIcon } from "lucide-react";
-import { getApiEndpoint } from "../utils/api";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Button } from "./ui/button";
+import { getApiEndpoint } from "@/lib/api";
+import { TaskStatus, Priority, TaskType } from "@/lib/types/taskTypes";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 // import { cn } from "../lib/utils";
-
-export enum TaskStatus {
-  TODO = "TODO",
-  IN_PROGRESS = "IN_PROGRESS",
-  DONE = "DONE",
-  ARCHIVED = "ARCHIVED",
-}
-
-export enum Priority {
-  HIGH = "HIGH",
-  MEDIUM = "MEDIUM",
-  LOW = "LOW",
-}
-
-export enum TaskType {
-  TASK = "TASK",
-  BUG = "BUG",
-  STORY = "STORY",
-  EPIC = "EPIC",
-}
 
 interface User {
   id: string;
@@ -139,13 +124,9 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
 
       // console.log("Data being sent to backend:", data);
 
-      await axios.post(
-        getApiEndpoint("/api/tasks/create"),
-        data,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await axios.post(getApiEndpoint("/api/tasks/create"), data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       // console.log("Task created successfully");
       onTaskAdded();
@@ -396,7 +377,7 @@ const CalenderTaskModal: React.FC<CalenderTaskModalProps> = ({
                       <Calendar
                         mode="single"
                         selected={dueDate ? new Date(dueDate) : undefined}
-                        onSelect={(date) =>
+                        onSelect={(date: Date | undefined) =>
                           setDueDate(date ? format(date, "yyyy-MM-dd") : "")
                         }
                         initialFocus

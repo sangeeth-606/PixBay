@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 // import { useNavigate } from "react-router-dom";
-import { getApiUrl } from "../utils/api";
-import WhiteBoard from "../components/WhiteBoard";
-import ChatRoom from "../components/ChatRoom";
+import { getApiUrl } from "../lib/api";
+import WhiteBoard from "../components/core/WhiteBoard";
+import ChatRoom from "../components/core/ChatRoom";
 
 // Generate unique peer ID
 const generateSafePeerId = (roomCode: string, userId: string): string => {

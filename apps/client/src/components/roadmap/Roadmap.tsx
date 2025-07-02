@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
-import RoadMapForm from "./RoadMapForm";
-import api from "../utils/api";
+import RoadMapForm from "@/components/forms/RoadMapForm";
+import api from "@/lib/api";
 
 interface Task {
   id: string;

@@ -47,9 +47,6 @@ RUN npm install --production
 # Copy the built server code from the builder stage
 COPY --from=builder /app/apps/server/src ./apps/server/src
 
-# Copy the built client code from the builder stage
-COPY --from=builder /app/apps/client/dist ./apps/client/dist
-
 # Expose the port the app runs on
 EXPOSE 5000
 

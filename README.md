@@ -44,37 +44,7 @@ This project is a monorepo managed by Turborepo.
 
 ## 🏁 Getting Started
 
-### Prerequisites
-
-- Node.js (v18 or higher)
-- npm (v9.2.0 or higher)
-- Docker (for PostgreSQL)
-
-### Installation
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/your-username/pixbay.git
-    cd pixbay
-    ```
-
-2.  **Install dependencies:**
-
-    ```bash
-    npm install
-    ```
-
-3.  **Set up environment variables:**
-
-    Create a `.env` file in `apps/server` and add the necessary environment variables (e.g., database URL, Clerk keys).
-
-4.  **Start the development servers:**
-    ```bash
-    npm run dev
-    ```
-
-This will start the frontend and backend applications in development mode.
+For detailed instructions on setting up and running the application using Docker, please refer to the [docker.md](docker.md) file.
 
 ## 🔧 Available Scripts
 

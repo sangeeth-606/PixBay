@@ -1,6 +1,6 @@
 import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FullScreenModal from "../common/FullScreenModal";
 import CustomSignInForm from "./CustomSignInForm";
 import PlatFormMockup from "../icons/PlatFormMockup";
@@ -19,6 +19,18 @@ interface SignInProps {
 
 function SignIn({ darkMode = false }: SignInProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return (
     <div className="flex items-center space-x-4">
@@ -53,100 +65,94 @@ function SignIn({ darkMode = false }: SignInProps) {
               </div>
             </div>
             {/* Right: Modern, feature-rich, on-brand */}
-            <div className="relative flex-1 lg:flex-[0.8] flex flex-col items-center justify-start bg-gradient-to-br from-[#171717] to-[#23272f] rounded-none lg:rounded-r-2xl overflow-y-auto min-h-[300px] sm:min-h-[400px] px-4 sm:px-6 lg:px-4 py-6 sm:py-8">
-              {/* Glowing emerald accent */}
-              <div className="absolute -top-12 sm:-top-24 -left-12 sm:-left-24 w-48 sm:w-96 h-48 sm:h-96 bg-emerald-500/20 rounded-full blur-3xl z-0 animate-pulse" />
-              <div className="relative z-10 w-full max-w-lg mx-auto flex flex-col items-center">
-                {/* Headline & tagline */}
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2 text-center px-2">
-                  All-in-one Collaboration Platform
-                </h2>
-                <p className="text-gray-300 mb-4 sm:mb-6 text-center text-sm sm:text-base lg:text-lg max-w-md px-2">
-                  Create rooms, manage projects, and connect instantly.
-                </p>
-                {/* App Preview */}
-                <motion.div
-                  className="w-full flex justify-center mb-4 sm:mb-6"
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <div className="scale-75 sm:scale-90 lg:scale-100">
-                    <PlatFormMockup darkMode={true} />
-                  </div>
-                </motion.div>
-                {/* Feature List */}
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 mt-4 sm:mt-8 px-2">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
-                      <VideoIcon
-                        size={16}
-                        className="sm:w-5 sm:h-5 text-emerald-400"
-                      />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-white font-medium text-sm sm:text-base">
-                        One-Click Video Meetings
-                      </div>
-                      <div className="text-gray-400 text-xs">
-                        Join video calls instantly with a single click.
-                      </div>
+            {isWideScreen && (
+              <div className="relative flex-1 lg:flex-[0.8] flex flex-col items-center justify-start bg-gradient-to-br from-[#171717] to-[#23272f] rounded-none lg:rounded-r-2xl overflow-y-auto min-h-[300px] sm:min-h-[400px] px-4 sm:px-6 lg:px-4 py-6 sm:py-8">
+                {/* Glowing emerald accent */}
+                <div className="absolute -top-12 sm:-top-24 -left-12 sm:-left-24 w-48 sm:w-96 h-48 sm:h-96 bg-emerald-500/20 rounded-full blur-3xl z-0 animate-pulse" />
+                <div className="relative z-10 w-full max-w-lg mx-auto flex flex-col items-center">
+                  {/* Headline & tagline */}
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2 text-center px-2">
+                    All-in-one Collaboration Platform
+                  </h2>
+                  <p className="text-gray-300 mb-4 sm:mb-6 text-center text-sm sm:text-base lg:text-lg max-w-md px-2">
+                    Create rooms, manage projects, and connect instantly.
+                  </p>
+                  {/* App Preview */}
+                  <div className="w-full flex justify-center items-center mb-4 sm:mb-6">
+                    <div className="scale-75 sm:scale-90 lg:scale-100 max-w-[400px] sm:max-w-[500px] lg:max-w-[600px] flex-shrink-0">
+                      <PlatFormMockup darkMode={true} />
                     </div>
                   </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
-                      <Clipboard
-                        size={16}
-                        className="sm:w-5 sm:h-5 text-emerald-400"
-                      />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-white font-medium text-sm sm:text-base">
-                        Project Management
-                      </div>
-                      <div className="text-gray-400 text-xs">
-                        Organize tasks with Kanban boards and timelines.
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
-                      <Users
-                        size={16}
-                        className="sm:w-5 sm:h-5 text-emerald-400"
-                      />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-white font-medium text-sm sm:text-base">
-                        Create or Join Rooms
-                      </div>
-                      <div className="text-gray-400 text-xs">
-                        Start a new workspace or join with a code.
+                  {/* Feature List */}
+                  <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 mt-4 sm:mt-8 px-2">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
+                        <VideoIcon
+                          size={16}
+                          className="sm:w-5 sm:h-5 text-emerald-400"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-white font-medium text-sm sm:text-base">
+                          One-Click Video Meetings
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          Join video calls instantly with a single click.
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
-                      <Users
-                        size={16}
-                        className="sm:w-5 sm:h-5 text-emerald-400"
-                      />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-white font-medium text-sm sm:text-base">
-                        Real-Time Collaboration
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
+                        <Clipboard
+                          size={16}
+                          className="sm:w-5 sm:h-5 text-emerald-400"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-white font-medium text-sm sm:text-base">
+                          Project Management
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          Organize tasks with Kanban boards and timelines.
+                        </div>
                       </div>
-                      <div className="text-gray-400 text-xs">
-                        Work together with chat, whiteboards, and docs.
+                    </div>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
+                        <Users
+                          size={16}
+                          className="sm:w-5 sm:h-5 text-emerald-400"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-white font-medium text-sm sm:text-base">
+                          Create or Join Rooms
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          Start a new workspace or join with a code.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <span className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 flex-shrink-0">
+                        <Users
+                          size={16}
+                          className="sm:w-5 sm:h-5 text-emerald-400"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-white font-medium text-sm sm:text-base">
+                          Real-Time Collaboration
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          Work together with chat, whiteboards, and docs.
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </FullScreenModal>
       </SignedOut>

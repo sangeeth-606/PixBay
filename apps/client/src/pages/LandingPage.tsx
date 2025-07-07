@@ -6,9 +6,7 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import SignIn from "../components/auth/SignIn";
 import Footer from "../components/common/Footer";
-import CallToAction from "../components/common/CallToAction";
 import FeaturesSection from "../components/common/FeaturesSection";
-import TrustedBySection from "../components/common/TrustedBySection";
 import PlatFormMockup from "../components/icons/PlatFormMockup";
 import { ShiftingDropDown } from "../components/ui/shiftingDropDown";
 import {
@@ -307,44 +305,52 @@ const LandingPage = () => {
 
   return (
     <div
-      className={`min-h-screen w-full ${darkMode ? "bg-[#1C1C1C] text-white" : "bg-[#F5F5F5] text-[#212121]"}`}
+      className={`min-h-screen w-full bg-gradient-to-b from-[#0A0A0A] via-[#131516] to-[#0A0A0A] ${darkMode ? "text-white" : "text-[#212121]"}`}
     >
       {/* Navigation */}
-      <nav
-        className={`sticky top-0 px-6 py-4 flex justify-between items-center border-b z-50 ${
-          darkMode
-            ? "bg-[#171717] border-[#2C2C2C]"
-            : "bg-white border-gray-200"
-        }`}
+      <div
+        className={`sticky top-0 w-full py-2 flex px-4 sm:px-6 md:px-10 lg:px-20 xl:px-28 2xl:px-40 z-50 transition-transform duration-300`}
       >
-        <div className="flex items-center space-x-2">
-          <img
-            src="/favicon_io/favicon-32x32.png"
-            alt="Pixbay Logo"
-            className="w-8 h-8"
-          />
-          <span className="text-xl font-bold">Pixbay </span>
-        </div>
-        <div className="flex items-center space-x-6">
-          <div className="hidden md:flex space-x-6">
-            <ShiftingDropDown darkMode={darkMode} />
-
-            <div className="text-gray-600 hover:text-indigo-600 font-semibold">
-              <SignIn />
-            </div>
+        <div
+          className={`h-[55px] border w-full rounded-xl flex items-center justify-between pl-3 pr-2 ${
+            darkMode
+              ? "bg-[#121212] border-[#313032]"
+              : "bg-white border-gray-200"
+          }`}
+        >
+          <div className="flex items-center space-x-2">
+            <img
+              src="/favicon_io/favicon-32x32.png"
+              alt="Pixbay Logo"
+              className="w-8 h-8"
+            />
+            <span className="text-xl font-bold">Pixbay </span>
           </div>
-          <button
-            onClick={toggleTheme}
-            className={`p-2 rounded-full ${
-              darkMode
-                ? "bg-[#2C2C2C] hover:bg-[#333]"
-                : "bg-gray-200 hover:bg-gray-300"
-            } transition-colors`}
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          <div className="hidden md:flex items-center md:relative gap-x-[5px]">
+            <div className="hidden md:flex space-x-6">
+              <ShiftingDropDown darkMode={darkMode} />
+
+              <div
+                className={`${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                } hover:text-indigo-600 font-semibold`}
+              >
+                <SignIn />
+              </div>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full ${
+                darkMode
+                  ? "bg-[#2C2C2C] hover:bg-[#333]"
+                  : "bg-gray-200 hover:bg-gray-300"
+              } transition-colors`}
+            >
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          </div>
         </div>
-      </nav>
+      </div>
 
       {/* Hero Section */}
       {showWorkspaceModal && (
@@ -558,7 +564,7 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className="relative max-w-6xl mx-auto text-center">
+        <div className="relative max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-inter">
             Work Together, Anywhere with
             <br />
@@ -659,7 +665,7 @@ const LandingPage = () => {
           <div className="flex flex-wrap justify-center gap-4 mb-12">
             <button
               onClick={ShowMaodalForSpace}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105"
+              className="bg-emerald-500 hover:bg-emerald-400 text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105"
             >
               Create a Room
               <ArrowRight className="ml-2" size={18} />
@@ -686,7 +692,7 @@ const LandingPage = () => {
               <button
                 type="submit"
                 disabled={isJoinWorkspaceLoading}
-                className={`bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-6 
+                className={`bg-emerald-500 hover:bg-emerald-300 text-white py-3 px-6 
                 rounded-r-md font-medium shadow-sm transition duration-150 ease-in-out 
                 focus:outline-none focus:ring-2 focus:ring-emerald-500 flex items-center
                 ${isJoinWorkspaceLoading ? "opacity-75 cursor-not-allowed" : ""}`}
@@ -788,13 +794,13 @@ const LandingPage = () => {
             </div>
           )}
           <div
-            className={`relative mx-auto w-full max-w-4xl rounded-xl overflow-hidden border ${
+            className={`relative mx-auto w-full max-w-[95%] rounded-xl overflow-hidden border ${
               darkMode
                 ? "border-[#2C2C2C] bg-[#171717]"
                 : "border-gray-200 bg-white"
             }`}
           >
-            <div className="h-[300px] md:h-[400px] flex items-center justify-center">
+            <div className="h-[350px] md:h-[550px] flex items-center justify-center">
               {/* Platform Interface mockup */}
               <PlatFormMockup darkMode={darkMode} />
             </div>
@@ -803,13 +809,13 @@ const LandingPage = () => {
       </section>
 
       {/* Trusted By Section */}
-      <TrustedBySection darkMode={darkMode} />
+      {/* <TrustedBySection darkMode={darkMode} /> */}
 
       {/* Features Section */}
       <FeaturesSection darkMode={darkMode} />
 
       {/* Call to Action */}
-      <CallToAction darkMode={darkMode} />
+      {/* <CallToAction darkMode={darkMode} /> */}
 
       {/* Footer */}
       <Footer darkMode={darkMode} />

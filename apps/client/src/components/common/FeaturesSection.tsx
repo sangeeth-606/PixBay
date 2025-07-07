@@ -6,7 +6,22 @@ interface FeaturesSectionProps {
 
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ darkMode }) => {
   return (
-    <section id="features" className="py-16 md:py-24 px-6 relative z-10">
+    <section
+      id="features"
+      className={`py-16 md:py-24 px-6 relative z-10 bg-gradient-to-b from-[#0A0A0A] via-[#131516] to-[#0A0A0A]`}
+    >
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute transform rotate-45 opacity-5">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[100px] w-[800px] bg-emerald-500 my-[100px] ml-[-400px]"
+              style={{ transform: `translateX(${i * 200}px)` }}
+            ></div>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
           Powerful Collaboration Features

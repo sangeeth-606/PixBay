@@ -57,6 +57,4 @@ For detailed instructions on setting up and running the application using Docker
 
 Contributions are welcome! Please feel free to submit a pull request.
 
-## 📝 License
 
-This project is licensed under the MIT License.

@@ -16,10 +16,12 @@
   "dependencies": {
     "@clerk/express": "^1.4.0",
     "@prisma/client": "^6.5.0",
+    "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-rate-limit": "^7.1.5",
+    "node-cron": "^4.2.0",
     "nodemon": "^3.1.9",
     "peer": "^1.0.2",
     "redis": "^5.5.6",

@@ -21,6 +21,7 @@ import { ExpressPeerServer } from "peer";
 import { verifyDatabaseConnection } from "./db.js";
 import redisClient, { checkRedisHealthAndReconnect } from "./utils/redis.js";
 import { redisHealthMiddleware } from "./middleware/redisHealth.js";
+import keepAlive from "./cron/keepAlive.js";
 
 // Log environment variables for debugging (only non-sensitive ones)
 // console.log("Environment:", {
@@ -33,7 +34,7 @@ import { redisHealthMiddleware } from "./middleware/redisHealth.js";
 // Set FRONTEND_URL based on NODE_ENV
 const FRONTEND_URL =
   process.env.NODE_ENV === "production"
-    ? "https://www.pixbay.space" // Removed trailing slash
+    ? "https://www.pixbay.space" 
     : "http://localhost:5173";
 
 const app = express();
@@ -131,6 +132,7 @@ async function startServer() {
 
     server.listen(PORT, () => {
       // console.log(`Server is running on port ${PORT}`);
+      keepAlive();
     });
   } catch (err) {
     console.error("Failed to start server:", err);

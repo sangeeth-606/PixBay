@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const keepAlive = () => {
     cron.schedule('*/3 * * * *', () => {
-        axios.get('https://kalpixbay.onrender.com')
+        axios.get('https://kalpixbay.onrender.com', { timeout: 5000 })
             .then(response => {
                 console.log('Ping successful:', response.status);
             })

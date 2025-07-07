@@ -132,6 +132,7 @@ async function startServer() {
 
     server.listen(PORT, () => {
       // console.log(`Server is running on port ${PORT}`);
+      keepAlive();
     });
   } catch (err) {
     console.error("Failed to start server:", err);
@@ -140,4 +141,3 @@ async function startServer() {
 }
 
 startServer();
-keepAlive();

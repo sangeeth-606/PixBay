@@ -355,7 +355,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       {showWorkspaceModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-[9999]"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
         >
           <div
@@ -663,39 +663,35 @@ const LandingPage = () => {
           </AnimatePresence>
 
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <button
-              onClick={ShowMaodalForSpace}
-              className="bg-emerald-500 hover:bg-emerald-400 text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105"
-            >
-              Create a Room
-              <ArrowRight className="ml-2" size={18} />
-            </button>
+            <div className="relative z-50">
+              <button
+                onClick={() => {
+                  console.log("Create Room button clicked");
+                  ShowMaodalForSpace();
+                }}
+                className="bg-emerald-500 hover:bg-emerald-400 text-white py-3 px-6 rounded-md font-medium flex items-center transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                Create a Room
+                <ArrowRight className="ml-2" size={18} />
+              </button>
+            </div>
 
-            <form onSubmit={handleJoinWorkspace} className="flex">
+            <form
+              onSubmit={handleJoinWorkspace}
+              className="flex relative z-50"
+            >
               <input
                 type="text"
                 placeholder="Enter Room Code"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value)}
                 disabled={isJoinWorkspaceLoading}
-                className={`py-3 px-4 rounded-l-md border-2 w-36 md:w-48 
-                transition-all duration-200 ease-in-out
-                ${
-                  darkMode
-                    ? "bg-[#2C2C2C] border-[#333] text-white placeholder-gray-500 focus:bg-[#2C2C2C]/90"
-                    : "bg-white border-gray-200 text-[#212121] placeholder-gray-400"
-                }
-                focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
-                hover:border-emerald-500/50
-                ${isJoinWorkspaceLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                className="py-3 px-4 rounded-l-md border-2 w-36 md:w-48 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 hover:border-emerald-500/50"
               />
               <button
                 type="submit"
                 disabled={isJoinWorkspaceLoading}
-                className={`bg-emerald-500 hover:bg-emerald-300 text-white py-3 px-6 
-                rounded-r-md font-medium shadow-sm transition duration-150 ease-in-out 
-                focus:outline-none focus:ring-2 focus:ring-emerald-500 flex items-center
-                ${isJoinWorkspaceLoading ? "opacity-75 cursor-not-allowed" : ""}`}
+                className="bg-emerald-500 hover:bg-emerald-300 text-white py-3 px-6 rounded-r-md font-medium shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 flex items-center"
               >
                 {isJoinWorkspaceLoading ? (
                   <>
@@ -727,35 +723,27 @@ const LandingPage = () => {
               </button>
             </form>
 
-            <Select
-              value={selectedWorkspace}
-              onValueChange={handleWorkspaceSelect}
-            >
-              <SelectTrigger
-                className={`w-[200px] font-medium shadow-md rounded-md transition-all duration-200
-                ${
-                  darkMode
-                    ? "bg-[#262626] border border-[#444] text-white hover:bg-[#2A2A2A] hover:border-[#555]"
-                    : "bg-white/90 border border-gray-100 text-[#212121] hover:bg-white hover:shadow-lg"
-                } focus:ring-1 focus:ring-offset-1 ${darkMode ? "focus:ring-gray-500" : "focus:ring-gray-200"}`}
-                style={{ height: "50px" }}
+            <div className="relative z-50">
+              <Select
+                value={selectedWorkspace}
+                onValueChange={handleWorkspaceSelect}
               >
-                <SelectValue placeholder="All your spaces" />
-              </SelectTrigger>
-              <SelectContent
-                className={`rounded-md overflow-hidden shadow-lg border-0 backdrop-blur-sm
-                ${
-                  darkMode
-                    ? "bg-[#282828]/90 text-white"
-                    : "bg-white/95 text-[#212121]"
-                }`}
-                position="popper"
-                sideOffset={8}
-                align="start"
-              >
-                {renderWorkspaces()}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  className="w-[200px] font-medium shadow-md rounded-md transition-all duration-200 focus:ring-1 focus:ring-offset-1 focus:ring-emerald-500"
+                  style={{ height: "50px" }}
+                >
+                  <SelectValue placeholder="All your spaces" />
+                </SelectTrigger>
+                <SelectContent
+                  className="rounded-md overflow-hidden shadow-lg border-0 backdrop-blur-sm bg-white/95 text-[#212121]"
+                  position="popper"
+                  sideOffset={8}
+                  align="start"
+                >
+                  {renderWorkspaces()}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Hero Image */}

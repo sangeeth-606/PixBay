@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface FullScreenModalProps {
   isOpen: boolean;
@@ -22,9 +23,9 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xl"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur-xl"
       onClick={onClose}
     >
       <div
@@ -40,7 +41,8 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({
           &times;
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

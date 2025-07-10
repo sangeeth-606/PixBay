@@ -309,7 +309,7 @@ const LandingPage = () => {
     >
       {/* Navigation */}
       <div
-        className={`sticky top-0 w-full py-2 flex px-4 sm:px-6 md:px-10 lg:px-20 xl:px-28 2xl:px-40 z-50 transition-transform duration-300`}
+        className={`sticky top-0 w-full py-2 flex px-4 sm:px-6 md:px-10 lg:px-20 xl:px-28 2xl:px-40 z-50`}
       >
         <div
           className={`h-[55px] border w-full rounded-xl flex items-center justify-between pl-3 pr-2 ${

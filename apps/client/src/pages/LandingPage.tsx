@@ -464,7 +464,7 @@ const LandingPage = () => {
       )}
       {showNameModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-[9999]"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
         >
           <div
@@ -582,7 +582,7 @@ const LandingPage = () => {
           <AnimatePresence mode="wait">
             {showAlert && (
               <motion.div
-                className="fixed inset-0 flex items-center justify-center z-50"
+                className="fixed inset-0 flex items-center justify-center z-[9999]"
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
